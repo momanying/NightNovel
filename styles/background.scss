@@ -1,0 +1,56 @@
+@use "sass:string";
+@use "sass:math";
+
+@layer utilities {
+  @function getShadows($n) {
+    $result: '0 0 0 #fff';
+    @for $i from 2 through $n {
+      $x: math.random(100);
+      $y: math.random(100);
+      $result: '#{$result}, #{$x}vw #{$y}vh 0 #fff';
+    }
+    @return string.unquote($result);
+  }
+
+  $duration: 500s;
+  $n: 1000;
+
+  @for $i from 1 through 5 {
+    $duration: $duration * 0.5;
+    $n: math.floor($n * 0.5);
+    .layer#{$i} {
+      $size: $i * 0.5px;
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: $size;
+      height: $size;
+      border-radius: 50%;
+      z-index: -1;
+      box-shadow: getShadows($n);
+      animation: moveUp $duration linear infinite both;
+      transform: translateY(0);
+      will-change: transform;
+
+      &::after {
+        content: '';
+        position: inherit;
+        left: 0;
+        top: 100vh;
+        width: inherit;
+        height: inherit;
+        border-radius: inherit;
+        box-shadow: inherit;
+      }
+    }
+  }
+
+  @keyframes moveUp {
+    from {
+      transform: translateY(100vh);
+    }
+    to {
+      transform: translateY(-100vh);
+    }
+  }
+}

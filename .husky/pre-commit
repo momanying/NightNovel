@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# 检查lint-staged是否已安装
+if command -v pnpm lint-staged >/dev/null 2>&1; then
+  pnpm lint-staged
+else
+  echo "警告: lint-staged未安装或配置，跳过检查"
+  exit 0
+fi
