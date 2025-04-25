@@ -15,19 +15,15 @@ export default defineNuxtConfig({
       tailwindcss(),
     ],
   },
-  modules: [
-    '@nuxt/eslint',
-    ['@pinia/nuxt',
-    {
-      autoImports: [
-        // 自动引入 `defineStore()`
-        'defineStore',
-        // 自动引入 `defineStore()` 并重命名为 `definePiniaStore()`
-        ['defineStore', 'definePiniaStore'],
-      ],
-    }],
-    'pinia-plugin-persistedstate/nuxt',
-  ],
+  modules: ['@nuxt/eslint', ['@pinia/nuxt',
+  {
+    autoImports: [
+      // 自动引入 `defineStore()`
+      'defineStore',
+      // 自动引入 `defineStore()` 并重命名为 `definePiniaStore()`
+      ['defineStore', 'definePiniaStore'],
+    ],
+  }], 'pinia-plugin-persistedstate/nuxt', '@nuxt/image'],
   typescript: {
     typeCheck: true
   },

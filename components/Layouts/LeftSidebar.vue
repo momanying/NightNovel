@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col space-y-6 py-6 px-4 rounded-r-lg shadow-lg">
+  <div class="flex flex-col space-y-6 rounded-r-lg shadow-lg">
     <SideBarRecommendedBook
       class="w-full"
       :novel="recommendedNovel"

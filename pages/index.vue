@@ -3,7 +3,7 @@
     <LayoutsTheHeader />
     <div class="flex items-start w-full p-0 m-0 min-h-screen">
       <!-- 左侧栏 -->
-      <div class="w-[320px] shrink-0 sticky top-[60px] py-4 pl-6">
+      <div class="w-[320px] shrink-0 sticky top-[60px] py-8 pl-10">
         <LayoutsLeftSidebar />
       </div>
 

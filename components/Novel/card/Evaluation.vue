@@ -10,7 +10,7 @@
                     class="text-amber-500 mr-0.5 h-3 w-3"
                     />
                 </div>
-                <span class="mr-2 text-amber-500 text-xs">({{ rating }})</span>
+                <span class="mr-2 text-amber-500 text-[10px] font-bold tracking-widest">({{ rating }})</span>
             </div>
         </div>
     </div>

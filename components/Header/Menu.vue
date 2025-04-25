@@ -1,6 +1,10 @@
 <template>
-    <div class="items-center ml-3">
-      <ul class="flex ml-4 gap-2">
+  <div class="items-center ml-3">
+    <div class="flex items-center">
+      <NuxtLink to="/articlelist" class="flex items-center justify-center mt-1.5 leading-5 inline-block px-1 cursor-pointer">
+        <span class="text-white px-2 pb-1 flex place-items-center">轻小说全集</span>
+      </NuxtLink>
+      <ul class="flex ml-2 gap-2">
         <li
           v-for="(item, index) in menuItems"
           :key="index"
@@ -34,6 +38,7 @@
         </li>
       </ul>
     </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -76,11 +81,6 @@ const onEnter = (el: Element, done: () => void) => {
 
 // 定义菜单数据
 const menuItems = [
-  {
-    title: '轻小说全集',
-    subItems: ['日系轻小说', '韩系轻小说', '国产轻小说', '新人作品', '经典作品'],
-    links: ['/novels/japanese', '/novels/korean', '/novels/chinese', '/novels/new', '/novels/classic']
-  },
   {
     title: '热门轻小说',
     subItems: ['周排行榜', '月排行榜', '总排行榜', '热门新作', '人气作家'],
