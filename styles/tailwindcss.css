@@ -18,6 +18,10 @@
   @apply text-xl font-bold border-l-4 border-indigo-600 pl-3 mb-4 text-white;
 }
 
+.title-h2 {
+  @apply text-xl mb-4 text-white font-bold;
+}
+
 
 body {
     margin: 0;

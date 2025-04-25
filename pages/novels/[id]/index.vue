@@ -1,20 +1,20 @@
 <template>
-  <div>
-    <LayoutsTheHeader />
+<div>
+  <LayoutsTheHeader />
+  <div class="mx-30 p-2.5">
     <div class="flex gap-5 mt-5">
 
       <NovelCard />
 
-      <NovelPopularComment />
-
     </div>
-    <div class="flex ml-10 mt-5">
-      <div class="w-1/2">
+    <div class="flex mt-5 justify-between">
+      <div>
         <NovelSameNovel />
       </div>
-      <div class="w-1/2">
+      <div>
         <NovelSimilarNovel />
       </div>
     </div>
-  </div>
+  </div> 
+</div>
 </template>

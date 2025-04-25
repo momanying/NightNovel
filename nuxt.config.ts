@@ -7,6 +7,9 @@ export default defineNuxtConfig({
     '~/styles/background.scss',
   ],
   devtools: { enabled: true },
+  plugins: [
+    '~/plugins/fontawesome.ts',
+  ],
   vite: {
     plugins: [
       tailwindcss(),
