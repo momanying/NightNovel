@@ -1,6 +1,6 @@
 <template>
-  <div class="popular-comment max-w-3xl flex-1 text-gray-400 mr-10">
-    <h2 class="review-title text-white text-lg font-normal mt-8 mb-2">
+  <div class="max-w-3xl flex-1 text-gray-400 mr-10">
+    <h2 class="second-h2">
       总体评价
     </h2>
     <div class="comment-list flex flex-col space-y-4">
@@ -8,13 +8,6 @@
         <div class="comment-header flex justify-between p-2.5 bg-gradient-to-r from-gray-700 to-gray-800">
           <div class="user-info flex items-center">
             <img class="comment-avatar w-10 h-10 rounded-sm" src="/static/02580.jpg" alt="评论者头像">
-            <div class="user-details ml-2.5">
-              <div class="comment-author text-blue-200 text-sm font-bold">{{ comment.author }}</div>
-              <div class="user-stats text-gray-500 text-xs">注册日期 {{ comment.booksOwned || 863 }} </div>
-              <div class="user-reviews text-gray-500 text-xs">{{ comment.reviewCount || 20 }} 篇评测</div>
-            </div>
-          </div>
-          <div class="recommendation-badge w-[150px] flex items-center bg-blue-600 px-2.5 py-1 rounded-sm">
             <div class="thumb-icon text-2xl text-sky-400 mr-2.5">
                 <font-awesome-icon :icon="['fas', comment.icon || 'thumbs-up']" />
             </div>
@@ -33,17 +26,15 @@
         <div class="review-feedback px-4 py-2.5 bg-gray-800 border-t border-gray-700">
           <div class="feedback-buttons flex space-x-1 mb-2.5">
             <button class="feedback-btn yes bg-gray-700 text-sky-400 px-2.5 py-1 text-xs cursor-pointer rounded-sm transition duration-200 ease-in-out hover:bg-sky-400 hover:text-white">
-              <font-awesome-icon :icon="['fas', 'thumbs-up']" class="mr-1"/> 是
+              <font-awesome-icon :icon="['fas', 'thumbs-up']" class="mr-1 w-4 h-4"/> 是
             </button>
             <button class="feedback-btn no bg-gray-700 text-sky-400 px-2.5 py-1 text-xs cursor-pointer rounded-sm transition duration-200 ease-in-out hover:bg-sky-400 hover:text-white">
-              <font-awesome-icon :icon="['fas', 'thumbs-down']" class="mr-1"/> 否
+              <font-awesome-icon :icon="['fas', 'thumbs-down']" class="mr-1 w-4 h-4"/> 否
             </button>
             <button class="feedback-btn funny bg-gray-700 text-sky-400 px-2.5 py-1 text-xs cursor-pointer rounded-sm transition duration-200 ease-in-out hover:bg-sky-400 hover:text-white">
-              <font-awesome-icon :icon="['fas', 'face-laugh']" class="mr-1"/> 欢乐
+              <font-awesome-icon :icon="['fas', 'face-laugh']" class="mr-1 w-4 h-4"/> 欢乐
             </button>
           </div>
-          <!-- 可以选择性地添加 helpful count 显示 -->
-          <!-- <div class="helpful-count text-gray-500 text-xs">{{ comment.helpfulCount || 0 }} 人觉得此评论有帮助</div> -->
         </div>
       </div>
     </div>  

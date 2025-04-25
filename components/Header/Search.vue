@@ -1,15 +1,15 @@
 <template>
-    <div class="position-relative">
+    <div ref="searchContainer" class="position-relative">
         <div class="search" :class="{'open': isOpen}">
 
             <!-- 搜索按钮  -->
             <button
-                class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 text-2xl text-center font-black"
+                class="absolute left-2 top-1/2 transform -translate-y-1/2 text-white text-2xl text-center font-black"
                 :class="{ 'cursor-default': isOpen }"
                 @click="toggleSearch"
             >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
             </button>
 
@@ -21,7 +21,7 @@
                 class="h-10 rounded-lg border-none outline-none transition-all duration-300 ease-in-out focus:outline-none"
                 :class="[
                     isOpen
-                       ? 'w-96 px-8 text-gray-800 bg-gray-100 dark:bg-gray-700 dark:text-gray-200'
+                       ? 'w-96 px-9 text-white bg-gray-800 dark:bg-gray-700 dark:text-gray-200'
                        : 'w-10 text-transparent bg-transparent placeholder-transparent cursor-pointer'
                 ]"
                 @input="handleInput"
@@ -92,7 +92,7 @@ const searchQuery = ref('');
 const searchResults = ref<SearchResult[]>([]);
 const isLoading = ref(false);
 const searchInput = ref<HTMLInputElement | null>(null);
-
+const searchContainer = ref<HTMLDivElement | null>(null);
 const showClear = computed(() => searchQuery.value.length > 0);
 
 // 创建防抖函数
@@ -180,16 +180,18 @@ const selectResult = (result: SearchResult) => {
 
 // 当点击Esc键时关闭搜索
 onMounted(() => {
-    const handleEsc = (event: KeyboardEvent) => {
-        if (event.key === 'Escape' && isOpen.value) {
+    const handleClickOutside = (event: MouseEvent) => {
+        if (isOpen.value &&
+            searchContainer.value &&
+            !searchContainer.value.contains(event.target as Node)
+        ) {
             closeSearch();
         }
     };
 
-    window.addEventListener('keydown', handleEsc);
-
+    window.addEventListener('click', handleClickOutside);
     onUnmounted(() => {
-        window.removeEventListener('keydown', handleEsc);
+        window.removeEventListener('click', handleClickOutside);
     });
 });
 </script>

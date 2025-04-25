@@ -1,5 +1,5 @@
 <template>
-    <div class="ml-[40px] mt-[10px] max-w-[800px] p-[20px] text-white rounded-lg shadow-lg">
+    <div class="ml-[40px] max-w-[800px] px-[20px] text-white rounded-lg shadow-lg bottom-0">
       <div v-if="novel">
         <h1 class="text-2xl font-bold mb-5">{{ novel.title }}</h1>
         <div class="flex flex-col md:flex-row gap-6">
@@ -21,7 +21,7 @@
                   v-for="tag in novel.tags"
                   :key="tag.id"
                   href="#"
-                  style="font-size: 15px; padding: 5px;"
+                  style="font-size: 10px; padding: 5px;"
                   class="inline-block mr-2 mb-1 px-2 py-0.5 rounded text-sm hover:scale-105 transition-transform duration-200"
                   @click.prevent="navigateToTag(tag.id)"
                 >
@@ -103,7 +103,7 @@ onMounted(async () => {
         updateTime: '2025-04-11'
       };
       tagLoading.value = false;
-    }, 800); // 增加延迟以便观察 loading 状态
+    }, 100); // 增加延迟以便观察 loading 状态
   } catch (error) {
     console.error('获取小说详情失败:', error);
     tagError.value = '加载标签失败';

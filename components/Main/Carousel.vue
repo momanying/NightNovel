@@ -78,7 +78,7 @@ const props = defineProps({
   },
   interval: {
     type: Number,
-    default: 5000 // 5秒
+    default: 3000 // 3秒
   }
 });
 

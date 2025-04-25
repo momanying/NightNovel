@@ -220,7 +220,3 @@
     getTags()
   })
 </script>
-
-<style>
-/* 删除之前的样式，改用Tailwind */
-</style>

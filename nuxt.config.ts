@@ -3,10 +3,8 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   css: [
-    '../styles/main.css',
-    '../styles/background.scss',
-    '@fortawesome/fontawesome-svg-core/styles.css',
-    'vue-toastification/dist/index.css'
+    '~/styles/index.css',
+    '~/styles/background.scss',
   ],
   devtools: { enabled: true },
   vite: {

@@ -15,12 +15,11 @@
     <!-- 右侧图标区域 -->
     <div class="flex ml-auto items-center relative">
       <div class="flex items-center">
-        <div>
-          <HeaderSearch />
-        </div>
-        <div class="ml-3">
+        
+          <HeaderSearch class="flex-1 mr-5"/>
+
           <HeaderUser /> 
-        </div>
+
       </div>
     </div>
   </div>

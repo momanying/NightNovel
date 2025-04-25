@@ -1,11 +1,13 @@
 <template>
     <div v-if="!userdata.isAuthenticated">
-        <NuxtLink to="/auth/login" class="text-white text-2xl no-underline hover:text-gray-100">
-            <font-awesome-icon :icon="['fas', 'user']" />
-        </NuxtLink>
-        <NuxtLink to="/auth/register" class="text-white text-2xl ml-5 no-underline hover:text-gray-100">
-            <font-awesome-icon :icon="['fas', 'user-plus']" />
-        </NuxtLink>
+        <div class="flex items-center">
+          <NuxtLink to="/auth/login">
+            <button class="text-white no-underline hover:text-gray-100">登录</button>
+          </NuxtLink>
+          <NuxtLink to="/auth/register" class="ml-5">
+            <button class="text-white no-underline hover:text-gray-100">注册</button>
+          </NuxtLink>
+        </div>
         </div>
         <div v-else class="flex items-center relative">
         <div
