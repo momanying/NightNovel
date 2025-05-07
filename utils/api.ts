@@ -1,38 +1,70 @@
 import type { Novel } from '~/types/novel/novel';
-import type { Chapter, ChapterDetail } from '~/types/novel/chapter';
+import type { ChapterDetail } from '~/types/novel/chapter';
 import type { User, UserWithBookmarks } from '~/types/auth/user'
 import type { ApiResponse } from '~/types/auth'
 import type { Bookmark } from '~/types/novel/bookmark';
 import type { ReadingHistory } from '~/types/novel/readhistory';
 import type { Comment, CommentReply } from '@/types/comment';
 
+// 卷类型定义
+interface Volume {
+  _id: string;
+  title: string;
+  order: number;
+  chapters: {
+    _id: string;
+    title: string;
+    order: number;
+    word_count: number;
+  }[];
+}
+
 // 小说相关API
 export const novelApi = {
-  // 获取推荐小说
-  getFeatured: () => $fetch<ApiResponse<Novel[]>>('/api/novels/featured'),
+  // 获取小说列表
+  getList: (params?: { page?: number; limit?: number; category?: string; tag?: string; keyword?: string }) => 
+    $fetch<ApiResponse<{novels: Novel[]; pagination: {total: number; page: number; limit: number; totalPages: number}}>>('/api/novels', { 
+      method: 'GET', 
+      query: params 
+    }),
   
   // 获取最新小说
-  getLatest: () => $fetch<ApiResponse<Novel[]>>('/api/novels/latest'),
+  getLatest: (limit?: number) => $fetch<ApiResponse<Novel[]>>('/api/novels/latest', { 
+    method: 'GET',
+    query: { limit }
+  }),
+  
   // 获取热门小说
-  getTop: () => $fetch<ApiResponse<Novel[]>>('/api/novels/top'),
+  getTop: (limit?: number) => $fetch<ApiResponse<Novel[]>>('/api/novels/top', {
+    method: 'GET',
+    query: { limit }
+  }),
   
   // 获取小说详情
-  getNovelById: (id: number) => $fetch<ApiResponse<Novel>>(`/api/novels/${id}`),  
+  getNovelById: (id: number | string) => $fetch<ApiResponse<{novel: Novel; volumes: Volume[]}>>(
+    `/api/novels/${id}`
+  ),  
   
-  // 获取小说章节列表
-  getChapters: (novelId: number) => $fetch<ApiResponse<Chapter[]>>(`/api/novels/${novelId}/chapters`),
+  // 获取小说章节内容
+  getChapter: (novelId: number | string, chapterId: number | string) => 
+    $fetch<ApiResponse<{
+      chapter: ChapterDetail;
+      prevChapter: {id: string; title: string; order: number} | null;
+      nextChapter: {id: string; title: string; order: number} | null;
+    }>>(`/api/novels/${novelId}/chapters/${chapterId}`),
   
-  // 获取章节内容
-  getChapter: (novelId: number, chapterId: number) => 
-    $fetch<ApiResponse<ChapterDetail>>(`/api/novels/${novelId}/chapters/${chapterId}`),
-  
-  // 按分类获取小说
-  getNovelsByCategory: (categoryId: number | string) => 
-    $fetch<ApiResponse<Novel[]>>(`/api/categories/${categoryId}/novels`),
-    
   // 搜索小说
-  searchNovels: (keyword: string) => 
-    $fetch<ApiResponse<Novel[]>>(`/api/novels/search`, { method: 'GET', query: { keyword } }),
+  searchNovels: (keyword: string, page?: number, limit?: number) => 
+    $fetch<ApiResponse<{
+      novels: Novel[]; 
+      pagination: {total: number; page: number; limit: number; totalPages: number}
+    }>>('/api/novels/search', { 
+      method: 'GET', 
+      query: { keyword, page, limit } 
+    }),
+    
+  // 获取小说分类
+  getCategories: () => $fetch<ApiResponse<{name: string; count: number}[]>>('/api/novels/categories')
 };
 
 // 用户相关API

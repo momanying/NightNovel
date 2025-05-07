@@ -21,29 +21,26 @@
 </template>
 
 <script setup lang="ts">
+import type { Novel } from '~/types/novel/novel';
 import type { Tag } from '~/types/tag';
 
 // 获取路由参数
 const route = useRoute();
-const novelId = route.params.id;
+const novelId = computed(() => {
+  const id = route.params.id;
+  return Array.isArray(id) ? id[0] : id;
+});
 
 // TagCloud 相关状态
 const tagLoading = ref(true);
 const tagError = ref('');
 
-// 示例数据
-const novel = ref<{
-  id: string | string[];
-  title: string;
-  author: string;
-  cover: string;
-  category: string;
-  status: string;
-  views: number;
-  updateTime: string;
-  description: string;
+// 修改类型为Novel的扩展类型
+const novel = ref<Novel & {
+  cover?: string;
+  description?: string;
+  updateTime?: string;
   tags?: Tag[];
-  rating?: number;
 }>();
 
 // 模拟API请求
@@ -57,13 +54,15 @@ onMounted(async () => {
     // 这里只是模拟延迟加载
     setTimeout(() => {
       novel.value = {
-        id: novelId,
+        id: novelId.value,
         title: '败犬女主太多了',
         author: '雨森焚火',
         cover: 'http://54.255.84.100/i/2025/04/11/67f8cf4ed464c.jpg',
+        cover_url: 'http://54.255.84.100/i/2025/04/11/67f8cf4ed464c.jpg', // 添加cover_url字段
         category: '校园恋爱',
         status: '连载中',
         views: 15632,
+        word_count: 793003, // 添加word_count字段
         description: '"为什么……为什么我会输给那种家伙？" 故事开始于面向未来的失恋。输给发小、暗恋对象的我——温水和彦，在高中生活第一天就意志消沉。这时，坐在我旁边的是……之前拒绝了和我发小告白的同班同学？恋爱败犬们谱写的败者复活战（青春恋爱喜剧），开幕！',
         tags: [ // 添加模拟标签数据
           { id: 3, name: "校园", count: 765 },

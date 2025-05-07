@@ -8,12 +8,12 @@ export function useTagStyles(tags: Ref<Tag[] | undefined>) {
   // 计算最大和最小计数的计算属性
   const maxCount = computed(() => {
     if (!tags.value || tags.value.length === 0) return 0;
-    return Math.max(...tags.value.map(t => t.count));
+    return Math.max(...tags.value.map(t => t.count || t.novelCount || 0));
   });
 
   const minCount = computed(() => {
     if (!tags.value || tags.value.length === 0) return 0;
-    return Math.min(...tags.value.map(t => t.count));
+    return Math.min(...tags.value.map(t => t.count || t.novelCount || 0));
   });
 
   // 获取标签字体大小的函数

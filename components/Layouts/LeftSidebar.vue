@@ -36,6 +36,9 @@
   
 <script setup lang="ts">
 
+  // 导入Tag接口，替换本地定义的Tag接口
+  import type { Tag } from '~/types/tag'
+
   // 类型定义
   interface RecommendedNovel {
     id: number | string
@@ -54,12 +57,6 @@
     id: number | string
     name: string
     type: string
-    count: number
-  }
-  
-  interface Tag {
-    id: number | string
-    name: string
     count: number
   }
   

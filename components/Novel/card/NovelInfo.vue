@@ -3,7 +3,7 @@
         <h1 class="text-2xl font-bold mb-5">{{ novel.title }}</h1>
         <div class="flex">
         <div class="flex-shrink-0 mr-5">
-            <img :src="novel.cover" :alt="novel.title" class="h-full w-full rounded-md shadow-md">
+            <img :src="novel.cover || novel.cover_url" :alt="novel.title" class="h-full w-full rounded-md shadow-md">
         </div>
         <div class="flex-1">
             <p class="mb-2"><span class="font-semibold">作者：</span>{{ novel.author }}</p>
@@ -14,7 +14,7 @@
                 <NovelCardEvaluation class="inline-block align-baseline" :rating="novel.rating" />
             </p>
             <p class="mb-2"><span class="font-semibold">阅读量：</span>{{ novel.views || 0 }}</p>
-            <p class="mb-2"><span class="font-semibold">更新时间：</span>{{ novel.updateTime || '暂无更新时间' }}</p>
+            <p class="mb-2"><span class="font-semibold">更新时间：</span>{{ novel.updateTime || novel.lastUpdate || '暂无更新时间' }}</p>
             <div class="mb-4">
             <span class="font-semibold block">标签：</span>
             <template v-if="tagLoading">加载中...</template>
@@ -22,11 +22,11 @@
             <template v-else-if="novel.tags && novel.tags.length > 0">
                 <a
                 v-for="tag in novel.tags"
-                :key="tag.id"
+                :key="tag.id || tag.name"
                 href="#"
                 style="font-size: 10px; padding: 5px;"
                 class="inline-block mr-2 mb-1 px-2 py-0.5 rounded text-sm hover:scale-105 transition-transform duration-200"
-                @click.prevent="navigateToTag(tag.id)"
+                @click.prevent="navigateToTag(tag.id || tag.name)"
                 >
                 <font-awesome-icon :icon="['fas', 'tags']" />{{ tag.name }}
                 </a>
@@ -42,26 +42,34 @@
     </div>
     <div class="mt-4">
         <h3 class="text-xl font-semibold mb-3">简介</h3>
-        <p class="text-gray-300 leading-relaxed">{{ novel.description || '暂无简介' }}</p>
+        <p class="text-gray-300 leading-relaxed">{{ novel.description || novel.introduction || '暂无简介' }}</p>
     </div>   
 </template>
 
-<script setup>
-defineProps({
-    novel: {
-        type: Object,
-        required: true
+<script setup lang="ts">
+import type { Novel } from '~/types/novel/novel'
+import type { Tag } from '~/types/tag'
+
+const props = defineProps<{
+    novel: Novel & {
+        cover?: string;
+        description?: string;
+        updateTime?: string;
+        tags?: Tag[];
     }
-})
+}>()
+
+const route = useRoute()
+const novelId = computed(() => props.novel.id || props.novel._id || route.params.id)
 
 const tagLoading = ref(false)
-const tagError = ref(null)
+const tagError = ref<string | null>(null)
 
 const isCollected = ref(false)
 
 // 导航到章节列表页面
 const navigateToChapters = () => {
-  navigateTo(`/novels/${novelId}/`);
+  navigateTo(`/novels/${novelId.value}/`);
 };
 
 // 切换收藏状态
@@ -71,7 +79,7 @@ const toggleCollect = () => {
 };
 
 // 导航到标签页面
-const navigateToTag = (tagId) => {
+const navigateToTag = (tagId: string | number) => {
   navigateTo(`/tags/${tagId}`);
 };
 </script>

@@ -11,11 +11,11 @@
             v-for="novel in group" 
           :key="novel.id" 
           class="flex-1 relative rounded-lg overflow-hidden shadow-md cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-          @click="navigateToNovel(novel.id)"
+          @click="navigateToNovel(novel.id || 0)"
         >
           <img 
             class="w-70 h-70 object-cover rounded-lg transition-transform duration-500 hover:scale-105"
-            :src="novel.cover" 
+            :src="novel.cover_url" 
             :alt="novel.title" 
             @error="handleImageError"
           >
@@ -58,13 +58,7 @@
 
 <script setup lang="ts">
 // 定义小说类型接口
-interface Novel {
-  id: number;
-  title: string;
-  author: string;
-  cover: string;
-  description?: string;
-}
+import type { Novel } from '@/types/novel/novel';
 
 // 接收小说数据
 const props = defineProps({
@@ -133,7 +127,7 @@ const stopAutoplay = () => {
 };
 
 // 导航到小说详情页
-const navigateToNovel = (id: number) => {
+const navigateToNovel = (id: number | string) => {
   localStorage.setItem('novelId', id.toString());
   const path = `/novels/${id}`;
   const newWindow = window.open('', '_blank');

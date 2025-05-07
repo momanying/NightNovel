@@ -3,14 +3,14 @@
     <LayoutsTheHeader />
     
     <!-- 筛选框 -->
-    <div class="bg-gray-900 px-4 py-4">
+    <div class="bg-gray-900 px-4 py-4 mx-10">
       <div class="max-w-7xl mx-auto">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
           <!-- 类型筛选 -->
           <div class="relative">
             <label class="text-gray-500 text-xs mb-1 block">类型筛选</label>
             <div class="relative">
-              <select v-model="typeFilter" @change="handleFilterChange" class="w-full bg-gray-800 text-white border border-gray-700 rounded py-2 px-3 appearance-none text-sm">
+              <select v-model="typeFilter" class="w-full bg-gray-800 text-white border border-gray-700 rounded py-2 px-3 appearance-none text-sm" @change="handleFilterChange">
                 <option v-for="option in typeOptions" :key="option" :value="option">
                   {{ option }}
                 </option>
@@ -25,7 +25,7 @@
           <div class="relative">
             <label class="text-gray-500 text-xs mb-1 block">语言筛选</label>
             <div class="relative">
-              <select v-model="languageFilter" @change="handleFilterChange" class="w-full bg-gray-800 text-white border border-gray-700 rounded py-2 px-3 appearance-none text-sm">
+              <select v-model="languageFilter" class="w-full bg-gray-800 text-white border border-gray-700 rounded py-2 px-3 appearance-none text-sm" @change="handleFilterChange">
                 <option v-for="option in languageOptions" :key="option" :value="option">
                   {{ option }}
                 </option>
@@ -40,7 +40,7 @@
           <div class="relative">
             <label class="text-gray-500 text-xs mb-1 block">平台筛选</label>
             <div class="relative">
-              <select v-model="platformFilter" @change="handleFilterChange" class="w-full bg-gray-800 text-white border border-gray-700 rounded py-2 px-3 appearance-none text-sm">
+              <select v-model="platformFilter" class="w-full bg-gray-800 text-white border border-gray-700 rounded py-2 px-3 appearance-none text-sm" @change="handleFilterChange">
                 <option v-for="option in platformOptions" :key="option" :value="option">
                   {{ option }}
                 </option>
@@ -57,7 +57,7 @@
           <div class="relative">
             <label class="text-gray-500 text-xs mb-1 block">发售年份</label>
             <div class="relative">
-              <select v-model="yearFilter" @change="handleFilterChange" class="w-full bg-gray-800 text-white border border-gray-700 rounded py-2 px-3 appearance-none text-sm">
+              <select v-model="yearFilter" class="w-full bg-gray-800 text-white border border-gray-700 rounded py-2 px-3 appearance-none text-sm" @change="handleFilterChange">
                 <option v-for="option in yearOptions" :key="option" :value="option">
                   {{ option }}
                 </option>
@@ -72,7 +72,7 @@
           <div class="relative">
             <label class="text-gray-500 text-xs mb-1 block">发售月份</label>
             <div class="relative">
-              <select v-model="monthFilter" @change="handleFilterChange" class="w-full bg-gray-800 text-white border border-gray-700 rounded py-2 px-3 appearance-none text-sm">
+              <select v-model="monthFilter" class="w-full bg-gray-800 text-white border border-gray-700 rounded py-2 px-3 appearance-none text-sm" @change="handleFilterChange">
                 <option v-for="option in monthOptions" :key="option" :value="option">
                   {{ option }}
                 </option>
@@ -88,7 +88,7 @@
             <div class="relative flex-grow">
               <label class="text-gray-500 text-xs mb-1 block">资源更新时间</label>
               <div class="relative">
-                <select v-model="sortOption" @change="handleFilterChange" class="w-full bg-gray-800 text-white border border-gray-700 rounded py-2 px-3 appearance-none text-sm">
+                <select v-model="sortOption" class="w-full bg-gray-800 text-white border border-gray-700 rounded py-2 px-3 appearance-none text-sm" @change="handleFilterChange">
                   <option v-for="option in sortOptions" :key="option" :value="option">
                     {{ option }}
                   </option>
@@ -98,7 +98,7 @@
                 </div>
               </div>
             </div>
-            <button @click="handleSortOrderToggle" class="bg-gray-800 text-white border border-gray-700 rounded py-2 px-3 h-[38px] flex items-center">
+            <button class="bg-gray-800 text-white border border-gray-700 rounded py-2 px-3 h-[38px] flex items-center" @click="handleSortOrderToggle">
               <Icon :name="sortDirection === '降序' ? 'heroicons:arrow-down' : 'heroicons:arrow-up'" class="h-4 w-4" />
               <span class="ml-1 text-sm">{{ sortDirection }}</span>
             </button>
@@ -108,29 +108,29 @@
     </div>
       
       <!-- 主内容区 -->
-      <div class="w-full mx-20 py-10">
+      <div class="mx-10 py-5">
         <!-- 小说列表 -->
         <div class="space-y-6">
         <div v-if="loading" class="py-8 text-center">
-            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto" />
             <p class="mt-4 text-gray-600">加载中...</p>
         </div>
 
         <div v-else-if="error" class="py-8 text-center">
             <p class="text-red-500">{{ error }}</p>
-            <button @click="()=>fetchNovels" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            <button class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" @click="()=>fetchNovels">
             重试
             </button>
         </div>
 
         <template v-else>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-2 gap-2">
                 <div v-for="novel in novels" :key="novel.id" class="border rounded-lg overflow-hidden">
                     <div class="flex flex-col h-full">
                         <!-- 小说封面和信息改为上下布局 -->
                         <div class="flex p-4">
                             <!-- 小说封面 -->
-                            <div class="w-1/4 flex-shrink-0">
+                            <div class="flex-shrink-0">
                                 <NuxtImg 
                                 :src="novel.cover" 
                                 :alt="novel.title" 
@@ -168,7 +168,7 @@
                                 <template v-for="(tag, index) in novel.tags.slice(0, 4)" :key="index">
                                     <NuxtLink 
                                     :to="`/tags/${tag.id}`" 
-                                    class="inline-block text-xs bg-blue-100 px-1.5 py-0.5 rounded mr-1 mb-1 hover:bg-blue-200"
+                                    class="inline-block text-xs bg-gray-800 px-1.5 py-0.5 rounded mr-1 mb-1 hover:bg-gray-700"
                                     >
                                     {{ tag.name }}
                                     </NuxtLink>
@@ -185,10 +185,10 @@
                                 <NuxtLink :to="`/novels/${novel.id}/read`" class="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
                                     阅读
                                 </NuxtLink>
-                                <button @click="addToBookshelf(novel.id)" class="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600">
+                                <button class="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600" @click="addToBookshelf(novel.id)">
                                     收藏
                                 </button>
-                                <button @click="recommendNovel(novel.id)" class="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600">
+                                <button class="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600" @click="recommendNovel(novel.id)">
                                     推荐
                                 </button>
                             </div>
@@ -202,31 +202,31 @@
         <!-- 分页 -->
         <div class="mt-8 flex justify-center">
         <div class="flex space-x-2">
-            <button 
-            @click="handlePrevPage" 
+            <button
+            class="px-4 py-2 border rounded hover:bg-gray-100 disabled:opacity-50" 
             :disabled="currentPage <= 1"
-            class="px-4 py-2 border rounded hover:bg-gray-100 disabled:opacity-50"
             type="button"
+            @click="handlePrevPage" 
             >
             上一页
             </button>
             <template v-for="page in totalPages" :key="page">
-            <button 
-                @click="() => handlePageChange(page)" 
+            <button  
                 :class="[
                 'px-4 py-2 border rounded',
                 currentPage === page ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'
                 ]"
                 type="button"
+                @click="() => handlePageChange(page)"
             >
                 {{ page }}
             </button>
             </template>
             <button 
-            @click="handleNextPage" 
-            :disabled="currentPage >= totalPages"
             class="px-4 py-2 border rounded hover:bg-gray-100 disabled:opacity-50"
+            :disabled="currentPage >= totalPages"
             type="button"
+            @click="handleNextPage" 
             >
             下一页
             </button>
@@ -423,6 +423,72 @@ const fetchNovels = async (page = 1) => {
           { id: 12, name: '人外' }
         ],
         description: '灵的次害——灵灾多发的现代东京。 大明阴师，安倍晴明的千年后的十御门「土御门」'
+      },
+      {
+        id: 5,
+        title: '东京暗鸦(东京乌鸦)',
+        author: '字野耕平',
+        authorId: 105,
+        category: '富士见文库',
+        categoryId: 205,
+        cover: 'http://54.255.84.100/i/2025/03/31/67e98b1d2f456.jpg',
+        updateDate: '2025-04-25',
+        wordCount: '320K',
+        status: '连载中',
+        isAnimated: true,
+        tags: [
+          { id: 1, name: '校园' },
+          { id: 8, name: '奇幻' },
+          { id: 9, name: '战斗' },
+          { id: 10, name: '后宫' },
+          { id: 11, name: '青梅竹马' },
+          { id: 12, name: '人外' }
+        ],
+        description: '灵的次害——灵灾多发的现代东京。 大明阴师，安倍晴明的千年后的十御门「土御门」'
+      },
+      {
+        id: 5,
+        title: '东京暗鸦(东京乌鸦)',
+        author: '字野耕平',
+        authorId: 105,
+        category: '富士见文库',
+        categoryId: 205,
+        cover: 'http://54.255.84.100/i/2025/03/31/67e98b1d2f456.jpg',
+        updateDate: '2025-04-25',
+        wordCount: '320K',
+        status: '连载中',
+        isAnimated: true,
+        tags: [
+          { id: 1, name: '校园' },
+          { id: 8, name: '奇幻' },
+          { id: 9, name: '战斗' },
+          { id: 10, name: '后宫' },
+          { id: 11, name: '青梅竹马' },
+          { id: 12, name: '人外' }
+        ],
+        description: '灵的次害——灵灾多发的现代东京。 大明阴师，安倍晴明的千年后的十御门「土御门」'
+      },
+      {
+        id: 5,
+        title: '东京暗鸦(东京乌鸦)',
+        author: '字野耕平',
+        authorId: 105,
+        category: '富士见文库',
+        categoryId: 205,
+        cover: 'http://54.255.84.100/i/2025/03/31/67e98b1d2f456.jpg',
+        updateDate: '2025-04-25',
+        wordCount: '320K',
+        status: '连载中',
+        isAnimated: true,
+        tags: [
+          { id: 1, name: '校园' },
+          { id: 8, name: '奇幻' },
+          { id: 9, name: '战斗' },
+          { id: 10, name: '后宫' },
+          { id: 11, name: '青梅竹马' },
+          { id: 12, name: '人外' }
+        ],
+        description: '灵的次害——灵灾多发的现代东京。 大明阴师，安倍晴明的千年后的十御门「土御门」'
       }
     ]
     
@@ -476,7 +542,7 @@ onMounted(() => {
 
 // SEO优化
 useHead({
-  title: '轻小说全集列表 - 轻之国度',
+  title: '夜幕轻小说全集',
   meta: [
     { name: 'description', content: '最新轻小说全集列表，包含各种分类、标签的轻小说作品。' }
   ]

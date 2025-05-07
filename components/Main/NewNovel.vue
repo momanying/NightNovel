@@ -6,11 +6,11 @@
         v-for="(novel, index) in novels.slice(0, 15)"
         :key="index"
         class="flex flex-col cursor-pointer transition-transform duration-300 hover:-translate-y-1"
-        @click="navigateToNovel(novel.id)"
+        @click="navigateToNovel(novel.id || 0)"
       >
         <img
           class="w-28 h-40 object-cover rounded-md mb-2"
-          :src="novel.cover"
+          :src="novel.cover_url"
           :alt="novel.title"
           @error="handleImageError"
         >
@@ -22,12 +22,7 @@
 </template>
 
 <script setup lang="ts">
-interface Novel {
-    id: number;
-    title: string;
-    author: string;
-    cover: string;
-}
+import type { Novel } from '@/types/novel/novel';
 
 defineProps({
     novels: {
@@ -42,7 +37,7 @@ const handleImageError = (e: Event) => {
 };
 
 // 添加导航到小说详情页的函数
-const navigateToNovel = (id: number) => {
+const navigateToNovel = (id: number | string) => {
   // 使用Nuxt的navigateTo是更好的方式，但如果需要在新窗口打开，保留原方式
   const path = `/novels/${id}`;
   const newWindow = window.open('', '_blank');

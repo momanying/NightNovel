@@ -1,5 +1,8 @@
 export interface Tag {
-    id: number | string;
-    name: string;
-    count: number;
-  }
+  id?: string | number;
+  name: string;
+  slug?: string;
+  description?: string;
+  novelCount?: number;
+  count?: number;
+}

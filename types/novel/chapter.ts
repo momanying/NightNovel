@@ -1,14 +1,26 @@
 export interface Chapter {
-    id: number;
+    id?: string;
+    _id?: string;
+    novelId: string;
+    volumeId: string;
     title: string;
-    novelId: number;
-    chapterNumber: number;
-    wordCount: number;
-    updatedAt: string;
+    order: number;
+    word_count: number;
+    source_url?: string;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 export interface ChapterDetail extends Chapter {
     content: string;
-    prevChapterId: number | null;
-    nextChapterId: number | null;
+    prev?: {
+        id: string;
+        title: string;
+        order: number;
+    } | null;
+    next?: {
+        id: string;
+        title: string;
+        order: number;
+    } | null;
 }

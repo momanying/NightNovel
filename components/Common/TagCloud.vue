@@ -4,11 +4,11 @@
     <div v-if="!loading" class="flex flex-wrap gap-2 px-4 py-4">
       <a
         v-for="tag in props.tags" 
-        :key="tag.id"
+        :key="tag.id || tag.name"
         href="#"
-        :style="{ fontSize: `${getTagSize(tag.count)}px`, color: getTagColor(tag.id) }"
+        :style="{ fontSize: `${getTagSize(tag.count || tag.novelCount || 0)}px`, color: getTagColor(tag.id || tag.name) }"
         class="hover:scale-110 transition-transform duration-200"
-        @click.prevent="$emit('navigate', tag.id)"
+        @click.prevent="$emit('navigate', tag.id || tag.name)"
       >
         {{ tag.name }}
       </a>
