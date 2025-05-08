@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Novel } from '@/types/novel/novel';
+import type { Novel } from '~/types/novel/novelinfo';
 const $api = useNuxtApp().$api
 
 const featuredNovels = ref<Novel[]>([]);
@@ -34,7 +34,7 @@ onMounted(async () => {
     }
     
     // 获取最新小说
-    const latestResponse = await $api.novel.getLatest(12);
+    const latestResponse = await $api.novel.getLatest(35);
     if (latestResponse && latestResponse.data) {
       featuredNovels.value = latestResponse.data;
     }

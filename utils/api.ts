@@ -1,24 +1,11 @@
-import type { Novel } from '~/types/novel/novel';
+import type { Novel } from '~/types/novel/novelinfo';
 import type { ChapterDetail } from '~/types/novel/chapter';
 import type { User, UserWithBookmarks } from '~/types/auth/user'
 import type { ApiResponse } from '~/types/auth'
 import type { Bookmark } from '~/types/novel/bookmark';
 import type { ReadingHistory } from '~/types/novel/readhistory';
 import type { Comment, CommentReply } from '@/types/comment';
-
-// 卷类型定义
-interface Volume {
-  _id: string;
-  title: string;
-  order: number;
-  chapters: {
-    _id: string;
-    title: string;
-    order: number;
-    word_count: number;
-  }[];
-}
-
+import type { Volume } from '~/types/novel/volume';
 // 小说相关API
 export const novelApi = {
   // 获取小说列表

@@ -1,10 +1,12 @@
+// 卷类型定义
 export interface Volume {
-  id?: string;
-  _id?: string;
-  novelId: string;
+  _id: string;
   title: string;
   order: number;
-  chapters?: string[];
-  createdAt?: string;
-  updatedAt?: string;
-} 
+  chapters: {
+    _id: string;
+    title: string;
+    order: number;
+    word_count: number;
+  }[];
+}

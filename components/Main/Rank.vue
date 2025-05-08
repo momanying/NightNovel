@@ -66,7 +66,7 @@
   
   <script setup lang="ts">
   import { computed } from 'vue';
-  import type { Novel } from '@/types/novel/novel';
+  import type { Novel } from '~/types/novel/novelinfo';
   
   const props = defineProps({
       novels: {
@@ -89,6 +89,7 @@
                   word_count: 0,
                   views: 0,
                   rating: 0,
+                  tags: '-',
               });
           }
       }

@@ -1,11 +1,5 @@
 import mongoose from 'mongoose'
 
-// 标签子模式
-const TagSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  slug: { type: String }
-})
-
 // 小说模式
 const NovelSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -17,7 +11,7 @@ const NovelSchema = new mongoose.Schema({
   source_site: { type: String },
   crawl_time: { type: String },
   word_count: { type: Number, default: 0 },
-  tags: [TagSchema],
+  tags: { type: String },
   animation: { type: Boolean, default: false },
   introduction: { type: String },
   volumes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Volume' }],

@@ -3,10 +3,10 @@
     <h2 class="text-xl font-bold border-l-4 border-indigo-600 pl-3 mb-4 text-white">最近更新</h2>
     <div class="grid grid-cols-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-1">
       <div
-        v-for="(novel, index) in novels.slice(0, 15)"
+        v-for="(novel, index) in novels.slice(0, 32)"
         :key="index"
         class="flex flex-col cursor-pointer transition-transform duration-300 hover:-translate-y-1"
-        @click="navigateToNovel(novel.id || 0)"
+        @click="navigateToNovel(novel._id || 0)"
       >
         <img
           class="w-28 h-40 object-cover rounded-md mb-2"
@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Novel } from '@/types/novel/novel';
+import type { Novel } from '~/types/novel/novelinfo';
 
 defineProps({
     novels: {

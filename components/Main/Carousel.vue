@@ -11,7 +11,7 @@
             v-for="novel in group" 
           :key="novel.id" 
           class="flex-1 relative rounded-lg overflow-hidden shadow-md cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-          @click="navigateToNovel(novel.id || 0)"
+          @click="navigateToNovel(novel._id || 0)"
         >
           <img 
             class="w-70 h-70 object-cover rounded-lg transition-transform duration-500 hover:scale-105"
@@ -58,7 +58,7 @@
 
 <script setup lang="ts">
 // 定义小说类型接口
-import type { Novel } from '@/types/novel/novel';
+import type { Novel } from '~/types/novel/novelinfo';
 
 // 接收小说数据
 const props = defineProps({
