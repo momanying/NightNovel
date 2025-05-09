@@ -1,5 +1,5 @@
 <template>
-    <div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto px-4 py-8 border-2 mt-[20px]">
         <div v-if="chapterData" class="space-y-6">
             <!-- 章节标题 -->
             <h1 class="text-2xl font-bold text-center">{{ chapterData.chapter.title }}</h1>

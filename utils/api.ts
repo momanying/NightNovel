@@ -14,6 +14,11 @@ export const novelApi = {
       method: 'GET', 
       query: params 
     }),
+
+  //获取推荐小说
+  getrecommond: () => $fetch<ApiResponse<{novel: Novel}>('/api/novels/recommond',{
+    method: 'GET'
+  }),
   
   // 获取最新小说
   getLatest: (limit?: number) => $fetch<ApiResponse<Novel[]>>('/api/novels/latest', { 
