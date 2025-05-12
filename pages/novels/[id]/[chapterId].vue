@@ -8,25 +8,26 @@
             <div class="flex justify-between items-center my-4">
                 <button 
                     v-if="chapterData.prevChapter" 
-                    @click="navigateToChapter(chapterData.prevChapter.id)"
                     class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md transition duration-200"
+                    @click="navigateToChapter(chapterData.prevChapter.id)"
                 >
                     上一章：{{ chapterData.prevChapter.title }}
                 </button>
                 <button 
                     v-if="chapterData.nextChapter" 
-                    @click="navigateToChapter(chapterData.nextChapter.id)"
                     class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md transition duration-200"
+                    @click="navigateToChapter(chapterData.nextChapter.id)"
                 >
                     下一章：{{ chapterData.nextChapter.title }}
                 </button>
             </div>
 
             <!-- 章节内容 -->
-            <div class="chapter-content text-lg leading-relaxed">
-                <p v-for="(paragraph, index) in contentParagraphs" 
-                   :key="index" 
-                   class="mb-6"
+            <div class="min-height-[70vh] text-lg leading-relaxed">
+                <p
+                    v-for="(paragraph, index) in contentParagraphs" 
+                    :key="index" 
+                    class="mb-[1.5rem] text-indent-[2rem]"
                 >
                     {{ paragraph }}
                 </p>
@@ -36,15 +37,15 @@
             <div class="flex justify-between items-center mt-8">
                 <button 
                     v-if="chapterData.prevChapter" 
-                    @click="navigateToChapter(chapterData.prevChapter.id)"
                     class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md transition duration-200"
+                    @click="navigateToChapter(chapterData.prevChapter.id)"
                 >
                     上一章：{{ chapterData.prevChapter.title }}
                 </button>
                 <button 
                     v-if="chapterData.nextChapter" 
-                    @click="navigateToChapter(chapterData.nextChapter.id)"
                     class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md transition duration-200"
+                    @click="navigateToChapter(chapterData.nextChapter.id)"
                 >
                     下一章：{{ chapterData.nextChapter.title }}
                 </button>
@@ -110,9 +111,9 @@ watch([params], async ([newParams]) => {
     error.value = null
     
     try {
-        const response = await $api.novel.getChapter(newParams.id, newParams.chapterId)
-        if (response.data) {
-            chapterData.value = response.data
+        const {data:response} = await $api.novel.getChapter(newParams.id, newParams.chapterId)
+        if (response.value) {
+            chapterData.value = response.value.data
         }
     } catch (err) {
         error.value = '获取章节内容失败'
@@ -141,14 +142,3 @@ onMounted(() => {
     })
 })
 </script>
-
-<style scoped>
-.chapter-content {
-    min-height: 70vh;
-}
-
-.chapter-content p {
-    text-indent: 2em;
-    margin-bottom: 1.5em;
-}
-</style> 

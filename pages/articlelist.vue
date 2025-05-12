@@ -132,7 +132,7 @@
                             <!-- 小说封面 -->
                             <div class="flex-shrink-0">
                                 <NuxtImg 
-                                :src="novel.cover" 
+                                :src="novel.cover_url" 
                                 :alt="novel.title" 
                                 class="h-32 object-cover rounded-md shadow-md"
                                 width="90"
@@ -148,16 +148,16 @@
                                     <NuxtLink :to="`/novels/${novel.id}`">{{ novel.title }}</NuxtLink>
                                 </h2>
                                 <div class="text-xs text-gray-600">
-                                    作者：<NuxtLink :to="`/authors/${novel.authorId}`" class="hover:text-blue-500">{{ novel.author }}</NuxtLink>
+                                    作者：<NuxtLink :to="`/authors/${novel.author}`" class="hover:text-blue-500">{{ novel.author }}</NuxtLink>
                                 </div>
                                 <div class="text-xs text-gray-600">
-                                    分类：<NuxtLink :to="`/categories/${novel.categoryId}`" class="hover:text-blue-500">{{ novel.category }}</NuxtLink>
+                                    分类：<NuxtLink :to="`/categories/${novel.category}`" class="hover:text-blue-500">{{ novel.category }}</NuxtLink>
                                 </div>
                                 
                                 <!-- 更新信息 -->
                                 <div class="text-xs text-gray-600 mt-1">
-                                    更新：{{ novel.updateDate }}/字数：{{ novel.wordCount }}
-                                    <div>{{ novel.status }}<span v-if="novel.isAnimated" class="text-red-500 ml-1">/已动画化</span></div>
+                                    更新：{{ novel.lastUpdate }}/字数：{{ novel.word_count }}
+                                    <div>{{ novel.status }}<span v-if="novel.animation" class="text-red-500 ml-1">/已动画化</span></div>
                                 </div>
                             </div>
                         </div>
@@ -165,19 +165,31 @@
                         <div class="px-4 pb-4">
                             <!-- 标签 -->
                             <div class="mb-2">
-                                <template v-for="(tag, index) in novel.tags.slice(0, 4)" :key="index">
+                                <template v-if="novel.tags && typeof novel.tags === 'string'">
                                     <NuxtLink 
-                                    :to="`/tags/${tag.id}`" 
-                                    class="inline-block text-xs bg-gray-800 px-1.5 py-0.5 rounded mr-1 mb-1 hover:bg-gray-700"
+                                        v-for="(tag, index) in novel.tags.split(',').slice(0, 4)" 
+                                        :key="index"
+                                        :to="`/tags/${tag}`" 
+                                        class="inline-block text-xs bg-gray-800 px-1.5 py-0.5 rounded mr-1 mb-1 hover:bg-gray-700"
                                     >
-                                    {{ tag.name }}
+                                        {{ tag }}
+                                    </NuxtLink>
+                                </template>
+                                <template v-else-if="novel.tags && Array.isArray(novel.tags)">
+                                    <NuxtLink 
+                                        v-for="(tag, index) in novel.tags.slice(0, 4)" 
+                                        :key="index"
+                                        :to="`/tags/${tag}`" 
+                                        class="inline-block text-xs bg-gray-800 px-1.5 py-0.5 rounded mr-1 mb-1 hover:bg-gray-700"
+                                    >
+                                        {{ tag }}
                                     </NuxtLink>
                                 </template>
                             </div>
 
                             <!-- 简介 -->
                             <div class="text-xs text-gray-700 mb-3 line-clamp-2">
-                                {{ novel.description }}
+                                {{ novel.introduction }}
                             </div>
 
                             <!-- 操作按钮 -->
@@ -185,7 +197,7 @@
                                 <NuxtLink :to="`/novels/${novel.id}/read`" class="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
                                     阅读
                                 </NuxtLink>
-                                <button class="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600" @click="addToBookshelf(novel.id)">
+                                <button class="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600" @click="addToBookshelf(novel._id)">
                                     收藏
                                 </button>
                                 <button class="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600" @click="recommendNovel(novel.id)">
@@ -237,32 +249,12 @@
 </template>
 
 <script setup lang="ts">
-// 小说列表类型
-interface Tag {
-  id: number | string
-  name: string
-}
+import type { Novel } from '~/types/novel/novelinfo'
 
-interface Novel {
-  id: number | string
-  title: string
-  author: string
-  authorId: number | string
-  category: string
-  categoryId: number | string
-  cover: string
-  updateDate: string
-  wordCount: string
-  status: string
-  isAnimated: boolean
-  tags: Tag[]
-  description: string
-}
-
-// 状态变量
-const novels = ref<Novel[]>([])
+const $api = useNuxtApp().$api
 const loading = ref(true)
 const error = ref('')
+const novels = ref<Novel[]>([])
 
 // 筛选相关状态
 const typeFilter = ref('全部类型')
@@ -281,10 +273,16 @@ const yearOptions = ['全部年份', '2025', '2024', '2023', '2022', '2021']
 const monthOptions = ['全部月份', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 const sortOptions = ['周点击', '月点击', '周推荐', '月推荐', '周鲜花', '月鲜花', '收藏数', '资源更新时间', '入库时间']
 
+// 分页状态
+const currentPage = ref(1)
+const totalPages = ref(1)
+const itemsPerPage = ref(10)
+const total = ref(0)
+
 // 处理筛选变化
 const handleFilterChange = () => {
-  // 这里可以根据筛选条件重新获取数据
-  fetchNovels(currentPage.value)
+  currentPage.value = 1
+  fetchNovels()
 }
 
 // 处理排序方向变化
@@ -293,210 +291,63 @@ const handleSortOrderToggle = () => {
   handleFilterChange()
 }
 
-// 分页状态
-const currentPage = ref(1)
-const totalPages = ref(5)
-// 每页显示数量，注释掉API调用部分后此变量暂时未使用
-const _itemsPerPage = 10
+// 构建查询参数
+const buildQueryParams = () => {
+  const params: {
+    page: number
+    limit: number
+    category?: string
+    tag?: string
+    keyword?: string
+    sort?: string
+    order?: string
+  } = {
+    page: currentPage.value,
+    limit: itemsPerPage.value
+  }
 
-// 模拟获取小说列表数据
-const fetchNovels = async (page = 1) => {
+  // 添加分类筛选
+  if (typeFilter.value !== '全部类型') {
+    params.category = typeFilter.value
+  }
+
+  // 添加排序参数
+  if (sortOption.value !== '资源更新时间') {
+    params.sort = sortOption.value
+  }
+
+  // 添加排序方向
+  params.order = sortDirection.value === '降序' ? 'desc' : 'asc'
+
+  return params
+}
+
+// 获取小说列表数据
+const fetchNovels = async () => {
   loading.value = true
   error.value = ''
   
   try {
-    // 实际项目中应该调用API获取数据
-    // const response = await $fetch('/api/novels', {
-    //   params: {
-    //     page,
-    //     pageSize: _itemsPerPage,
-    //     type: typeFilter.value !== '全部类型' ? typeFilter.value : undefined,
-    //     language: languageFilter.value !== '全部语言' ? languageFilter.value : undefined,
-    //     platform: platformFilter.value !== '全部平台' ? platformFilter.value : undefined,
-    //     year: yearFilter.value !== '全部年份' ? yearFilter.value : undefined,
-    //     month: monthFilter.value !== '全部月份' ? monthFilter.value : undefined,
-    //     sortBy: sortOption.value,
-    //     sortDirection: sortDirection.value
-    //   }
-    // })
+    const params = buildQueryParams()
+    const { data: response } = await $api.novel.getList(params)
     
-    // 模拟异步获取数据
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    novels.value = [
-      {
-        id: 1,
-        title: '不亲近任何人的跳级天才幼女，只对我撒娇的',
-        author: '八神镜',
-        authorId: 101,
-        category: 'GA文库',
-        categoryId: 201,
-        cover: 'http://54.255.84.100/i/2025/03/27/67e56ac2ad562.jpg',
-        updateDate: '2025-04-25',
-        wordCount: '68K',
-        status: '连载中',
-        isAnimated: false,
-        tags: [
-          { id: 1, name: '校园' },
-          { id: 2, name: '青春' },
-          { id: 3, name: '恋爱' },
-          { id: 4, name: '欢乐向' },
-          { id: 5, name: '妹妹' }
-        ],
-        description: '「因为……是你航我的教室里有一个八岁的女孩。跳级的天才少女，外表像公主一样惹人怜……'
-      },
-      {
-        id: 2,
-        title: '又妹生活',
-        author: '三河ごーすと',
-        authorId: 102,
-        category: 'MF文库J',
-        categoryId: 202,
-        cover: 'http://54.255.84.100/i/2025/03/28/67e68a2c3b562.jpg',
-        updateDate: '2025-04-25',
-        wordCount: '1210K',
-        status: '连载中',
-        isAnimated: true,
-        tags: [
-          { id: 1, name: '校园' },
-          { id: 2, name: '青春' },
-          { id: 3, name: '恋爱' },
-          { id: 5, name: '妹妹' }
-        ],
-        description: '高中生浅村悠太，由于父亲再婚，和学年第一美少女终濑沙季成为同住一个屋檐下的兄妹。'
-      },
-      {
-        id: 3,
-        title: '过往惯愧的人物设定已无人使用',
-        author: '味井晴佳',
-        authorId: 103,
-        category: '小学馆',
-        categoryId: 203,
-        cover: 'http://54.255.84.100/i/2025/03/29/67e76c5d9a421.jpg',
-        updateDate: '2025-04-25',
-        wordCount: '117K',
-        status: '已完结',
-        isAnimated: false,
-        tags: [
-          { id: 6, name: '科幻' },
-          { id: 2, name: '青春' },
-          { id: 3, name: '恋爱' }
-        ],
-        description: '「喘来」出现在十九岁的成央面前，那是他在十五岁时为了名演俱乃所创作的虚拟角色。'
-      },
-      {
-        id: 4,
-        title: '和魔女共度的七天',
-        author: '东野圭吾',
-        authorId: 104,
-        category: '角川文库',
-        categoryId: 204,
-        cover: 'http://54.255.84.100/i/2025/03/30/67e87c5d4a789.jpg',
-        updateDate: '2025-04-24',
-        wordCount: '171K',
-        status: '已完结',
-        isAnimated: false,
-        tags: [
-          { id: 6, name: '科幻' },
-          { id: 7, name: '悬疑' }
-        ],
-        description: '★少年冒险×警察推理×幻想科学！那个夏天，发生了许多难以置信的事。 在加强了A'
-      },
-      {
-        id: 5,
-        title: '东京暗鸦(东京乌鸦)',
-        author: '字野耕平',
-        authorId: 105,
-        category: '富士见文库',
-        categoryId: 205,
-        cover: 'http://54.255.84.100/i/2025/03/31/67e98b1d2f456.jpg',
-        updateDate: '2025-04-25',
-        wordCount: '320K',
-        status: '连载中',
-        isAnimated: true,
-        tags: [
-          { id: 1, name: '校园' },
-          { id: 8, name: '奇幻' },
-          { id: 9, name: '战斗' },
-          { id: 10, name: '后宫' },
-          { id: 11, name: '青梅竹马' },
-          { id: 12, name: '人外' }
-        ],
-        description: '灵的次害——灵灾多发的现代东京。 大明阴师，安倍晴明的千年后的十御门「土御门」'
-      },
-      {
-        id: 5,
-        title: '东京暗鸦(东京乌鸦)',
-        author: '字野耕平',
-        authorId: 105,
-        category: '富士见文库',
-        categoryId: 205,
-        cover: 'http://54.255.84.100/i/2025/03/31/67e98b1d2f456.jpg',
-        updateDate: '2025-04-25',
-        wordCount: '320K',
-        status: '连载中',
-        isAnimated: true,
-        tags: [
-          { id: 1, name: '校园' },
-          { id: 8, name: '奇幻' },
-          { id: 9, name: '战斗' },
-          { id: 10, name: '后宫' },
-          { id: 11, name: '青梅竹马' },
-          { id: 12, name: '人外' }
-        ],
-        description: '灵的次害——灵灾多发的现代东京。 大明阴师，安倍晴明的千年后的十御门「土御门」'
-      },
-      {
-        id: 5,
-        title: '东京暗鸦(东京乌鸦)',
-        author: '字野耕平',
-        authorId: 105,
-        category: '富士见文库',
-        categoryId: 205,
-        cover: 'http://54.255.84.100/i/2025/03/31/67e98b1d2f456.jpg',
-        updateDate: '2025-04-25',
-        wordCount: '320K',
-        status: '连载中',
-        isAnimated: true,
-        tags: [
-          { id: 1, name: '校园' },
-          { id: 8, name: '奇幻' },
-          { id: 9, name: '战斗' },
-          { id: 10, name: '后宫' },
-          { id: 11, name: '青梅竹马' },
-          { id: 12, name: '人外' }
-        ],
-        description: '灵的次害——灵灾多发的现代东京。 大明阴师，安倍晴明的千年后的十御门「土御门」'
-      },
-      {
-        id: 5,
-        title: '东京暗鸦(东京乌鸦)',
-        author: '字野耕平',
-        authorId: 105,
-        category: '富士见文库',
-        categoryId: 205,
-        cover: 'http://54.255.84.100/i/2025/03/31/67e98b1d2f456.jpg',
-        updateDate: '2025-04-25',
-        wordCount: '320K',
-        status: '连载中',
-        isAnimated: true,
-        tags: [
-          { id: 1, name: '校园' },
-          { id: 8, name: '奇幻' },
-          { id: 9, name: '战斗' },
-          { id: 10, name: '后宫' },
-          { id: 11, name: '青梅竹马' },
-          { id: 12, name: '人外' }
-        ],
-        description: '灵的次害——灵灾多发的现代东京。 大明阴师，安倍晴明的千年后的十御门「土御门」'
-      }
-    ]
-    
-    currentPage.value = page
-    loading.value = false
+    if (response.value && response.value.code === 200 && response.value.data) {
+      novels.value = response.value.data.novels || []
+      
+      // 更新分页信息
+      total.value = response.value.data.pagination.total
+      currentPage.value = response.value.data.pagination.page
+      itemsPerPage.value = response.value.data.pagination.limit
+      totalPages.value = response.value.data.pagination.totalPages
+    } else {
+      error.value = response.value?.message || '获取小说列表失败'
+      novels.value = []
+    }
   } catch (err) {
     console.error('获取小说列表失败:', err)
     error.value = '获取小说列表失败，请稍后再试'
+    novels.value = []
+  } finally {
     loading.value = false
   }
 }
@@ -505,7 +356,7 @@ const fetchNovels = async (page = 1) => {
 const changePage = (page: number) => {
   if (page < 1 || page > totalPages.value) return
   currentPage.value = page
-  fetchNovels(page)
+  fetchNovels()
 }
 
 // 分页处理函数
@@ -522,7 +373,7 @@ const handleNextPage = () => {
 }
 
 // 添加到书架
-const addToBookshelf = (novelId: number | string) => {
+const addToBookshelf = (novelId: undefined | string) => {
   // TODO: 实现添加到书架的逻辑
   console.log('添加到书架:', novelId)
   // 如果有认证系统，可能需要检查用户是否已登录
@@ -530,7 +381,7 @@ const addToBookshelf = (novelId: number | string) => {
 }
 
 // 推荐小说
-const recommendNovel = (novelId: number | string) => {
+const recommendNovel = (novelId: undefined | string) => {
   // TODO: 实现推荐小说的逻辑
   console.log('推荐小说:', novelId)
 }
@@ -539,6 +390,15 @@ const recommendNovel = (novelId: number | string) => {
 onMounted(() => {
   fetchNovels()
 })
+
+// 监听路由变化，重新加载数据
+watch(() => useRoute().query, () => {
+  const page = parseInt(useRoute().query.page as string) || 1
+  if (page !== currentPage.value) {
+    currentPage.value = page
+    fetchNovels()
+  }
+}, { immediate: true })
 
 // SEO优化
 useHead({

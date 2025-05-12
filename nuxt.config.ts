@@ -27,7 +27,7 @@ export default defineNuxtConfig({
   typescript: {
     typeCheck: true
   },
-
+  ssr: true,
   // 添加运行时配置
   runtimeConfig: {
     // 私有密钥，仅在服务器端可用

@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     const novels = await Novel.find()
       .sort({ createdAt: -1 })
       .limit(limit)
-      .select('title author cover_url introduction lastUpdate')
+      .select('title author cover_url lastUpdate')
     
     return {
       code: 200,

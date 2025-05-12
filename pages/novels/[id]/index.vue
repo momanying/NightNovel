@@ -29,9 +29,9 @@ const route = useRoute()
 
 onMounted(async () => {
   try{
-    const inforesponse = await $api.novel.getNovelById(route.params.id as string)
-    if(inforesponse.data){
-      novelinfo.value = inforesponse.data.novel
+    const { data: inforesponse } = await $api.novel.getNovelById(route.params.id as string)
+    if(inforesponse.value && inforesponse.value.code === 200 && inforesponse.value.data){
+      novelinfo.value = inforesponse.value.data.novel
     }
   }catch(error){
     console.error('获取小说信息失败:', error)

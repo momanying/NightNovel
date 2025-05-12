@@ -10,36 +10,38 @@ import type { Volume } from '~/types/novel/volume';
 export const novelApi = {
   // 获取小说列表
   getList: (params?: { page?: number; limit?: number; category?: string; tag?: string; keyword?: string }) => 
-    $fetch<ApiResponse<{novels: Novel[]; pagination: {total: number; page: number; limit: number; totalPages: number}}>>('/api/novels', { 
+    useFetch<ApiResponse<{novels: Novel[]; pagination: {total: number; page: number; limit: number; totalPages: number}}>>('/api/novels', { 
       method: 'GET', 
       query: params 
     }),
 
   //获取推荐小说
-  getrecommond: () => $fetch<ApiResponse<{novel: Novel}>('/api/novels/recommond',{
+  getrecommond: () => useFetch<ApiResponse<{novel: Novel}>>('/api/novels/random',{
     method: 'GET'
   }),
   
   // 获取最新小说
-  getLatest: (limit?: number) => $fetch<ApiResponse<Novel[]>>('/api/novels/latest', { 
+  getLatest: (limit?: number) => useFetch<ApiResponse<Novel[]>>('/api/novels/latest', { 
     method: 'GET',
     query: { limit }
   }),
   
   // 获取热门小说
-  getTop: (limit?: number) => $fetch<ApiResponse<Novel[]>>('/api/novels/top', {
+  getTop: (limit?: number) => useFetch<ApiResponse<Novel[]>>('/api/novels/top', {
     method: 'GET',
-    query: { limit }
+    query: { limit },
+    server: true,
+    key: `top-novels-${limit || 10}`
   }),
   
   // 获取小说详情
-  getNovelById: (id: number | string) => $fetch<ApiResponse<{novel: Novel; volumes: Volume[]}>>(
+  getNovelById: (id: number | string) => useFetch<ApiResponse<{novel: Novel; volumes: Volume[]}>>(
     `/api/novels/${id}`
   ),  
   
   // 获取小说章节内容
   getChapter: (novelId: number | string, chapterId: number | string) => 
-    $fetch<ApiResponse<{
+    useFetch<ApiResponse<{
       chapter: ChapterDetail;
       prevChapter: {id: string; title: string; order: number} | null;
       nextChapter: {id: string; title: string; order: number} | null;
@@ -47,7 +49,7 @@ export const novelApi = {
   
   // 搜索小说
   searchNovels: (keyword: string, page?: number, limit?: number) => 
-    $fetch<ApiResponse<{
+    useFetch<ApiResponse<{
       novels: Novel[]; 
       pagination: {total: number; page: number; limit: number; totalPages: number}
     }>>('/api/novels/search', { 
@@ -56,7 +58,7 @@ export const novelApi = {
     }),
     
   // 获取小说分类
-  getCategories: () => $fetch<ApiResponse<{name: string; count: number}[]>>('/api/novels/categories')
+  getCategories: () => useFetch<ApiResponse<{name: string; count: number}[]>>('/api/novels/categories')
 };
 
 // 用户相关API

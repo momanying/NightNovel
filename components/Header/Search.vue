@@ -57,43 +57,53 @@
         >
             <div class="py-2">
                 <div
-                    v-for="(result, index) in searchResults"
-                    :key="index"
+                    v-for="novel in searchResults"
+                    :key="novel._id"
                     class="px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-                    @click="selectResult(result)"
+                    @click="selectResult(novel)"
                 >
                     <div class="flex justify-between">
                         <span class="font-medium text-gray-800 dark:text-gray-200">
-                            {{ result.titlePrefix }}
-                            <span class="font-bold">{{ result.queryText }}</span>
-                            {{ result.titleSuffix }}
+                            {{ highlightTitle(novel.title) }}
                         </span>
-                        <span class="text-xs text-gray-500 dark:text-gray-400">{{ result.data }}</span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">{{ novel.author }}</span>
                     </div>
-                    <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ result.content }}</div>
+                    <div class="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{{ novel.introduction }}</div>
                 </div>
+            </div>
+            <div v-if="hasMoreResults" class="text-center p-2 text-sm text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700">
+                <nuxt-link 
+                    :to="`/search?keyword=${encodeURIComponent(searchQuery)}`"
+                    class="hover:underline hover:text-primary-600 dark:hover:text-primary-400"
+                    @click="closeSearch"
+                >
+                    查看更多结果
+                </nuxt-link>
             </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-interface SearchResult {
-  titlePrefix: string;
-  queryText: string;
-  titleSuffix: string;
-  data: string;
-  content: string;
-  uri: string;
+interface Novel {
+  _id: string;
+  title: string;
+  author: string;
+  category: string;
+  status: string;
+  cover_url: string;
+  introduction: string;
 }
 
 const isOpen = ref(false);
 const searchQuery = ref('');
-const searchResults = ref<SearchResult[]>([]);
+const searchResults = ref<Novel[]>([]);
 const isLoading = ref(false);
 const searchInput = ref<HTMLInputElement | null>(null);
 const searchContainer = ref<HTMLDivElement | null>(null);
 const showClear = computed(() => searchQuery.value.length > 0);
+const hasMoreResults = ref(false);
+const totalResults = ref(0);
 
 // 创建防抖函数
 const debounce = <T extends (...args: unknown[]) => void>(fn: T, delay: number): ((...args: Parameters<T>) => void) => {
@@ -134,48 +144,61 @@ const handleInput = debounce(() => {
     }
 }, 300);
 
+const highlightTitle = (title: string) => {
+    if (!searchQuery.value) return title;
+    
+    const regex = new RegExp(`(${searchQuery.value})`, 'gi');
+    return title.replace(regex, '<strong class="text-primary-600 dark:text-primary-400">$1</strong>');
+}
+
 const performSearch = async () => {
     if (!searchQuery.value.trim()) return;
     
     isLoading.value = true;
     
     try {
-        // 这里可以替换为实际的API调用
-        // const { data } = await useFetch('/api/search', {
-        //   query: { q: searchQuery.value }
-        // });
+        // 调用API进行搜索，只显示前5条结果
+        const { data } = await useFetch('/api/novels/search', {
+          query: { 
+            keyword: searchQuery.value,
+            limit: 5,
+            page: 1
+          }
+        });
         
-        // 模拟API调用
-        await new Promise(resolve => setTimeout(resolve, 300));
+        const response = data.value as { 
+          code: number; 
+          message: string; 
+          data?: { 
+            novels: Novel[]; 
+            pagination: { 
+              total: number; 
+              page: number; 
+              limit: number; 
+              totalPages: number;
+            } 
+          } 
+        };
         
-        searchResults.value = [
-            {
-                titlePrefix: '包含 ',
-                queryText: searchQuery.value,
-                titleSuffix: ' 的搜索结果',
-                data: new Date().toISOString().split('T')[0],
-                content: `这是包含 ${searchQuery.value} 的搜索结果内容。`,
-                uri: '/example'
-            },
-            {
-                titlePrefix: '',
-                queryText: searchQuery.value,
-                titleSuffix: ' 相关文章',
-                data: new Date().toISOString().split('T')[0],
-                content: `这是另一个与 ${searchQuery.value} 相关的搜索结果。`,
-                uri: '/example/article'
-            }
-        ];
+        if (response && response.code === 200 && response.data) {
+            searchResults.value = response.data.novels;
+            totalResults.value = response.data.pagination.total;
+            hasMoreResults.value = totalResults.value > 5;
+        } else {
+            searchResults.value = [];
+            hasMoreResults.value = false;
+        }
     } catch (error) {
         console.error('搜索出错:', error);
+        searchResults.value = [];
     } finally {
         isLoading.value = false;
     }
 }
 
-const selectResult = (result: SearchResult) => {
+const selectResult = (novel: Novel) => {
     closeSearch();
-    navigateTo(result.uri);
+    navigateTo(`/novels/${novel._id}`);
 }
 
 // 当点击Esc键时关闭搜索
@@ -189,9 +212,18 @@ onMounted(() => {
         }
     };
 
+    const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') {
+            closeSearch();
+        }
+    };
+
     window.addEventListener('click', handleClickOutside);
+    window.addEventListener('keydown', handleKeyDown);
+    
     onUnmounted(() => {
         window.removeEventListener('click', handleClickOutside);
+        window.removeEventListener('keydown', handleKeyDown);
     });
 });
 </script>
@@ -207,5 +239,10 @@ onMounted(() => {
 .search-leave-to {
     opacity: 0;
     transform: translateY(-10px);
+}
+
+/* 允许HTML内容渲染 */
+:deep(strong) {
+    font-weight: 700;
 }
 </style>

@@ -53,9 +53,9 @@ onMounted(async () => {
     if (!params.value) return
     
     try {
-        const response = await $api.novel.getNovelById(params.value.id)
-        if(response.data?.volumes){
-            volumes.value = response.data.volumes
+        const {data:response} = await $api.novel.getNovelById(params.value.id)
+        if(response.value && response.value.code === 200 && response.value.data?.volumes){
+            volumes.value = response.value.data.volumes
         }
     } catch (error) {
         console.error('获取小说章节列表失败:', error)

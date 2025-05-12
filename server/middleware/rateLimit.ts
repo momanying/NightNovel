@@ -1,4 +1,5 @@
 import type { H3Event } from 'h3'
+import { eventHandler, getRequestIP } from 'h3'
 
 interface RateLimitOptions {
   windowMs: number // 时间窗口，单位毫秒
@@ -11,7 +12,8 @@ const requestStore = new Map<string, { count: number; resetTime: number }>()
 export const rateLimit = (options: RateLimitOptions) => {
   const { windowMs, max } = options
 
-  return async (event: H3Event) => {
+  // 使用eventHandler包装处理函数
+  return eventHandler(async (event: H3Event) => {
     const ip = getRequestIP(event, { xForwardedFor: true }) || 'unknown'
     const now = Date.now()
     const record = requestStore.get(ip)
@@ -48,7 +50,7 @@ export const rateLimit = (options: RateLimitOptions) => {
         }
       }
     }
-  }
+  })
 } 
 
 export default rateLimit({ windowMs: 60 * 1000, max: 60 })
