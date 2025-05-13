@@ -1,137 +1,128 @@
 <template>
-    <div class="max-w-4xl mx-auto px-4 py-8 border-2 mt-[20px]">
-        <div v-if="chapterData" class="space-y-6">
-            <!-- 章节标题 -->
-            <h1 class="text-2xl font-bold text-center">{{ chapterData.chapter.title }}</h1>
+    <div>
+        <LayoutsTheHeader />
+        <div class="mx-auto max-w-4xl px-4 py-8 mt-4 bg-gray-900 rounded-lg">
+            <div v-if="currentNovel" class="mb-4">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-lg font-semibold">{{ currentNovel.title }}</h3>
+                    <NuxtLink :to="`/novels/${novelId}/list`" class="text-sm text-gray-400 hover:text-gray-300">
+                        返回目录
+                    </NuxtLink>
+                </div>
+            </div>
             
-            <!-- 导航按钮 -->
-            <div class="flex justify-between items-center my-4">
-                <button 
-                    v-if="chapterData.prevChapter" 
-                    class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md transition duration-200"
-                    @click="navigateToChapter(chapterData.prevChapter.id)"
-                >
-                    上一章：{{ chapterData.prevChapter.title }}
-                </button>
-                <button 
-                    v-if="chapterData.nextChapter" 
-                    class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md transition duration-200"
-                    @click="navigateToChapter(chapterData.nextChapter.id)"
-                >
-                    下一章：{{ chapterData.nextChapter.title }}
-                </button>
-            </div>
+            <div v-if="currentChapter" class="space-y-6">
+                <!-- 章节标题 -->
+                <h1 class="text-2xl font-bold text-center">{{ currentChapter.title }}</h1>
+                <!-- 章节内容 -->
+                <div class="min-height-[70vh] text-lg leading-relaxed">
+                    <p
+                        v-for="(paragraph, index) in contentParagraphs" 
+                        :key="index" 
+                        class="mb-[1.5rem] text-indent-[2rem]"
+                    >
+                        {{ paragraph }}
+                    </p>
+                </div>
 
-            <!-- 章节内容 -->
-            <div class="min-height-[70vh] text-lg leading-relaxed">
-                <p
-                    v-for="(paragraph, index) in contentParagraphs" 
-                    :key="index" 
-                    class="mb-[1.5rem] text-indent-[2rem]"
-                >
-                    {{ paragraph }}
-                </p>
+                <!-- 底部导航按钮 -->
+                <div class="flex justify-between items-center mt-8">
+                    <button 
+                        v-if="prevChapter" 
+                        class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md transition duration-200"
+                        @click="navigateToChapter(prevChapter.id)"
+                    >
+                        上一章：{{ prevChapter.title }}
+                    </button>
+                    <div v-else class="w-24"></div>
+                    
+                    <button 
+                        v-if="nextChapter" 
+                        class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md transition duration-200"
+                        @click="navigateToChapter(nextChapter.id)"
+                    >
+                        下一章：{{ nextChapter.title }}
+                    </button>
+                    <div v-else class="w-24"></div>
+                </div>
             </div>
-
-            <!-- 底部导航按钮 -->
-            <div class="flex justify-between items-center mt-8">
-                <button 
-                    v-if="chapterData.prevChapter" 
-                    class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md transition duration-200"
-                    @click="navigateToChapter(chapterData.prevChapter.id)"
-                >
-                    上一章：{{ chapterData.prevChapter.title }}
-                </button>
-                <button 
-                    v-if="chapterData.nextChapter" 
-                    class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md transition duration-200"
-                    @click="navigateToChapter(chapterData.nextChapter.id)"
-                >
-                    下一章：{{ chapterData.nextChapter.title }}
-                </button>
+            <div v-else-if="loadingChapter" class="text-center py-8">
+                加载中...
             </div>
-        </div>
-        <div v-else-if="loading" class="text-center py-8">
-            加载中...
-        </div>
-        <div v-else class="text-center py-8 text-red-500">
-            {{ error || '加载失败' }}
+            <div v-else-if="chapterError" class="text-center py-8 text-red-500">
+                {{ chapterError }}
+            </div>
+            <div v-else class="text-center py-8 text-red-500">
+                章节加载失败
+            </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
+import { useNovelStore } from '~/stores/novel'
 import type { ChapterDetail } from '~/types/novel/chapter'
+import type { ApiResponse } from '~/types/auth/index'
 
 const route = useRoute()
-const loading = ref(true)
-const error = ref<string | null>(null)
-const chapterData = ref<{
-    chapter: ChapterDetail;
-    prevChapter: { id: string; title: string; order: number } | null;
-    nextChapter: { id: string; title: string; order: number } | null;
-} | null>(null)
+const novelId = computed(() => route.params.id as string)
+const chapterId = computed(() => route.params.chapterId as string)
+
+// 使用novel store
+const novelStore = useNovelStore()
+const { 
+    currentNovel, 
+    currentChapter, 
+    prevChapter, 
+    nextChapter, 
+    loadingChapter, 
+    chapterError 
+} = storeToRefs(novelStore)
 
 // 处理段落
 const contentParagraphs = computed(() => {
-    if (!chapterData.value?.chapter.content) return []
-    return chapterData.value.chapter.content.split('\n\n').filter(p => p.trim())
-})
-
-const $api = useNuxtApp().$api
-
-// 验证路由参数
-const params = computed(() => {
-    const id = route.params.id
-    const chapterId = route.params.chapterId
-    
-    if (!id || id === 'undefined' || !chapterId || chapterId === 'undefined') {
-        return null
-    }
-    return {
-        id: id as string,
-        chapterId: chapterId as string
-    }
+    if (!currentChapter.value?.content) return []
+    return currentChapter.value.content.split('\n\n').filter(p => p.trim())
 })
 
 // 导航到指定章节
-const navigateToChapter = (chapterId: string) => {
-    if (!params.value?.id) return
-    navigateTo(`/novels/${params.value.id}/${chapterId}`)
+const navigateToChapter = (nextChapterId: string) => {
+    if (!novelId.value) return
+    navigateTo(`/novels/${novelId.value}/${nextChapterId}`)
+}
+
+// 加载章节内容
+const loadChapterContent = async () => {
+    if (!novelId.value || !chapterId.value) return
+    
+    await novelStore.fetchChapterContent(novelId.value, chapterId.value)
+    
+    // 更新页面标题
+    if (currentNovel.value && currentChapter.value) {
+        useHead({
+            title: `${currentNovel.value.title} - ${currentChapter.value.title}`,
+            meta: [
+                { name: 'description', content: `正在阅读${currentNovel.value.title}的${currentChapter.value.title}` }
+            ]
+        })
+    }
 }
 
 // 监听路由参数变化
-watch([params], async ([newParams]) => {
-    if (!newParams) {
-        error.value = '无效的路由参数'
-        return
-    }
-    
-    loading.value = true
-    error.value = null
-    
-    try {
-        const {data:response} = await $api.novel.getChapter(newParams.id, newParams.chapterId)
-        if (response.value) {
-            chapterData.value = response.value.data
-        }
-    } catch (err) {
-        error.value = '获取章节内容失败'
-        console.error('获取章节内容失败:', err)
-    } finally {
-        loading.value = false
-    }
+watch([novelId, chapterId], () => {
+    loadChapterContent()
 }, { immediate: true })
 
 // 键盘导航
 onMounted(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
-        if (!chapterData.value) return
+        if (!prevChapter.value && !nextChapter.value) return
         
-        if (event.key === 'ArrowLeft' && chapterData.value.prevChapter) {
-            navigateToChapter(chapterData.value.prevChapter.id)
-        } else if (event.key === 'ArrowRight' && chapterData.value.nextChapter) {
-            navigateToChapter(chapterData.value.nextChapter.id)
+        if (event.key === 'ArrowLeft' && prevChapter.value) {
+            navigateToChapter(prevChapter.value.id)
+        } else if (event.key === 'ArrowRight' && nextChapter.value) {
+            navigateToChapter(nextChapter.value.id)
         }
     }
     

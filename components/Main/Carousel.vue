@@ -1,56 +1,42 @@
 <template>
-  <div class="relative w-full overflow-hidden rounded-lg shadow-md">
-    <!-- 轮播图主体内容 -->
-    <div class="flex w-full transition-transform duration-500" :style="{ transform: `translateX(-${currentSlide * 100}%)` }">
-      <div 
-        v-for="(group, groupIndex) in novelGroups" 
-        :key="groupIndex" 
-        class="flex-none w-full flex justify-between gap-5 p-5"
-      >
-        <div 
-            v-for="novel in group" 
-          :key="novel.id" 
-          class="flex-1 relative rounded-lg overflow-hidden shadow-md cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-          @click="navigateToNovel(novel._id || 0)"
+  <div class="relative h-[400px] w-full">
+    <div class="h-full overflow-hidden">
+      <!-- 书籍轮播区域 -->
+      <ul class="flex h-full">
+        <li 
+          v-for="(novel, index) in novels.slice(0, 5)" 
+          :key="novel._id"
+          class="cursor-pointer absolute overflow-hidden transition-all duration-500 ease-out shadow-md hover:shadow-xl rounded-lg transform origin-bottom"
+          :style="getStyle(index)"
+          @click="onClick(novel._id)"
         >
-          <img 
-            class="w-70 h-70 object-cover rounded-lg transition-transform duration-500 hover:scale-105"
-            :src="novel.cover_url" 
-            :alt="novel.title" 
-            @error="handleImageError"
-          >
-          <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent text-white rounded-b-lg">
-            <h3 class="text-lg font-medium mb-1">{{ novel.title }}</h3>
-            <p class="text-sm text-gray-300">{{ novel.author }}</p>
+          <div class="relative w-full h-full group">
+            <img 
+              :src="novel.cover_url" 
+              :alt="novel.title" 
+              class="w-full h-full object-cover rounded-lg"
+              @error="handleImageError"
+            >
+            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <p class="text-white font-bold truncate">{{ novel.title }}</p>
+              <p class="text-white/80 text-sm truncate">{{ novel.author }}</p>
+            </div>
           </div>
-        </div>
-      </div>
+        </li>
+      </ul>
     </div>
     
-    <!-- 轮播图控制按钮 -->
-    <button 
-      class="absolute top-1/2 left-2.5 -translate-y-1/2 w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center opacity-70 transition-opacity hover:opacity-100 z-10 disabled:opacity-30 disabled:cursor-not-allowed"
-      :disabled="currentSlide === 0"
-      @click="prevSlide" 
-    >
-      <font-awesome-icon :icon="['fas', 'chevron-left']" />
-    </button>
-    <button 
-      class="absolute top-1/2 right-2.5 -translate-y-1/2 w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center opacity-70 transition-opacity hover:opacity-100 z-10 disabled:opacity-30 disabled:cursor-not-allowed"
-      :disabled="currentSlide === novelGroups.length - 1"
-      @click="nextSlide" 
-    >
-      <font-awesome-icon :icon="['fas', 'chevron-right']" />
-    </button>
-    
-    <!-- 轮播图指示器 -->
-    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2.5">
-      <span 
-        v-for="(_, index) in novelGroups" 
-        :key="index" 
-        class="w-3 h-3 rounded-full bg-white/50 cursor-pointer transition-all duration-300"
-        :class="{ 'bg-orange-500 scale-110': currentSlide === index }"
-        @click="goToSlide(index)" 
+    <!-- 指示器 -->
+    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-50">
+      <button 
+        v-for="(_, i) in novels.slice(0, 5)" 
+        :key="i"
+        :class="[
+          'w-2 h-2 rounded-full transition-all duration-300',
+          current === i ? 'bg-white w-4' : 'bg-white/50 hover:bg-white/70'
+        ]"
+        :aria-label="`转到第${i+1}页`"
+        @click="goToSlide(i)"
       />
     </div>
   </div>
@@ -76,79 +62,169 @@ const props = defineProps({
   }
 });
 
-// 将小说分组，每组4本
-const novelGroups = computed(() => {
-  const groups: Novel[][] = [];
-  for (let i = 0; i < props.novels.length; i += 4) {
-    groups.push(props.novels.slice(i, i + 4));
+const animations = [
+  { left: '0%', top: '30px', opacity: 0.4, zIndex: 1,  width: '130px', height: '200px' },
+  { left: '20%', top: '10px', opacity: 0.7, zIndex: 2,  width: '130px', height: '200px' },
+  { left: '40%', top: '0px', opacity: 1, zIndex: 3,  width: '130px', height: '200px' },
+  { left: '60%', top: '10px', opacity: 0.7, zIndex: 2,  width: '130px', height: '200px' },
+  { left: '80%', top: '30px', opacity: 0.4, zIndex: 1,  width: '130px', height: '200px' },
+]
+
+// 当前选中的索引
+const current = ref(0);
+
+let timer: NodeJS.Timeout | null = null;
+
+const items = computed(() => {
+  // 确保至少有5个项目以填充轮播
+  if (props.novels.length >= 5) {
+    return props.novels.slice(0, 5);
+  } else {
+    // 如果不足5个，使用占位符填充
+    const result = [...props.novels];
+    while (result.length < 5) {
+      result.push({
+        _id: `placeholder-${result.length}`,
+        title: '占位',
+        cover_url: '/images/default-cover.jpg',
+        author: '',
+        introduction: ''
+      } as Novel);
+    }
+    return result;
   }
-  return groups;
 });
 
-// 当前显示的轮播页索引
-const currentSlide = ref(0);
-
-// 轮播图控制
-const nextSlide = () => {
-  if (currentSlide.value < novelGroups.value.length - 1) {
-    currentSlide.value++;
-  } else {
-    currentSlide.value = 0; // 循环到第一页
+const getStyle = (index: number) => {
+  const position = (index - current.value + items.value.length) % items.value.length;
+  const ani = animations[position];
+  return {
+    left: ani.left,
+    top: ani.top,
+    opacity: ani.opacity,
+    zIndex: ani.zIndex,
+    width: ani.width,
+    height: ani.height
   }
-};
+}
 
-const prevSlide = () => {
-  if (currentSlide.value > 0) {
-    currentSlide.value--;
-  } else {
-    currentSlide.value = novelGroups.value.length - 1; // 循环到最后一页
-  }
-};
+const next = () => {
+  current.value = (current.value + 1) % items.value.length;
+}
+
+const prev = () => {
+  current.value = (current.value - 1 + items.value.length) % items.value.length;
+}
 
 const goToSlide = (index: number) => {
-  currentSlide.value = index;
-};
+  stop();
+  current.value = index;
+  setTimeout(start, 500);
+}
 
-// 自动轮播
-let autoplayInterval: ReturnType<typeof setInterval> | null = null;
-
-const startAutoplay = () => {
-  if (props.autoplay && novelGroups.value.length > 1) {
-    autoplayInterval = setInterval(() => {
-      nextSlide();
+const start = () => {
+  // 先清除可能存在的计时器
+  stop();
+  
+  // 设置新的计时器
+  if (props.autoplay && items.value.length > 1) {
+    timer = setInterval(() => {
+      next();
     }, props.interval);
   }
-};
+}
 
-const stopAutoplay = () => {
-  if (autoplayInterval) {
-    clearInterval(autoplayInterval);
+const stop = () => {
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
   }
-};
+}
 
-// 导航到小说详情页
-const navigateToNovel = (id: number | string) => {
-  localStorage.setItem('novelId', id.toString());
-  const path = `/novels/${id}`;
-  const newWindow = window.open('', '_blank');
-  if (newWindow) {
-    newWindow.location.href = path;
+const moveToCenter = (steps: number, callback?: () => void) => {
+  if (steps <= 0) {
+    if (callback) callback();
+    return;
   }
-};
+  
+  prev();
+  setTimeout(() => {
+    moveToCenter(steps - 1, callback);
+  }, 500); // 500ms和transition-duration对齐
+}
 
-// 图片加载错误处理
+const moveToCenterReverse = (steps: number, callback?: () => void) => {
+  if (steps <= 0) {
+    if (callback) callback();
+    return;
+  }
+  
+  next();
+  setTimeout(() => {
+    moveToCenterReverse(steps - 1, callback);
+  }, 500);
+}
+
+// 图片错误处理
 const handleImageError = (e: Event) => {
   if (e.target && e.target instanceof HTMLImageElement) {
-    e.target.src = 'https://placehold.co/200x300/cccccc/333333?text=加载失败';
+    e.target.src = '/images/default-cover.jpg';
   }
-};
+}
 
-// 生命周期钩子
+const onClick = (id: string | undefined) => {
+  // 检查ID是否为占位符ID
+  if (!id || (typeof id === 'string' && id.startsWith('placeholder-'))) {
+    return; // 不处理占位符ID或空ID的点击
+  }
+  
+  // 找到点击的小说在数组中的索引
+  const clickedIndex = items.value.findIndex(novel => novel._id === id);
+  if (clickedIndex === -1) return;
+  
+  // 计算点击项与当前中心项的位置关系
+  const position = (clickedIndex - current.value + items.value.length) % items.value.length;
+  
+  // 如果点击的是中心位置(position === 2，对应animations中索引2的位置)，则跳转到详情页
+  if (position === 2) {
+    localStorage.setItem('novelId', String(id));
+    const path = `/novels/${id}`;
+    const newWindow = window.open('', '_blank');
+    if (newWindow) {
+      newWindow.location.href = path;
+    }
+  } else {
+    stop(); // 停止自动轮播
+    
+    // 确定最短路径转到中心
+    if (position < 2) {
+      // 向右移动(使用next)，例如位置1到位置2需要移动1步
+      const stepsToCenter = 2 - position;
+      moveToCenter(stepsToCenter, start); // 完成后重新开始自动轮播
+    } else {
+      // 向左移动(使用prev)，例如位置3到位置2需要移动1步
+      const stepsToCenter = position - 2;
+      moveToCenterReverse(stepsToCenter, start); // 完成后重新开始自动轮播
+    }
+  }
+}
+
 onMounted(() => {
-  startAutoplay();
-});
+  start();
+})
 
 onBeforeUnmount(() => {
-  stopAutoplay();
-});
-</script> 
+  stop();
+})
+</script>
+
+<style scoped>
+li {
+  transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+li:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  z-index: 10 !important;
+}
+</style>

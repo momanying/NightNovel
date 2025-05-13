@@ -1,20 +1,25 @@
 <template>
     <div>
-        <h1 class="text-2xl font-bold mb-5">{{ novel.title }}</h1>
+        <h1 class="text-2xl font-bold mb-5">{{ novel?.title || '加载中...' }}</h1>
         <div class="flex">
         <div class="flex-shrink-0 mr-5">
-            <img :src="novel.cover_url" :alt="novel.title" class="h-full w-full rounded-md shadow-md">
+            <img 
+              :src="novel?.cover_url" 
+              :alt="novel?.title" 
+              class="h-full w-full rounded-md shadow-md"
+              @error="handleImageError"
+            >
         </div>
         <div class="flex-1 relative">
-            <p class="mb-1"><span class="font-semibold">作者：</span>{{ novel.author }}</p>
-            <p class="mb-1"><span class="font-semibold">分类：</span>{{ novel.category }}</p>
-            <p class="mb-1"><span class="font-semibold">状态：</span>{{ novel.status || '连载中' }}</p>
+            <p class="mb-1"><span class="font-semibold">作者：</span>{{ novel?.author || '未知' }}</p>
+            <p class="mb-1"><span class="font-semibold">分类：</span>{{ novel?.category || '未分类' }}</p>
+            <p class="mb-1"><span class="font-semibold">状态：</span>{{ novel?.status || '连载中' }}</p>
             <p class="mb-1">
                 <span class="font-semibold">评分：</span>
-                <NovelCardEvaluation class="inline-block align-baseline" :rating="novel.rating" />
+                <NovelCardEvaluation class="inline-block align-baseline" :rating="novel?.rating || 0" />
             </p>
-            <p class="mb-1"><span class="font-semibold">阅读量：</span>{{ novel.views || 0 }}</p>
-            <p class="mb-1"><span class="font-semibold">更新时间：</span>{{ novel.lastUpdate || '暂无更新时间' }}</p>
+            <p class="mb-1"><span class="font-semibold">阅读量：</span>{{ novel?.views || 0 }}</p>
+            <p class="mb-1"><span class="font-semibold">更新时间：</span>{{ novel?.lastUpdate || '暂无更新时间' }}</p>
             <div class="mt-2">
             <span class="font-semibold block">标签：</span>
             <template v-if="tagLoading">加载中...</template>
@@ -41,7 +46,7 @@
     </div>
     <div class="mt-4">
         <h3 class="text-xl font-semibold mb-3">简介</h3>
-        <p class="text-gray-300 leading-relaxed">{{ novel.introduction || '暂无简介' }}</p>
+        <p class="text-gray-300 leading-relaxed">{{ novel?.introduction || '暂无简介' }}</p>
     </div>   
 </template>
 
@@ -53,9 +58,8 @@ const props = defineProps<{
 }>()
 
 const tagList = computed(() => {
-    return props.novel && props.novel.tags 
-      ? props.novel.tags.split(' ').filter(Boolean)
-      : []
+    if (!props.novel || !props.novel.tags) return []
+    return props.novel.tags.split(' ').filter(Boolean)
 })
 
 const tagLoading = ref(false)
@@ -63,9 +67,16 @@ const tagError = ref<string | null>(null)
 
 const isCollected = ref(false)
 
+// 处理图片加载错误
+const handleImageError = (e: Event) => {
+  if (e.target instanceof HTMLImageElement) {
+    e.target.src = '/images/default-cover.jpg' // 替换为默认封面图片路径
+  }
+}
+
 // 导航到章节列表页面
 const navigateToChapters = () => {
-  if (!props.novel._id) return
+  if (!props.novel || !props.novel._id) return
   navigateTo(`/novels/${props.novel._id}/list`);
 };
 

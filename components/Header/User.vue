@@ -40,10 +40,10 @@ const toast = useToast()
 const userStore = useUserStore()
 
 const userdata = computed(() => ({
-  username: userStore.getUser?.username,
-  email: userStore.getUser?.email,
-  avatar: userStore.getUser?.avatar,
-  isAuthenticated: userStore.getAuthenticated,
+  username: userStore.user?.username,
+  email: userStore.user?.email,
+  avatar: userStore.user?.avatar,
+  isAuthenticated: userStore.authenticated,
 }))
 
 const showUserMenu = ref(false);

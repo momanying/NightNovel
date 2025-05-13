@@ -180,7 +180,7 @@
                                         v-for="(tag, index) in novel.tags.slice(0, 4)" 
                                         :key="index"
                                         :to="`/tags/${tag}`" 
-                                        class="inline-block text-xs bg-gray-800 px-1.5 py-0.5 rounded mr-1 mb-1 hover:bg-gray-700"
+                                    class="inline-block text-xs bg-gray-800 px-1.5 py-0.5 rounded mr-1 mb-1 hover:bg-gray-700"
                                     >
                                         {{ tag }}
                                     </NuxtLink>

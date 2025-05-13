@@ -12,7 +12,7 @@
                     :alt="rankItem(1)?.title || '加载中'"
                     @error="handleImageError"
                   >
-                  <div class="absolute bottom-0 left-0 right-0 p-2.5 text-xs bg-gradient-to-t from-black/80 to-transparent text-white">
+                  <div class="truncate absolute bottom-0 left-0 right-0 p-2.5 text-xs bg-gradient-to-t from-black/80 to-transparent text-white">
                       <div>{{ rankItem(1)?.title || '加载中' }}</div>
                   </div>
               </div>
@@ -27,7 +27,7 @@
                     :alt="rankItem(0)?.title || '加载中'" 
                     @error="handleImageError"
                   >
-                  <div class="absolute bottom-0 left-0 right-0 p-2.5 text-xs bg-gradient-to-t from-black/80 to-transparent text-white">
+                  <div class="truncate absolute bottom-0 left-0 right-0 p-2.5 text-xs bg-gradient-to-t from-black/80 to-transparent text-white">
                       <div>{{ rankItem(0)?.title || '加载中' }}</div>
                   </div>
               </div>
@@ -42,7 +42,7 @@
                     :alt="rankItem(2)?.title || '加载中'" 
                     @error="handleImageError"
                   >
-                  <div class="absolute bottom-0 left-0 right-0 p-2.5 text-xs bg-gradient-to-t from-black/80 to-transparent text-white">
+                  <div class="truncate absolute bottom-0 left-0 right-0 p-2.5 text-xs bg-gradient-to-t from-black/80 to-transparent text-white">
                       <div>{{ rankItem(2)?.title || '加载中' }}</div>
                   </div>
               </div>
@@ -56,7 +56,7 @@
               <li 
                 v-for="(index) in 7" 
                 :key="index"
-                class="text-white text-sm py-0.5 leading-normal text-left relative cursor-pointer transition-all duration-300 hover:translate-x-1 hover:text-yellow-400"
+                class="truncate text-white text-sm py-0.5 leading-normal text-left relative cursor-pointer transition-all duration-300 hover:translate-x-1 hover:text-yellow-400"
                 @click="openNovelDetail(rankItem(index+2)?._id || 0)"
               >
                 {{ index + 3 }}、{{ rankItem(index+2)?.title || '加载中' }}
@@ -112,8 +112,8 @@
   };
   
   const handleImageError = (e: Event) => {
-    if (e.target instanceof HTMLImageElement) {
+      if (e.target instanceof HTMLImageElement) {
       e.target.src = placeholderImage;
-    }
+      }
   };
-</script>
+  </script>

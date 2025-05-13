@@ -5,7 +5,7 @@ export interface Novel {
   author: string;
   category?: string;
   status?: string;
-  lastUpdate?: string;
+  lastUpdate: string;
   cover_url: string;
   word_count?: number;
   tags?: string;

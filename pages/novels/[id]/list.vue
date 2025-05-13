@@ -1,15 +1,45 @@
 <template>
     <div class="w-full border-2 h-full">
-        <div v-for="volume in volumes" :key="volume._id">
-            <div class="border-2 h-full mx-[50px] my-[50px] flex">
-                <div class="w-[30%] p-4">
-                    <h2 class="title-h2">{{ volume.title }}</h2>
-                    <img src="http://img.wenku8.com/image/3/3057/3057s.jpg" alt="novel-cover" class="">
-                </div>
-                <div v-if="volume.chapters" class="my-1 grid grid-cols-5 gap-5 ">
-                    <div v-for="chapter in volume.chapters" :key="chapter._id" class="p-2 hover:bg-gray-700" @click="handleChapterClick(chapter._id)">
-                        {{ chapter.title }}
-                        <span class="text-sm text-gray-400">{{ chapter.word_count }}字</span>
+        <LayoutsTheHeader />
+        <div class="mx-8 my-6">
+            <h1 
+                class="text-2xl font-bold mb-6" 
+                >{{ currentNovel?.title }}
+            </h1>
+            
+            <div v-if="loadingNovel" class="flex justify-center items-center h-[200px]">
+                <span class="text-lg">加载中...</span>
+            </div>
+            
+            <div v-else-if="novelError" class="flex justify-center items-center h-[200px]">
+                <span class="text-red-500">{{ novelError }}</span>
+            </div>
+            
+            <div v-else-if="novelVolumes.length === 0" class="flex justify-center items-center h-[200px]">
+                <span class="text-gray-500">暂无章节数据</span>
+            </div>
+            
+            <div v-else>
+                <div v-for="volume in novelVolumes" :key="volume._id" class="mb-8">
+                    <div class="border-b pb-2 mb-4">
+                        <h2 class="title-h2">{{ volume.title }}</h2>
+                    </div>
+                    
+                    <div v-if="volume.chapters && volume.chapters.length > 0" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                        <div 
+                            v-for="chapter in volume.chapters" 
+                            :key="chapter._id" 
+                            class="p-3 border rounded hover:bg-gray-700 cursor-pointer transition-colors duration-200"
+                            @click="handleChapterClick(chapter._id)">
+                            <div class="flex justify-between items-center">
+                                <span class="truncate">{{ chapter.title }}</span>
+                                <span class="text-sm text-gray-400 ml-2 whitespace-nowrap">{{ chapter.word_count }}字</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div v-else class="text-gray-500 p-3">
+                        该卷暂无章节
                     </div>
                 </div>
             </div>
@@ -18,48 +48,43 @@
 </template>
 
 <script setup lang="ts">
-import type { Volume } from '~/types/novel/volume';
+import { storeToRefs } from 'pinia'
+import { useNovelStore } from '~/stores/novel'
 
-const $api = useNuxtApp().$api
-const router = useRouter()
-const volumes = ref<Volume[]>([])
-const route = useRoute()
-
-// 验证路由参数
-const params = computed(() => {
-    const id = route.params.id
-    
+const route = useRoute();
+const router = useRouter();
+const novelId = computed(() => {
+    const id = route.params.id;
     if (!id || id === 'undefined') {
-        return null
+        return null;
     }
-    return {
-        id: id as string
-    }
-})
+    return id as string;
+});
 
-// 监听路由参数变化
-watch(params, (newParams) => {
-    if (!newParams) {
-        router.push('/novels')
-    }
-}, { immediate: true })
+// 使用novel store
+const novelStore = useNovelStore();
+const { currentNovel, novelVolumes, loadingNovel, novelError } = storeToRefs(novelStore);
 
+// 章节点击处理
 const handleChapterClick = (chapterId: string) => {
-    if (!params.value?.id || !chapterId) return
-    navigateTo(`/novels/${params.value.id}/${chapterId}`)
-}
+    if (!novelId.value || !chapterId) return;
+    navigateTo(`/novels/${novelId.value}/${chapterId}`);
+};
 
-onMounted(async () => {
-    if (!params.value) return
-    
-    try {
-        const {data:response} = await $api.novel.getNovelById(params.value.id)
-        if(response.value && response.value.code === 200 && response.value.data?.volumes){
-            volumes.value = response.value.data.volumes
-        }
-    } catch (error) {
-        console.error('获取小说章节列表失败:', error)
-        // 可以添加错误提示
+// 监听novelId变化，获取小说数据
+watch(novelId, async (newId) => {
+    if (!newId) {
+        router.push('/novels');
+    } else {
+        await novelStore.fetchNovelData(newId);
     }
-})
+}, { immediate: true });
+
+// SEO优化
+useHead({
+    title: currentNovel.value ? `${currentNovel.value.title} - 章节列表` : '小说章节列表',
+    meta: [
+        { name: 'description', content: currentNovel.value ? `${currentNovel.value.title}的所有章节列表` : '浏览小说的所有章节' }
+    ]
+});
 </script>

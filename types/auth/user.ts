@@ -1,4 +1,4 @@
-import type { Bookmark } from '../novel/bookmark';
+import type { IBookmarkData } from '../novel/bookmark';
 import type { ReadingHistory } from '../novel/readhistory';
 
 export interface User {
@@ -12,6 +12,6 @@ export interface User {
 }
 
 export interface UserWithBookmarks extends User {
-  bookmarks: Bookmark[];
+  bookmarks: IBookmarkData[];
   reading_history: ReadingHistory[];
 }

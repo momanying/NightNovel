@@ -2,10 +2,9 @@ import type { Novel } from '~/types/novel/novelinfo';
 import type { ChapterDetail } from '~/types/novel/chapter';
 import type { User, UserWithBookmarks } from '~/types/auth/user'
 import type { ApiResponse } from '~/types/auth'
-import type { Bookmark } from '~/types/novel/bookmark';
 import type { ReadingHistory } from '~/types/novel/readhistory';
 import type { Comment, CommentReply } from '@/types/comment';
-import type { Volume } from '~/types/novel/volume';
+import type { IBookmarkData } from '~/types/novel/bookmark';
 // 小说相关API
 export const novelApi = {
   // 获取小说列表
@@ -13,31 +12,7 @@ export const novelApi = {
     useFetch<ApiResponse<{novels: Novel[]; pagination: {total: number; page: number; limit: number; totalPages: number}}>>('/api/novels', { 
       method: 'GET', 
       query: params 
-    }),
-
-  //获取推荐小说
-  getrecommond: () => useFetch<ApiResponse<{novel: Novel}>>('/api/novels/random',{
-    method: 'GET'
-  }),
-  
-  // 获取最新小说
-  getLatest: (limit?: number) => useFetch<ApiResponse<Novel[]>>('/api/novels/latest', { 
-    method: 'GET',
-    query: { limit }
-  }),
-  
-  // 获取热门小说
-  getTop: (limit?: number) => useFetch<ApiResponse<Novel[]>>('/api/novels/top', {
-    method: 'GET',
-    query: { limit },
-    server: true,
-    key: `top-novels-${limit || 10}`
-  }),
-  
-  // 获取小说详情
-  getNovelById: (id: number | string) => useFetch<ApiResponse<{novel: Novel; volumes: Volume[]}>>(
-    `/api/novels/${id}`
-  ),  
+    }),  
   
   // 获取小说章节内容
   getChapter: (novelId: number | string, chapterId: number | string) => 
@@ -45,7 +20,7 @@ export const novelApi = {
       chapter: ChapterDetail;
       prevChapter: {id: string; title: string; order: number} | null;
       nextChapter: {id: string; title: string; order: number} | null;
-    }>>(`/api/novels/${novelId}/chapters/${chapterId}`),
+    }>>(`/api/novels/${novelId}/${chapterId}`),
   
   // 搜索小说
   searchNovels: (keyword: string, page?: number, limit?: number) => 
@@ -72,11 +47,50 @@ export const userApi = {
     $fetch<ApiResponse<{token: string, user: User}>>('/api/auth/register', { method: 'POST', body: { username, email, password } }),
   
   // 获取用户信息
-  getUserInfo: () => $fetch<ApiResponse<{user: UserWithBookmarks}>>(`/api/auth/user`, { method: 'GET' }),
+  getUserInfo: (token?: string) => 
+    $fetch<ApiResponse<{user: UserWithBookmarks}>>('/api/auth/user', {
+      method: 'GET',
+      headers: token ? {
+        Authorization: `Bearer ${token}`
+      } : {}
+    }),
+
+  // 退出登录
+  logout: () => 
+    $fetch<ApiResponse<{success: boolean}>>('/api/auth/logout', {
+      method: 'POST'
+    }),
+  
+  // 获取书架数量
+  getBookshelfCount: (token: string) =>
+    $fetch<ApiResponse<{count: number}>>('/api/user/bookshelf/count', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }),
+  
+  // 获取评论数量
+  getCommentsCount: (token: string) =>
+    $fetch<ApiResponse<{count: number}>>('/api/user/comments/count', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }),
+  
+  // 获取浏览历史数量
+  getHistoryCount: (token: string) =>
+    $fetch<ApiResponse<{count: number}>>('/api/user/history/count', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }),
   
   // 添加书签
   addBookmark: (novelId: number, chapterId?: number) => 
-    $fetch<ApiResponse<{bookmark: Bookmark}>>(`/api/bookmarks/add`, { method: 'POST', body: { novelId, chapterId } }),
+    $fetch<ApiResponse<{bookmark: IBookmarkData}>>(`/api/bookmarks/add`, { method: 'POST', body: { novelId, chapterId } }),
   
   // 移除书签
   removeBookmark: (bookmarkId: number) => 
@@ -85,6 +99,26 @@ export const userApi = {
   // 添加阅读历史
   addHistory: (novelId: number, chapterId: number) => 
     $fetch<ApiResponse<{history: ReadingHistory}>>(`/api/history/add`, { method: 'POST', body: { novelId, chapterId } }),
+
+  // 获取用户书架列表
+  getBookshelf: (token: string, params?: { page?: number; limit?: number }) =>
+    $fetch<ApiResponse<{bookmarks: IBookmarkData[]; pagination: {total: number; page: number; limit: number; totalPages: number}}>>('/api/user/bookshelf', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      query: params
+    }),
+  
+  // 从书架移除
+  removeFromBookshelf: (bookmarkId: number, token: string) =>
+    $fetch<ApiResponse<{success: boolean}>>('/api/user/bookshelf/remove', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      body: { bookmarkId }
+    }),
 };
 
 // 评论相关API

@@ -1,4 +1,4 @@
-import { novelApi, userApi, commentApi } from '~/utils/api'
+import { novelApi, userApi, commentApi } from '~/composables/api'
 
 // 定义API类型
 interface ApiInstance {

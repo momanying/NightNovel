@@ -61,12 +61,12 @@ export default defineEventHandler(async (event) => {
       // 使用全文索引搜索时，按相关度排序
       novels = await Novel.find(
         searchConditions,
-        { score: { $meta: 'textScore' } }
-      )
-        .sort({ score: { $meta: 'textScore' } })
-        .skip(skip)
-        .limit(limit)
-        .select('-volumes')
+      { score: { $meta: 'textScore' } }
+    )
+      .sort({ score: { $meta: 'textScore' } })
+      .skip(skip)
+      .limit(limit)
+      .select('-volumes')
     } else {
       // 使用其他条件搜索时，按更新时间排序
       novels = await Novel.find(searchConditions)

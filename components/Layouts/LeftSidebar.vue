@@ -2,18 +2,10 @@
   <div class="flex flex-col space-y-6 rounded-r-lg shadow-lg">
     <SideBarRecommendedBook
       class="w-full"
-      :novel="recommendedNovel"
-      :loading="loading.recommend"
-      @navigate="navigateToNovel"
-      @random="updateRecommendedNovel"
     />
 
-    <SideBarCategoryList
+    <SideBarPersonList
       class="w-full"
-      :categories="categories"
-      :loading="loading.categories"
-      :error="error.categories"
-      @navigate="navigateToCategory"
     />
 
     <SideBarStatusList
@@ -38,34 +30,6 @@
 <script setup lang="ts">
 // 导入Tag接口，替换本地定义的Tag接口
 import type { Tag } from '~/types/tag'
-import type { Novel } from '~/types/novel/novelinfo'
-import type { ApiResponse } from '~/types/auth'
-
-// 使用useFetch获取推荐小说，优化SSR
-const { data: randomResponse } = await useFetch<ApiResponse<{novel: Novel}>>('/api/novels/random', {
-  key: 'recommended-novel',
-  transform: (response) => response
-})
-
-// 保存当前推荐小说
-const currentRecommendedNovel = ref<Novel | null>(null)
-
-// 响应式状态 - 用于显示
-const recommendedNovel = computed<Novel | null>(() => {
-  // 如果有手动设置的值，优先使用
-  if (currentRecommendedNovel.value) {
-    return currentRecommendedNovel.value
-  }
-  
-  // 否则使用API返回的值
-  if (randomResponse.value && 'data' in randomResponse.value && randomResponse.value.code === 200) {
-    return randomResponse.value.data?.novel || null
-  }
-  return null
-})
-
-// 从onMounted移除推荐小说获取
-onMounted(async()=>{ /* 空的onMounted，已使用useFetch */ })
 
 interface Category {
   id: number | string
@@ -199,21 +163,6 @@ const getTags = async () => {
     loading.value.tags = false
   }
 }
-
-// 导航到小说详情页
-const navigateToNovel = (id: number | string) => {
-  const path = `/novels/${id}`
-  const newWindow = window.open('', '_blank')
-  if (newWindow) {
-    newWindow.location.href = path
-  }
-}
-
-// 导航到分类页面
-const navigateToCategory = (categoryId: number | string) => {
-  navigateTo(`/categories/${categoryId}`)
-}
-
 // 导航到状态页面
 const navigateToStatus = (statusType: string) => {
   navigateTo(`/novels/status/${statusType}`)
@@ -222,22 +171,6 @@ const navigateToStatus = (statusType: string) => {
 // 导航到标签页面
 const navigateToTag = (tagId: number | string) => {
   navigateTo(`/tags/${tagId}`)
-}
-
-// 更新推荐小说
-const updateRecommendedNovel = (novel: Novel) => {
-  currentRecommendedNovel.value = {
-    id: novel.id || novel._id || '',
-    title: novel.title,
-    author: novel.author,
-    category: novel.category,
-    status: novel.status,
-    cover_url: novel.cover_url,
-    word_count: novel.word_count,
-    tags: novel.tags,
-    rating: novel.rating
-  }
-  loading.value.recommend = false
 }
 
 // 生命周期钩子
