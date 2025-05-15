@@ -1,26 +1,26 @@
 <template>
     <div class="bg-sky-500/10 rounded-lg shadow-lg p-5">
-    <h2 class="text-xl font-bold border-l-4 border-indigo-600 pl-3 mb-4 text-white">最近更新</h2>
-    <div 
-     v-if="novels"
-      class="grid grid-cols-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-1"
-      >
-      <div
-        v-for="(novel, index) in novels.slice(0, 32)"
-        :key="index"
-        class="flex flex-col cursor-pointer transition-transform duration-300 hover:-translate-y-1"
-        @click="navigateToNovel(novel._id || 0)"
-      >
-        <img
-          class="w-28 h-40 object-cover rounded-md mb-2"
-          :src="novel.cover_url"
-          :alt="novel.title"
-          @error="handleImageError"
+      <h2 class="text-xl font-bold border-l-4 border-indigo-600 pl-3 mb-4 text-white">最近更新</h2>
+      <div 
+      v-if="novels"
+        class="grid grid-cols-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-1"
         >
-        <h3 class="text-sm font-medium text-white mt-1">{{ novel.title }}</h3>
-        <p class="text-xs text-gray-400">{{ novel.author }}</p>
+        <div
+          v-for="(novel, index) in novels.slice(0, 16)"
+          :key="index"
+          class="flex flex-col cursor-pointer transition-transform duration-300 hover:-translate-y-1"
+          @click="navigateToNovel(novel._id || 0)"
+        >
+          <img
+            class="w-28 h-40 object-cover rounded-md mb-2"
+            :src="novel.cover_url"
+            :alt="novel.title"
+            @error="handleImageError"
+          >
+          <h3 class="text-sm font-medium text-white mt-1">{{ novel.title }}</h3>
+          <p class="text-xs text-gray-400">{{ novel.author }}</p>
+        </div>
       </div>
-    </div>
   </div>
 </template>
 

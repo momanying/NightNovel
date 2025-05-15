@@ -1,14 +1,14 @@
 <template>
-  <div>
+  <div class="gird h-screen w-screen">
     <LayoutsTheHeader />
-    <div class="flex items-start w-full p-0 m-0 min-h-screen">
+    <div class="flex w-full mt-[30px]">
       <!-- 左侧栏 -->
-      <div class="w-[320px] shrink-0 top-[60px] py-8 pl-10">
+      <div class="w-xs shrink-0 pl-7">
         <LayoutsLeftSidebar />
       </div>
 
       <!-- 主容器 -->
-      <div class="flex-1 py-10 pl-5">
+      <div class="flex-auto pl-5">
         <LayoutsMainContainer :featured-novels="featuredNovels" :top-novels="topNovels"/>
       </div>
     </div>

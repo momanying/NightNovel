@@ -1,5 +1,6 @@
-import { novelApi, userApi, commentApi } from '~/composables/api'
-
+import { commentApi } from '~/composables/commentapi'
+import { novelApi } from '~/composables/novelapi'
+import { userApi } from '~/composables/userapi'
 // 定义API类型
 interface ApiInstance {
     novel: typeof novelApi;

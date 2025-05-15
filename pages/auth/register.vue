@@ -82,7 +82,7 @@
 <script setup lang="ts">
 import { useToast } from 'vue-toastification'
 import { useUserStore } from '~/stores/user'
-import type { ApiError } from '~/types/auth/apierror'
+import type { ApiError } from '~/types/apiresponse'
 
 const toast = useToast()
 const userStore = useUserStore()
@@ -119,25 +119,23 @@ async function handleRegister() {
       formData.value.password
     )
     if (data.code === 200 && data.data) {
-      userStore.setToken(data.data.token)
-      userStore.setUser(data.data.user)
+      userStore.setUser({
+        id: data.data.user.id,
+        username: data.data.user.username,
+        avatar: data.data.user.avatar,
+        token: data.data.token
+      })
       toast.success(data.message)
       await navigateTo('/auth/login')
     } 
   } catch (error: unknown) {
     // 改进错误处理
     const err = error as ApiError
-    if (err.data?.data?.errors) {
-      const errors = err.data.data.errors;
-      for (const key in errors) {
-        toast.error(errors[key]);
-      }
-    } else if (err.data?.message) {
-      toast.error(err.data.message);
-    } else {
-      toast.error('注册失败，请稍后重试')
-    }
-  } finally {
+    if (err) {
+        toast.error(err.message);
+    } 
+  }
+    finally {
     loading.value = false
   }
 }

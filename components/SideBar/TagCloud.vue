@@ -4,11 +4,11 @@
     <div v-if="!loading" class="flex flex-wrap gap-2 px-4 py-4">
       <a
         v-for="tag in tags"
-        :key="tag.id || tag.name"
+        :key="tag.name"
         href="#"
-        :style="{ fontSize: `${getTagSize(tag.count || 0)}px`, color: getTagColor(tag.id || tag.name) }"
+        :style="{ fontSize: `${getTagSize(tag.count)}px`, color: getTagColor(tag.name) }"
         class="hover:scale-110 transition-transform duration-200"
-        @click.prevent="$emit('navigate', tag.id || tag.name)"
+        @click.prevent="navigateToTag(tag.name)"
       >
         {{ tag.name }}
       </a>
@@ -21,34 +21,47 @@
 </template>
 
 <script setup lang="ts">
-import type { Tag } from '~/types/tag';
+import { useTagCloud } from '~/composables/useTagCloud';
 
-const props = defineProps<{
-  tags: Tag[],
-  loading: boolean,
-  error: string
-}>();
+// 使用标签云组合式函数
+const { tags, loading, error } = useTagCloud();
 
-defineEmits(['navigate']);
+const navigateToTag = (tagName: string) => {
+  navigateTo(`/novels/tag/${encodeURIComponent(tagName)}`);
+};
 
 const getTagSize = (count: number) => {
-  const max = Math.max(...props.tags.map(t => t.count || 0));
-  const min = Math.min(...props.tags.map(t => t.count || 0));
+  if (!tags.value.length) return 15;
+  
+  const max = Math.max(...tags.value.map(t => t.count));
+  const min = Math.min(...tags.value.map(t => t.count));
+  
   if (max === min) return 15;
-  return 12 + ((count - min) / (max - min)) * 6;
+  return 14 + ((count - min) / (max - min)) * 8;
 };
 
-const getTagColor = (id: number | string) => {
+const getTagColor = (tagName: string) => {
   const colors = ['#ff6600', '#00aaff', '#cc00cc', '#66ccff', '#ffcc00', '#99cc00', '#0099ff'];
-  if (typeof id === 'string' && !id.match(/^\d+$/)) {
-    // 使用字符串的哈希码作为颜色索引
-    let hash = 0;
-    for (let i = 0; i < id.length; i++) {
-      hash = ((hash << 5) - hash) + id.charCodeAt(i);
-      hash |= 0; // 转换为32位整数
-    }
-    return colors[Math.abs(hash) % colors.length];
+  
+  // 使用字符串的哈希码作为颜色索引
+  let hash = 0;
+  for (let i = 0; i < tagName.length; i++) {
+    hash = ((hash << 5) - hash) + tagName.charCodeAt(i);
+    hash |= 0; // 转换为32位整数
   }
-  return colors[Number(id) % colors.length];
+  
+  return colors[Math.abs(hash) % colors.length];
 };
 </script>
+
+<style scoped>
+.tag-cloud-enter-active,
+.tag-cloud-leave-active {
+  transition: opacity 0.3s, transform 0.3s;
+}
+.tag-cloud-enter-from,
+.tag-cloud-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
+}
+</style>

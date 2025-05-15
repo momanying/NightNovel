@@ -6,9 +6,9 @@ export default defineEventHandler(async (event) => {
     const query = getQuery(event)
     const limit = parseInt(query.limit as string) || 10
     
-    // 查询最新小说（基于创建时间）
+    // 查询最新小说（基于 lastUpdate 字段）
     const novels = await Novel.find()
-      .sort({ createdAt: -1 })
+      .sort({ lastUpdate: -1 })
       .limit(limit)
       .select('title author cover_url lastUpdate')
     

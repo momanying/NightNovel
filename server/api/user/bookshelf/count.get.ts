@@ -4,7 +4,7 @@ import { Bookmark } from '~/server/models'
 export default defineEventHandler(async (event) => {
   try {
     // 获取Authorization头
-    const authorization = event.headers.get('Authorization')
+    const authorization = event.headers.get('token')
     if (!authorization) {
       return {
         code: 401,

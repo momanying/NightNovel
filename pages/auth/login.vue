@@ -2,7 +2,7 @@
     <div class="flex justify-center items-center h-screen">
         <div class="auth-container flex flex-col w-[50%] h-[60%]">
         <div class="sm:mx-auto sm:w-full sm:max-w-sm">
-            <img class="mx-auto h-10 w-auto" src="/public/avatar.png" alt="NightNovel">
+            <img class="mx-auto h-10 w-auto" src="http://54.255.84.100/i/2025/05/14/6823f89a2e094.webp" alt="NightNovel">
             <h2 class="mt-10 text-center text-2xl font-bold tracking-tight text-gray-900">登录账号</h2>
         </div>
     
@@ -80,9 +80,12 @@ async function handleLogin() {
     )
 
     if (data.code === 200 && data.data) {
-      userStore.setToken(data.data.token)
-      userStore.setUser(data.data.user)
-      userStore.setAuthenticated(true)
+      userStore.setUser({
+        id: data.data.user.id,
+        username: data.data.user.username,
+        avatar: data.data.user.avatar,
+        token: data.data.token
+      })
       toast.success(data.message)
       await navigateTo('/')
     } else {

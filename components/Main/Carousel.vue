@@ -1,52 +1,61 @@
 <template>
-  <div class="relative h-[400px] w-full">
-    <div class="h-full overflow-hidden">
-      <!-- 书籍轮播区域 -->
-      <ul class="flex h-full">
+  <div class="flex w-full h-[400px] bg-gray-800 text-white rounded-lg overflow-hidden shadow-lg">
+    <!-- 左侧：轮播区域 -->
+    <div class="w-2/5 h-full p-4">
+      <ul class="relative w-full h-full">
         <li 
-          v-for="(novel, index) in novels.slice(0, 5)" 
+          v-for="(novel, index) in items" 
           :key="novel._id"
-          class="cursor-pointer absolute overflow-hidden transition-all duration-500 ease-out shadow-md hover:shadow-xl rounded-lg transform origin-bottom"
+          class="cursor-pointer absolute transition-all duration-500 ease-out shadow-md hover:shadow-xl rounded-lg transform origin-bottom overflow-hidden"
           :style="getStyle(index)"
-          @click="onClick(novel._id)"
+          @click="onClick(novel._id, index)"
         >
-          <div class="relative w-full h-full group">
             <img 
               :src="novel.cover_url" 
               :alt="novel.title" 
               class="w-full h-full object-cover rounded-lg"
               @error="handleImageError"
             >
-            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <p class="text-white font-bold truncate">{{ novel.title }}</p>
-              <p class="text-white/80 text-sm truncate">{{ novel.author }}</p>
-            </div>
-          </div>
         </li>
       </ul>
     </div>
-    
-    <!-- 指示器 -->
-    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-50">
-      <button 
-        v-for="(_, i) in novels.slice(0, 5)" 
-        :key="i"
-        :class="[
-          'w-2 h-2 rounded-full transition-all duration-300',
-          current === i ? 'bg-white w-4' : 'bg-white/50 hover:bg-white/70'
-        ]"
-        :aria-label="`转到第${i+1}页`"
-        @click="goToSlide(i)"
-      />
+
+    <!-- 右侧：小说详情区域 -->
+    <div class="w-3/5 h-full flex flex-col justify-center bg-gray-800/50 p-6">
+      <div v-if="novelStore.loadingNovel" class="text-center text-gray-400">
+        <p>详细信息加载中...</p>
+      </div>
+      <div v-else-if="novelStore.novelError" class="text-center text-red-400">
+        <p>加载详情失败: {{ novelStore.novelError }}</p>
+      </div>
+      <div v-else-if="displayedNovelDetails">
+        <h2 class="text-2xl font-semibold mb-3 text-purple-400 truncate w-full break-words">{{ displayedNovelDetails.title }}</h2>
+        <p class="text-sm text-gray-300 mb-1">作者: {{ displayedNovelDetails.author }}</p>
+        <p class="text-gray-400 text-xs mt-1 mb-4">更新于: {{ displayedNovelDetails.lastUpdate || '未知' }}</p>
+        <p class="text-gray-300 text-sm mt-4 max-h-32 overflow-y-auto pr-2 text-justify leading-relaxed novel-introduction-scrollbar">
+          {{ displayedNovelDetails.introduction || '暂无简介' }}
+        </p>
+        <button 
+          v-if="displayedNovelDetails._id && !displayedNovelDetails._id.startsWith('placeholder-')"
+          class="mt-6 bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-2 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
+          @click="navigateToNovelPage(displayedNovelDetails._id)"
+         >
+          阅读详情
+        </button>
+      </div>
+      <div v-else class="text-center text-gray-500">
+        <p>请选择一本小说</p>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// 定义小说类型接口
 import type { Novel } from '~/types/novel/novelinfo';
+import { useNovelStore } from '~/stores/novel';
 
-// 接收小说数据
+const novelStore = useNovelStore();
+
 const props = defineProps({
   novels: {
     type: Array as () => Novel[],
@@ -58,173 +67,176 @@ const props = defineProps({
   },
   interval: {
     type: Number,
-    default: 3000 // 3秒
+    default: 3000
   }
 });
 
+// 主图在顶部，下方是4张紧密排列的缩略图
+// 索引0: 主图
+// 索引1-4: 缩略图
 const animations = [
-  { left: '0%', top: '30px', opacity: 0.4, zIndex: 1,  width: '130px', height: '200px' },
-  { left: '20%', top: '10px', opacity: 0.7, zIndex: 2,  width: '130px', height: '200px' },
-  { left: '40%', top: '0px', opacity: 1, zIndex: 3,  width: '130px', height: '200px' },
-  { left: '60%', top: '10px', opacity: 0.7, zIndex: 2,  width: '130px', height: '200px' },
-  { left: '80%', top: '30px', opacity: 0.4, zIndex: 1,  width: '130px', height: '200px' },
-]
+  { left: '55px', top: '10%', opacity: 1, zIndex: 1, width: '180px', height: '230px' }, // 主图，宽度调整为100%相对于其容器（左侧区域的li）
+  { left: '50px', top: '80%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },   // 缩略图1
+  { left: '100px', top: '80%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },  // 缩略图2
+  { left: '150px', top: '80%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },  // 缩略图3
+  { left: '200px', top: '80%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },  // 缩略图4
+];
 
-// 当前选中的索引
-const current = ref(0);
-
+const current = ref(0); // 追踪 items.value 中作为主图的索引
 let timer: NodeJS.Timeout | null = null;
-
-const items = computed(() => {
-  // 确保至少有5个项目以填充轮播
-  if (props.novels.length >= 5) {
-    return props.novels.slice(0, 5);
-  } else {
-    // 如果不足5个，使用占位符填充
-    const result = [...props.novels];
-    while (result.length < 5) {
-      result.push({
-        _id: `placeholder-${result.length}`,
-        title: '占位',
-        cover_url: '/images/default-cover.jpg',
-        author: '',
-        introduction: ''
-      } as Novel);
-    }
-    return result;
+const items = computed<Novel[]>(() => {
+  const novelItems = props.novels || [];
+  const result = [...novelItems].slice(0, 5); // Ensure we don't take more than 5 initially
+  
+  // 如果不足5个，使用占位符填充
+  while (result.length < 5) {
+    result.push({
+      _id: `placeholder-${result.length}`,
+      title: '暂无作品',
+      cover_url: '/images/default-cover.jpg',
+      author: 'N/A',
+      introduction: '敬请期待更多精彩内容。',
+      category: '',
+      status: '连载中',
+      lastUpdate: '',
+      tags: '',
+      volumes: [],
+      views: 0,
+      rating: 0,
+      ratingCount: 0,
+      // animation 和 source_site, crawl_time 如果Novel类型需要，也应提供默认值
+    } as Novel); // 类型断言，确保符合Novel接口
   }
+  return result.slice(0, 5); // 确保最终返回不超过5个元素
 });
 
-const getStyle = (index: number) => {
-  const position = (index - current.value + items.value.length) % items.value.length;
-  const ani = animations[position];
-  return {
-    left: ani.left,
-    top: ani.top,
-    opacity: ani.opacity,
-    zIndex: ani.zIndex,
-    width: ani.width,
-    height: ani.height
+const getStyle = (itemIndex: number) => {
+  // 计算 itemIndex 相对于 current (主图索引) 的位置
+  const relativePosition = (itemIndex - current.value + items.value.length) % items.value.length;
+  return animations[relativePosition] || {}; // Fallback to empty object
+};
+
+// const isMainImage = (itemIndex: number) => {
+//   const relativePosition = (itemIndex - current.value + items.value.length) % items.value.length;
+//   return relativePosition === 0;
+// }
+
+const currentNovelFromItems = computed(() => {
+  if (items.value.length > 0 && items.value[current.value]) {
+    return items.value[current.value];
   }
-}
+  return null;
+});
+
+watch(currentNovelFromItems, async (activeNovel) => {
+  if (activeNovel && activeNovel._id && !activeNovel._id.startsWith('placeholder-')) {
+    // Fetch full details if not already fetched for this ID or if cache is invalid
+    // The store's fetchNovelData itself handles caching logic.
+    await novelStore.fetchNovelData(activeNovel._id);
+  }
+}, { immediate: true });
+
+const displayedNovelDetails = computed(() => {
+  const activeNovelInCarousel = currentNovelFromItems.value;
+  if (!activeNovelInCarousel) return null;
+
+  // If store has the current novel and its ID matches the active one in carousel, prefer store's version
+  if (novelStore.currentNovel && novelStore.currentNovel._id === activeNovelInCarousel._id) {
+    return novelStore.currentNovel;
+  }
+  // Otherwise, fallback to the novel data from props (items)
+  return activeNovelInCarousel;
+});
 
 const next = () => {
-  current.value = (current.value + 1) % items.value.length;
-}
-
-const prev = () => {
-  current.value = (current.value - 1 + items.value.length) % items.value.length;
-}
-
-const goToSlide = (index: number) => {
-  stop();
-  current.value = index;
-  setTimeout(start, 500);
-}
+  if (items.value.length > 0) {
+    current.value = (current.value + 1) % items.value.length;
+  }
+};
 
 const start = () => {
-  // 先清除可能存在的计时器
   stop();
-  
-  // 设置新的计时器
   if (props.autoplay && items.value.length > 1) {
-    timer = setInterval(() => {
-      next();
-    }, props.interval);
+    timer = setInterval(next, props.interval);
   }
-}
+};
 
 const stop = () => {
   if (timer) {
     clearInterval(timer);
     timer = null;
   }
-}
+};
 
-const moveToCenter = (steps: number, callback?: () => void) => {
-  if (steps <= 0) {
-    if (callback) callback();
-    return;
-  }
-  
-  prev();
-  setTimeout(() => {
-    moveToCenter(steps - 1, callback);
-  }, 500); // 500ms和transition-duration对齐
-}
-
-const moveToCenterReverse = (steps: number, callback?: () => void) => {
-  if (steps <= 0) {
-    if (callback) callback();
-    return;
-  }
-  
-  next();
-  setTimeout(() => {
-    moveToCenterReverse(steps - 1, callback);
-  }, 500);
-}
-
-// 图片错误处理
 const handleImageError = (e: Event) => {
-  if (e.target && e.target instanceof HTMLImageElement) {
-    e.target.src = '/images/default-cover.jpg';
+  const target = e.target as HTMLImageElement;
+  if (target) {
+    target.src = '/images/default-cover.jpg'; 
   }
-}
+};
 
-const onClick = (id: string | undefined) => {
-  // 检查ID是否为占位符ID
-  if (!id || (typeof id === 'string' && id.startsWith('placeholder-'))) {
-    return; // 不处理占位符ID或空ID的点击
+const onClick = (id: string | undefined, itemOriginalIndex: number) => {
+  if (!id || id.startsWith('placeholder-')) return;
+
+  const relativePosition = (itemOriginalIndex - current.value + items.value.length) % items.value.length;
+
+  if (relativePosition === 0) { // 点击的是主图
+    navigateToNovelPage(id);
+  } else { // 点击的是缩略图
+    stop();
+    current.value = itemOriginalIndex; // 将点击的缩略图设为新的主图
+    start();
   }
-  
-  // 找到点击的小说在数组中的索引
-  const clickedIndex = items.value.findIndex(novel => novel._id === id);
-  if (clickedIndex === -1) return;
-  
-  // 计算点击项与当前中心项的位置关系
-  const position = (clickedIndex - current.value + items.value.length) % items.value.length;
-  
-  // 如果点击的是中心位置(position === 2，对应animations中索引2的位置)，则跳转到详情页
-  if (position === 2) {
-    localStorage.setItem('novelId', String(id));
-    const path = `/novels/${id}`;
-    const newWindow = window.open('', '_blank');
-    if (newWindow) {
-      newWindow.location.href = path;
-    }
-  } else {
-    stop(); // 停止自动轮播
-    
-    // 确定最短路径转到中心
-    if (position < 2) {
-      // 向右移动(使用next)，例如位置1到位置2需要移动1步
-      const stepsToCenter = 2 - position;
-      moveToCenter(stepsToCenter, start); // 完成后重新开始自动轮播
-    } else {
-      // 向左移动(使用prev)，例如位置3到位置2需要移动1步
-      const stepsToCenter = position - 2;
-      moveToCenterReverse(stepsToCenter, start); // 完成后重新开始自动轮播
-    }
+};
+
+const navigateToNovelPage = (id?: string) => {
+  if (!id || id.startsWith('placeholder-')) return;
+  localStorage.setItem('novelId', String(id));
+  const path = `/novels/${id}`;
+  // 在新标签页打开
+  const newWindow = window.open(path, '_blank');
+  if (newWindow) {
+    newWindow.focus();
   }
-}
+};
 
 onMounted(() => {
   start();
-})
+});
 
 onBeforeUnmount(() => {
   stop();
-})
+});
+
 </script>
 
 <style scoped>
 li {
-  transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+  /* transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1); */ /* Can be re-enabled if needed */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 li:hover {
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-  z-index: 10 !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  /* z-index is managed by animation style now if needed, but hover can still have higher z-index */
+  /* z-index: 10 !important; */ 
+}
+
+.novel-introduction-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.novel-introduction-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.novel-introduction-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(192, 132, 252, 0.7); /* purple-400 with opacity */
+  border-radius: 3px;
+}
+
+.novel-introduction-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(167, 90, 243, 0.9); /* darker purple */
 }
 </style>

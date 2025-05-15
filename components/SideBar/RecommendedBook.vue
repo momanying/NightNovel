@@ -47,7 +47,7 @@
 
 <script setup lang="ts">
 import type { Novel } from '~/types/novel/novelinfo';
-import type { ApiResponse } from '~/types/auth'
+import type { ApiResponse } from '~/types/apiresponse'
 
 // 状态管理
 const loading = ref(false); // 初始不显示加载状态，避免SSR不匹配

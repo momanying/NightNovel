@@ -57,8 +57,10 @@
 
 <script setup lang="ts">
 import { useUserStore } from '~/stores/user';
+import { storeToRefs } from 'pinia';
 
 const userStore = useUserStore();
+const { token } = storeToRefs(userStore);
 const router = useRouter();
 
 // 书签类型定义
@@ -93,20 +95,27 @@ interface RemoveBookmarkResponse {
   error?: string;
 }
 
-// 检查用户登录状态
-onMounted(() => {
-  if (!userStore.isLoggedIn) {
-    router.push('/login');
-  }
-});
-
 // 响应式状态
 const loading = ref(true);
 const error = ref('');
 const bookmarks = ref<Bookmark[]>([]);
 
+// 检查用户登录状态
+onMounted(() => {
+  // 使用计算属性检查登录状态
+  if (!token.value) {
+    router.push('/auth/login');
+    return;
+  }
+  
+  // 已登录，获取书架数据
+  fetchBookshelf();
+});
+
 // 获取书架数据
 const fetchBookshelf = async () => {
+  if (!token.value) return;
+  
   loading.value = true;
   error.value = '';
   
@@ -114,7 +123,7 @@ const fetchBookshelf = async () => {
     const response = await $fetch<BookshelfResponse>('/api/user/bookshelf', {
       method: 'GET',
       headers: {
-        Authorization: `Bearer ${userStore.token}`
+        Authorization: `Bearer ${token.value}`
       }
     });
     
@@ -138,7 +147,7 @@ const removeFromBookshelf = async (bookmarkId: string) => {
       method: 'POST',
       body: { bookmarkId },
       headers: {
-        Authorization: `Bearer ${userStore.token}`
+        Authorization: `Bearer ${token.value}`
       }
     });
     
@@ -157,7 +166,7 @@ const removeFromBookshelf = async (bookmarkId: string) => {
 const continueReading = (bookmark: Bookmark) => {
   // 如果有章节ID，跳转到上次阅读的章节，否则跳转到小说详情页
   if (bookmark.chapterId) {
-    router.push(`/novels/${bookmark.novelId}/chapters/${bookmark.chapterId}`);
+    router.push(`/novels/${bookmark.novelId}/${bookmark.chapterId}`);
   } else {
     router.push(`/novels/${bookmark.novelId}`);
   }
@@ -178,7 +187,4 @@ const formatDate = (dateString: string) => {
     day: 'numeric' 
   });
 };
-
-// 加载数据
-onMounted(fetchBookshelf);
 </script> 

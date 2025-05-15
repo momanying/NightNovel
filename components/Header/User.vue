@@ -1,5 +1,5 @@
 <template>
-    <div v-if="!userdata.isAuthenticated">
+    <div v-if="!userdata.token">
         <div class="flex items-center">
           <NuxtLink to="/auth/login">
             <button class="text-white no-underline hover:text-gray-100">登录</button>
@@ -40,10 +40,9 @@ const toast = useToast()
 const userStore = useUserStore()
 
 const userdata = computed(() => ({
-  username: userStore.user?.username,
-  email: userStore.user?.email,
-  avatar: userStore.user?.avatar,
-  isAuthenticated: userStore.authenticated,
+  username: userStore.username,
+  avatar: userStore.avatar,
+  token: userStore.token,
 }))
 
 const showUserMenu = ref(false);

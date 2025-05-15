@@ -8,28 +8,13 @@
       class="w-full"
     />
 
-    <SideBarStatusList
-      class="w-full"
-      :statuses="statuses"
-      :loading="loading.statuses"
-      :error="error.statuses"
-      @navigate="navigateToStatus"
-    />
-
-    <SideBarTagCloud
-      class="w-full"
-      :tags="tags"
-      :loading="loading.tags"
-      :error="error.tags"
-      @navigate="navigateToTag"
-    />
+    <SideBarTagCloud class="w-full" />
   </div>
 </template>
 
   
 <script setup lang="ts">
 // 导入Tag接口，替换本地定义的Tag接口
-import type { Tag } from '~/types/tag'
 
 interface Category {
   id: number | string
@@ -47,7 +32,6 @@ interface Status {
 // 响应式状态
 const categories = ref<Category[]>([])
 const statuses = ref<Status[]>([])
-const tags = ref<Tag[]>([])
 
 // 加载状态
 const loading = ref({
@@ -105,12 +89,6 @@ const getStatuses = async () => {
   error.value.statuses = ''
   
   try {
-    // 实际项目中应该使用API获取状态列表
-    // const response = await $api.novel.getStatuses()
-    // if (response.code === 200) {
-    //   statuses.value = response.data
-    // }
-    
     // 模拟数据
     setTimeout(() => {
       statuses.value = [
@@ -141,20 +119,6 @@ const getTags = async () => {
     
     // 模拟数据
     setTimeout(() => {
-      tags.value = [
-        { id: 1, name: "异世界转生", count: 562 },
-        { id: 2, name: "魔法", count: 428 },
-        { id: 3, name: "校园", count: 765 },
-        { id: 4, name: "冒险", count: 512 },
-        { id: 5, name: "后宫", count: 324 },
-        { id: 6, name: "恋爱", count: 687 },
-        { id: 7, name: "战斗", count: 539 },
-        { id: 8, name: "游戏", count: 412 },
-        { id: 9, name: "轻松", count: 298 },
-        { id: 10, name: "搞笑", count: 472 },
-        { id: 11, name: "治愈", count: 247 },
-        { id: 12, name: "日常", count: 385 },
-      ]
       loading.value.tags = false
     }, 250)
   } catch (err) {
@@ -162,15 +126,6 @@ const getTags = async () => {
     error.value.tags = '获取标签列表失败'
     loading.value.tags = false
   }
-}
-// 导航到状态页面
-const navigateToStatus = (statusType: string) => {
-  navigateTo(`/novels/status/${statusType}`)
-}
-
-// 导航到标签页面
-const navigateToTag = (tagId: number | string) => {
-  navigateTo(`/tags/${tagId}`)
 }
 
 // 生命周期钩子

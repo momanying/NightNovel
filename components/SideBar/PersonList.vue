@@ -1,6 +1,6 @@
 <template>
   <div class="bg-gray-800 rounded-lg overflow-hidden shadow-md">
-    <h3 class="bg-gray-700 text-white font-medium text-lg py-3 px-4">✨️ 欢迎你 {{ userStore.user?.username }}！✨️</h3>
+    <h3 class="bg-gray-700 text-white font-medium text-lg py-3 px-4">✨️ 欢迎你 {{ userStore.username }}！✨️</h3>
     <ul v-if="!loading" class="space-y-3 px-4 py-3">
       <li>
         <a 
@@ -56,44 +56,8 @@ const userStore = useUserStore();
 const loading = ref(false);
 const error = ref('');
 const bookshelfCount = ref(0);
-const commentsCount = ref(0);
 const historyCount = ref(0);
 const router = useRouter();
-
-interface CountResponse {
-  code: number;
-  message: string;
-  data?: {
-    count: number;
-  } | null;
-  error?: string;
-}
-
-// 获取用户数据
-const fetchUserData = async () => {
-  if (!userStore.isLoggedIn) {
-    return;
-  }
-
-  loading.value = true;
-  error.value = '';
-  
-  try {
-    // 获取用户书架、评论和历史信息
-    const [bookshelfResponse, historyResponse] = await Promise.all([
-      $fetch<CountResponse>('/api/user/bookshelf/count'),
-      $fetch<CountResponse>('/api/user/history/count')
-    ]);
-    
-    bookshelfCount.value = bookshelfResponse.data?.count || 0;
-    historyCount.value = historyResponse.data?.count || 0;
-  } catch (err) {
-    console.error('获取用户数据失败:', err);
-    error.value = '获取用户数据失败';
-  } finally {
-    loading.value = false;
-  }
-};
 
 // 退出登录
 const logout = async () => {
@@ -115,18 +79,4 @@ const navigateTo = (path: string) => {
   }
   router.push(path);
 };
-
-// 页面加载时获取数据
-onMounted(fetchUserData);
-
-// 监听用户登录状态变化
-watch(() => userStore.isLoggedIn, (isLoggedIn) => {
-  if (isLoggedIn) {
-    fetchUserData();
-  } else {
-    bookshelfCount.value = 0;
-    commentsCount.value = 0;
-    historyCount.value = 0;
-  }
-});
 </script>

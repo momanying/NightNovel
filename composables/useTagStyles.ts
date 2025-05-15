@@ -1,7 +1,6 @@
-import type { Tag } from '@/types/tag';
 import { computed } from 'vue';
 import type { Ref } from 'vue';
-
+import type { Tag } from '../types/tagscloud'
 // 定义 Composable 函数
 export function useTagStyles(tags: Ref<Tag[] | undefined>) {
 

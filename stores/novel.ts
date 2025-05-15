@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import type { Novel } from '~/types/novel/novelinfo'
 import type { Volume } from '~/types/novel/volume'
 import type { ChapterDetail } from '~/types/novel/chapter'
-import type { ApiResponse } from '~/types/auth'
+import type { ApiResponse } from '~/types/apiresponse'
 
 export const useNovelStore = defineStore('novel', () => {
   // 状态

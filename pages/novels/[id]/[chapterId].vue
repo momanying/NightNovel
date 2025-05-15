@@ -34,7 +34,7 @@
                     >
                         上一章：{{ prevChapter.title }}
                     </button>
-                    <div v-else class="w-24"></div>
+                    <div v-else class="w-24"/>
                     
                     <button 
                         v-if="nextChapter" 
@@ -43,7 +43,7 @@
                     >
                         下一章：{{ nextChapter.title }}
                     </button>
-                    <div v-else class="w-24"></div>
+                    <div v-else class="w-24"/>
                 </div>
             </div>
             <div v-else-if="loadingChapter" class="text-center py-8">
@@ -62,8 +62,6 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useNovelStore } from '~/stores/novel'
-import type { ChapterDetail } from '~/types/novel/chapter'
-import type { ApiResponse } from '~/types/auth/index'
 
 const route = useRoute()
 const novelId = computed(() => route.params.id as string)

@@ -12,7 +12,8 @@ const PUBLIC_ROUTES: string[] = [
   '/api/novels',         // 小说列表
   '/api/novels/featured', // 推荐小说
   '/api/novels/latest',   // 最新小说
-  '/api/novels/top'       // 热门小说
+  '/api/novels/top',      // 热门小说
+  '/api/tags/cloud'       // 标签云
 ]
 
 export default defineEventHandler(async (event) => {

@@ -1,5 +1,5 @@
 <template>
-    <div class="rounded-xl shadow-md w-[350px] overflow-hidden">
+    <div class="rounded-xl shadow-md w-[350px] overflow-hidden mr-4">
       <h2 class="text-xl font-bold mb-4 text-white border-l-4 border-indigo-600 pl-3">人气排行</h2>
       
       <div class="flex justify-center items-end overflow-hidden border-b border-dashed border-gray-600 mb-4">
