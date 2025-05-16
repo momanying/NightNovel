@@ -118,14 +118,14 @@
 
         <div v-else-if="error" class="py-8 text-center">
             <p class="text-red-500">{{ error }}</p>
-            <button class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" @click="()=>fetchNovels">
+            <button class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" @click="fetchNovels">
             重试
             </button>
         </div>
 
         <template v-else>
             <div class="grid grid-cols-2 gap-2">
-                <div v-for="novel in novels" :key="novel.id" class="border rounded-lg overflow-hidden">
+                <div v-for="novel in novels" :key="novel._id" class="border rounded-lg overflow-hidden">
                     <div class="flex flex-col h-full">
                         <!-- 小说封面和信息改为上下布局 -->
                         <div class="flex p-4">
@@ -145,7 +145,7 @@
                             <div class="w-3/4 pl-4">
                                 <!-- 标题和作者 -->
                                 <h2 class="text-base font-semibold text-blue-800 hover:text-blue-600 mb-1">
-                                    <NuxtLink :to="`/novels/${novel.id}`">{{ novel.title }}</NuxtLink>
+                                    <NuxtLink :to="`/novels/${novel._id}`">{{ novel.title }}</NuxtLink>
                                 </h2>
                                 <div class="text-xs text-gray-600">
                                     作者：<NuxtLink :to="`/authors/${novel.author}`" class="hover:text-blue-500">{{ novel.author }}</NuxtLink>
@@ -156,8 +156,8 @@
                                 
                                 <!-- 更新信息 -->
                                 <div class="text-xs text-gray-600 mt-1">
-                                    更新：{{ novel.lastUpdate }}/字数：{{ novel.word_count }}
-                                    <div>{{ novel.status }}<span v-if="novel.animation" class="text-red-500 ml-1">/已动画化</span></div>
+                                    更新：{{ novel.lastUpdate || '暂无更新' }}/字数：{{ novel.word_count || 0 }}
+                                    <div>{{ novel.status || '连载中' }}<span v-if="novel.animation" class="text-red-500 ml-1">/已动画化</span></div>
                                 </div>
                             </div>
                         </div>
@@ -189,18 +189,18 @@
 
                             <!-- 简介 -->
                             <div class="text-xs text-gray-700 mb-3 line-clamp-2">
-                                {{ novel.introduction }}
+                                {{ novel.introduction || '暂无简介' }}
                             </div>
 
                             <!-- 操作按钮 -->
                             <div class="flex gap-1 text-xs">
-                                <NuxtLink :to="`/novels/${novel.id}/read`" class="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                <NuxtLink :to="`/novels/${novel._id}/read`" class="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
                                     阅读
                                 </NuxtLink>
                                 <button class="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600" @click="addToBookshelf(novel._id)">
                                     收藏
                                 </button>
-                                <button class="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600" @click="recommendNovel(novel.id)">
+                                <button class="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600" @click="recommendNovel(novel._id)">
                                     推荐
                                 </button>
                             </div>
@@ -208,41 +208,19 @@
                     </div>
                 </div>
             </div>
+            <div v-if="novels.length === 0" class="py-8 text-center text-gray-500">
+                暂无符合条件的小说
+            </div>
         </template>
         </div>
 
         <!-- 分页 -->
         <div class="mt-8 flex justify-center">
-        <div class="flex space-x-2">
-            <button
-            class="px-4 py-2 border rounded hover:bg-gray-100 disabled:opacity-50" 
-            :disabled="currentPage <= 1"
-            type="button"
-            @click="handlePrevPage" 
-            >
-            上一页
-            </button>
-            <template v-for="page in totalPages" :key="page">
-            <button  
-                :class="[
-                'px-4 py-2 border rounded',
-                currentPage === page ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'
-                ]"
-                type="button"
-                @click="() => handlePageChange(page)"
-            >
-                {{ page }}
-            </button>
-            </template>
-            <button 
-            class="px-4 py-2 border rounded hover:bg-gray-100 disabled:opacity-50"
-            :disabled="currentPage >= totalPages"
-            type="button"
-            @click="handleNextPage" 
-            >
-            下一页
-            </button>
-        </div>
+          <CommonPagination 
+            :current-page="currentPage"
+            :total-pages="totalPages"
+            @page-changed="handlePageChange"
+          />
         </div>
     </div>
 </div>
@@ -250,8 +228,8 @@
 
 <script setup lang="ts">
 import type { Novel } from '~/types/novel/novelinfo'
+// import CommonPagination from '~/components/Common/Pagination.vue'; // Nuxt 3 自动导入
 
-const $api = useNuxtApp().$api
 const loading = ref(true)
 const error = ref('')
 const novels = ref<Novel[]>([])
@@ -293,15 +271,7 @@ const handleSortOrderToggle = () => {
 
 // 构建查询参数
 const buildQueryParams = () => {
-  const params: {
-    page: number
-    limit: number
-    category?: string
-    tag?: string
-    keyword?: string
-    sort?: string
-    order?: string
-  } = {
+  const params: Record<string, string | number> = {
     page: currentPage.value,
     limit: itemsPerPage.value
   }
@@ -309,6 +279,21 @@ const buildQueryParams = () => {
   // 添加分类筛选
   if (typeFilter.value !== '全部类型') {
     params.category = typeFilter.value
+  }
+
+  // 添加平台筛选
+  if (platformFilter.value !== '全部平台') {
+    params.platform = platformFilter.value
+  }
+
+  // 添加年份筛选
+  if (yearFilter.value !== '全部年份') {
+    params.year = yearFilter.value
+  }
+
+  // 添加月份筛选
+  if (monthFilter.value !== '全部月份') {
+    params.month = monthFilter.value
   }
 
   // 添加排序参数
@@ -329,51 +314,70 @@ const fetchNovels = async () => {
   
   try {
     const params = buildQueryParams()
-    const { data: response } = await $api.novel.getList(params)
+    const response = await useFetch('/api/novels/list', {
+      method: 'GET',
+      query: params
+    })
     
-    if (response.value && response.value.code === 200 && response.value.data) {
-      novels.value = response.value.data.novels || []
+    if (response.data.value && response.data.value.code === 200) {
+      // 将 response.data.value 断言为明确的成功响应类型
+      const successfulResponse = response.data.value as {
+        code: 200;
+        message: string;
+        data: {
+          novels: Novel[];
+          pagination: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+          };
+        };
+      };
+      
+      novels.value = successfulResponse.data.novels || []
       
       // 更新分页信息
-      total.value = response.value.data.pagination.total
-      currentPage.value = response.value.data.pagination.page
-      itemsPerPage.value = response.value.data.pagination.limit
-      totalPages.value = response.value.data.pagination.totalPages
+      const paginationData = successfulResponse.data.pagination;
+      total.value = paginationData.total;
+      currentPage.value = paginationData.page;
+      itemsPerPage.value = paginationData.limit;
+      totalPages.value = paginationData.totalPages;
     } else {
-      error.value = response.value?.message || '获取小说列表失败'
+      error.value = response.data.value?.message || '获取小说列表失败'
       novels.value = []
+      // 重置分页信息
+      total.value = 0;
+      currentPage.value = 1;
+      totalPages.value = 0;
     }
   } catch (err) {
     console.error('获取小说列表失败:', err)
     error.value = '获取小说列表失败，请稍后再试'
     novels.value = []
+     // 重置分页信息
+      total.value = 0;
+      currentPage.value = 1;
+      totalPages.value = 0;
   } finally {
     loading.value = false
   }
 }
 
-// 改变页码
-const changePage = (page: number) => {
-  if (page < 1 || page > totalPages.value) return
-  currentPage.value = page
-  fetchNovels()
-}
-
-// 分页处理函数
+// 改变页码 (现在由 Pagination 组件触发)
 const handlePageChange = (page: number) => {
-  changePage(page)
-}
-
-const handlePrevPage = () => {
-  changePage(currentPage.value - 1)
-}
-
-const handleNextPage = () => {
-  changePage(currentPage.value + 1)
+  if (page >= 1 && page <= totalPages.value && page !== currentPage.value) {
+    currentPage.value = page
+    fetchNovels()
+     // 更新路由
+    const router = useRouter()
+    router.push({ query: { ...useRoute().query, page: page } })
+  }
 }
 
 // 添加到书架
-const addToBookshelf = (novelId: undefined | string) => {
+const addToBookshelf = (novelId: string | undefined) => {
+  if (!novelId) return
   // TODO: 实现添加到书架的逻辑
   console.log('添加到书架:', novelId)
   // 如果有认证系统，可能需要检查用户是否已登录
@@ -381,24 +385,34 @@ const addToBookshelf = (novelId: undefined | string) => {
 }
 
 // 推荐小说
-const recommendNovel = (novelId: undefined | string) => {
+const recommendNovel = (novelId: string | undefined) => {
+  if (!novelId) return
   // TODO: 实现推荐小说的逻辑
   console.log('推荐小说:', novelId)
 }
 
 // 生命周期钩子
 onMounted(() => {
+  // 从路由查询参数初始化页码
+  const routePage = parseInt(useRoute().query.page as string);
+  if (!isNaN(routePage) && routePage > 0) {
+    currentPage.value = routePage;
+  }
   fetchNovels()
 })
 
-// 监听路由变化，重新加载数据
-watch(() => useRoute().query, () => {
-  const page = parseInt(useRoute().query.page as string) || 1
-  if (page !== currentPage.value) {
-    currentPage.value = page
-    fetchNovels()
+// 监听路由变化，但不直接调用 fetchNovels，因为页码变化会通过 handlePageChange 处理
+watch(() => useRoute().query.page, (newPage) => {
+  const pageNumber = parseInt(newPage as string);
+  if (!isNaN(pageNumber) && pageNumber > 0 && pageNumber !== currentPage.value) {
+    // currentPage.value = pageNumber; // 由 handlePageChange 更新
+    // fetchNovels(); // fetchNovels 会在 handlePageChange 中调用
+    // 确保在浏览器前进后退时，如果页码变化，数据能正确加载
+    if (String(currentPage.value) !== newPage) {
+        handlePageChange(pageNumber);
+    }
   }
-}, { immediate: true })
+});
 
 // SEO优化
 useHead({

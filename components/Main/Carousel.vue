@@ -1,7 +1,10 @@
 <template>
-  <div class="flex w-full h-[400px] bg-gray-800 text-white rounded-lg overflow-hidden shadow-lg">
+  <div>
+    <h2 class="text-xl font-bold border-l-4 border-indigo-600 pl-3 mb-4 text-white">口碑佳作</h2>
+  </div>
+  <div class="flex w-[800px] h-[400px] text-white overflow-hidden justify-between">
     <!-- 左侧：轮播区域 -->
-    <div class="w-2/5 h-full p-4">
+    <div class="w-2/5 h-full">
       <ul class="relative w-full h-full">
         <li 
           v-for="(novel, index) in items" 
@@ -21,7 +24,7 @@
     </div>
 
     <!-- 右侧：小说详情区域 -->
-    <div class="w-3/5 h-full flex flex-col justify-center bg-gray-800/50 p-6">
+    <div class="w-[500px] h-full flex flex-col py-7 pl-6">
       <div v-if="novelStore.loadingNovel" class="text-center text-gray-400">
         <p>详细信息加载中...</p>
       </div>
@@ -32,16 +35,9 @@
         <h2 class="text-2xl font-semibold mb-3 text-purple-400 truncate w-full break-words">{{ displayedNovelDetails.title }}</h2>
         <p class="text-sm text-gray-300 mb-1">作者: {{ displayedNovelDetails.author }}</p>
         <p class="text-gray-400 text-xs mt-1 mb-4">更新于: {{ displayedNovelDetails.lastUpdate || '未知' }}</p>
-        <p class="text-gray-300 text-sm mt-4 max-h-32 overflow-y-auto pr-2 text-justify leading-relaxed novel-introduction-scrollbar">
+        <p class="text-gray-300 text-sm mt-4 overflow-y-auto pr-2 text-justify leading-relaxed">
           {{ displayedNovelDetails.introduction || '暂无简介' }}
         </p>
-        <button 
-          v-if="displayedNovelDetails._id && !displayedNovelDetails._id.startsWith('placeholder-')"
-          class="mt-6 bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-2 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
-          @click="navigateToNovelPage(displayedNovelDetails._id)"
-         >
-          阅读详情
-        </button>
       </div>
       <div v-else class="text-center text-gray-500">
         <p>请选择一本小说</p>
@@ -75,11 +71,11 @@ const props = defineProps({
 // 索引0: 主图
 // 索引1-4: 缩略图
 const animations = [
-  { left: '55px', top: '10%', opacity: 1, zIndex: 1, width: '180px', height: '230px' }, // 主图，宽度调整为100%相对于其容器（左侧区域的li）
-  { left: '50px', top: '80%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },   // 缩略图1
-  { left: '100px', top: '80%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },  // 缩略图2
-  { left: '150px', top: '80%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },  // 缩略图3
-  { left: '200px', top: '80%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },  // 缩略图4
+  { left: '55px', top: '8%', opacity: 1, zIndex: 1, width: '180px', height: '230px' }, // 主图，宽度调整为100%相对于其容器（左侧区域的li）
+  { left: '50px', top: '70%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },   // 缩略图1
+  { left: '100px', top: '70%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },  // 缩略图2
+  { left: '150px', top: '70%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },  // 缩略图3
+  { left: '200px', top: '70%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },  // 缩略图4
 ];
 
 const current = ref(0); // 追踪 items.value 中作为主图的索引

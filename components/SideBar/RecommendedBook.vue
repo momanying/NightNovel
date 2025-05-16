@@ -1,6 +1,6 @@
 <template>
   <div class="bg-gray-800 rounded-lg overflow-hidden shadow-md">
-    <h3 class="bg-gray-700 text-white font-medium text-lg py-3 px-4">NightFall今日推荐</h3>
+    <h3 class="bg-gray-700 text-white font-medium text-lg py-3 px-4">今日推荐</h3>
     
     <div class="flex flex-col items-center text-center p-4 space-y-4">
       <div v-if="loading" class="flex items-center justify-center w-32 h-44">

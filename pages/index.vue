@@ -1,17 +1,20 @@
 <template>
-  <div class="gird h-screen w-screen">
+  <div>
     <LayoutsTheHeader />
-    <div class="flex w-full mt-[30px]">
-      <!-- 左侧栏 -->
-      <div class="w-xs shrink-0 pl-7">
-        <LayoutsLeftSidebar />
-      </div>
-
-      <!-- 主容器 -->
-      <div class="flex-auto pl-5">
-        <LayoutsMainContainer :featured-novels="featuredNovels" :top-novels="topNovels"/>
-      </div>
+    <!-- 默认垂直堆叠，md及以上水平排列 -->
+    <div class="mx-[50px] my-[20px]">
+      <div class="flex relative">
+        <div class="md:flex-auto mr-10">
+          <LayoutsMainContainer :featured-novels="featuredNovels"/>
+        </div>
+        <!-- 小屏幕: w-full, 大屏幕: md:w-xs (或具体宽度如 md:w-64), 适当调整边距 -->
+        <div class="w-full md:w-sm md:shrink-0 mb-6 md:mb-0 md:pr-5 lg:pr-7">
+          <LayoutsLeftSidebar  :top-novels="topNovels"/>
+        </div>
+      </div>      <!-- 小屏幕: w-full, 大屏幕: md:flex-auto -->
     </div>
+
+    <LayoutsFooter />
   </div>
 </template>
 
@@ -31,7 +34,7 @@ const { data: topResponse } = await useFetch('/api/novels/top', {
 // 获取最新小说
 const { data: latestResponse } = await useFetch('/api/novels/latest', {
   method: 'GET',
-  query: { limit: 35 },
+  query: { limit: 18 },
   key: 'latest-novels',
   transform: (response) => {
     return response

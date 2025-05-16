@@ -51,12 +51,14 @@ const toggleUserMenu = () => {
   showUserMenu.value = !showUserMenu.value;
 }
 
-const logout = () => {
-  userStore.logout();
-  navigateTo('/auth/login');
+const logout = async () => {
+  await userStore.logout();
   toast.success('退出成功');
-}
 
+  setTimeout(() => {
+    navigateTo('/auth/login');
+  }, 1000);
+}
 // 点击外部区域关闭菜单
 onMounted(() => {
   document.addEventListener('click', (event) => {
@@ -73,4 +75,6 @@ const userMenu = [
     userMethods:['/user/home','/user/collection','/user/comment',logout]
   }
 ]
+
+
 </script>

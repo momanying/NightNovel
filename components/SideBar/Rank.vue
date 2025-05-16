@@ -1,8 +1,8 @@
 <template>
-    <div class="rounded-xl shadow-md w-[350px] overflow-hidden mr-4">
-      <h2 class="text-xl font-bold mb-4 text-white border-l-4 border-indigo-600 pl-3">人气排行</h2>
+    <div class="bg-gray-800 rounded-lg overflow-hidden shadow-md">
+      <h3 class="bg-gray-700 text-white font-medium text-lg py-3 px-4">人气榜</h3>
       
-      <div class="flex justify-center items-end overflow-hidden border-b border-dashed border-gray-600 mb-4">
+      <div class="flex justify-center items-end overflow-hidden border-b border-dashed border-gray-600 mb-2 mt-3">
           <!-- 第二名 -->
           <div class="flex flex-col items-center relative w-1/3 cursor-pointer" @click="openNovelDetail(rankItem(1)?._id || 0)">
               <div class="w-[90px] h-[115px] relative mb-2.5 rounded-lg overflow-hidden shadow-md transition-transform duration-300 hover:-translate-y-1">
@@ -56,10 +56,12 @@
               <li 
                 v-for="(index) in 7" 
                 :key="index"
-                class="truncate text-white text-sm py-0.5 leading-normal text-left relative cursor-pointer transition-all duration-300 hover:translate-x-1 hover:text-yellow-400"
+                class="truncate text-white text-sm py-0.5 leading-normal text-left relative cursor-pointer transition-all duration-300 hover:translate-x-1 hover:text-yellow-400
+                border-b border-dashed border-gray-700"
                 @click="openNovelDetail(rankItem(index+2)?._id || 0)"
               >
                 {{ index + 3 }}、{{ rankItem(index+2)?.title || '加载中' }}
+                <br>
               </li>
           </ul>
       </div>

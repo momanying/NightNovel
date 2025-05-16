@@ -1,5 +1,4 @@
 import { Novel } from '~/server/models'
-import { incrementNovelViews } from '~/server/utils/novel'
 import type { Types } from 'mongoose'
 
 // 定义缓存小说的接口
@@ -126,11 +125,6 @@ export default defineEventHandler(async (_event) => {
       const randomIndex = Math.floor(Math.random() * novelCache.length);
       const novel = novelCache[randomIndex];
       
-      // 异步增加浏览量，不阻塞响应
-      incrementNovelViews(novel._id.toString()).catch(err => {
-        console.error('增加浏览量失败:', err);
-      });
-      
       return {
         code: 200,
         message: '获取随机小说成功',
@@ -167,11 +161,6 @@ export default defineEventHandler(async (_event) => {
         data: null
       }
     }
-    
-    // 异步增加浏览量
-    incrementNovelViews(novel._id.toString()).catch(err => {
-      console.error('增加浏览量失败:', err);
-    });
     
     return {
       code: 200,

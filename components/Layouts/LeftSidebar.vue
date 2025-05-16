@@ -1,20 +1,31 @@
 <template>
-  <div class="flex flex-col space-y-6 rounded-r-lg shadow-lg">
+  <div class="flex flex-col space-y-7 rounded-r-lg shadow-lg relative h-full">
+
     <SideBarRecommendedBook
       class="w-full"
     />
+
+    <SideBarRank :novels="props.topNovels" />
 
     <SideBarPersonList
       class="w-full"
     />
 
-    <SideBarTagCloud class="w-full" />
+    <SideBarNewNovel class="w-full absolute bottom-0" />
   </div>
 </template>
 
   
 <script setup lang="ts">
 // 导入Tag接口，替换本地定义的Tag接口
+import type { Novel } from '~/types/novel/novelinfo';
+
+const props = defineProps({
+  topNovels:{
+    type: Array as () => Novel[],
+    required: true
+  }
+})
 
 interface Category {
   id: number | string
