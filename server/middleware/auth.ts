@@ -1,5 +1,5 @@
 import { verifyToken } from '../api/auth/jwt'
-import { User } from '../models/user'
+import { UserModel } from '../models'
 
 // 定义公开路由列表
 const PUBLIC_ROUTES: string[] = [
@@ -44,7 +44,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const decoded = verifyToken(token)
-    const user = await User.findById(decoded.id)
+    const user = await UserModel.findById(decoded.id)
 
     if (!user) {
       throw createError({

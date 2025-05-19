@@ -1,6 +1,6 @@
 <template>
 <div>
-  <LayoutsTheHeader />
+  <LayoutsHeaderContainer />
   <div class="mx-30 p-2.5">
     <div class="flex gap-5 mt-5">
       <NovelCard v-if="currentNovel" :novelinfo="currentNovel" />

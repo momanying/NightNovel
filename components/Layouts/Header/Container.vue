@@ -10,15 +10,15 @@
     </div>
     
     <!-- 中间菜单区域 -->
-    <HeaderMenu />
+    <LayoutsHeaderMenu />
     
     <!-- 右侧图标区域 -->
     <div class="flex ml-auto items-center relative">
       <div class="flex items-center">
         
-          <HeaderSearch class="flex-1 mr-5"/>
+          <LayoutsHeaderSearch class="flex-1 mr-5"/>
 
-          <HeaderUser /> 
+          <LayoutsHeaderUser /> 
 
       </div>
     </div>

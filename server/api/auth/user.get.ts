@@ -1,4 +1,4 @@
-import { User } from '~/server/models/user'
+import { UserModel } from '~/server/models'
 import { verifyToken } from './jwt'
 
 export default defineEventHandler(async (event) => {
@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
     const token = authorization.replace('Bearer ', '')
     const decoded = verifyToken(token)
     
-    const user = await User.findById(decoded.id).select('-password')
+    const user = await UserModel.findById(decoded.id).select('-password')
     if (!user) {
       return {
         code: 404,

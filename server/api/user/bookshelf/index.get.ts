@@ -1,5 +1,5 @@
 import { verifyToken } from '~/server/api/auth/jwt'
-import { Bookmark, Novel } from '~/server/models'
+import { BookmarkModel, NovelModel } from '~/server/models'
 import type { Types } from 'mongoose'
 import type { IBookmarkData } from '~/types/novel/bookmark'
 
@@ -46,11 +46,11 @@ export default defineEventHandler(async (event) => {
     }
 
     // 获取用户书架中的小说，按更新时间降序排序
-    const bookmarks = await Bookmark.find({ userId: decoded.id })
+    const bookmarks = await BookmarkModel.find({ userId: decoded.id })
       .sort({ updatedAt: -1 })
       .populate({
         path: 'novelId',
-        model: Novel,
+        model: NovelModel,
         select: '_id title author cover_url'
       })
       .lean()

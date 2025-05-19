@@ -24,33 +24,18 @@
     </div>
 
     <!-- 右侧：小说详情区域 -->
-    <div class="w-[500px] h-full flex flex-col py-7 pl-6">
-      <div v-if="novelStore.loadingNovel" class="text-center text-gray-400">
-        <p>详细信息加载中...</p>
-      </div>
-      <div v-else-if="novelStore.novelError" class="text-center text-red-400">
-        <p>加载详情失败: {{ novelStore.novelError }}</p>
-      </div>
-      <div v-else-if="displayedNovelDetails">
-        <h2 class="text-2xl font-semibold mb-3 text-purple-400 truncate w-full break-words">{{ displayedNovelDetails.title }}</h2>
-        <p class="text-sm text-gray-300 mb-1">作者: {{ displayedNovelDetails.author }}</p>
-        <p class="text-gray-400 text-xs mt-1 mb-4">更新于: {{ displayedNovelDetails.lastUpdate || '未知' }}</p>
-        <p class="text-gray-300 text-sm mt-4 overflow-y-auto pr-2 text-justify leading-relaxed">
-          {{ displayedNovelDetails.introduction || '暂无简介' }}
+    <div  v-if="items.length > 0 && items[current]" class="w-[500px] h-full flex flex-col py-7 pl-6">
+        <h2 class="text-2xl font-semibold mb-3 text-purple-400 truncate w-full break-words">{{ items[current].title }}</h2>
+        <p class="text-sm text-gray-300 mb-1">作者: {{ items[current].author }}</p>
+        <p class="text-gray-300 text-sm mt-4 pr-2 text-justify leading-relaxed" style="max-height: 160px;"> 
+          {{ items[current].introduction || '暂无简介' }}
         </p>
-      </div>
-      <div v-else class="text-center text-gray-500">
-        <p>请选择一本小说</p>
-      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { Novel } from '~/types/novel/novelinfo';
-import { useNovelStore } from '~/stores/novel';
-
-const novelStore = useNovelStore();
 
 const props = defineProps({
   novels: {
@@ -81,7 +66,7 @@ const animations = [
 const current = ref(0); // 追踪 items.value 中作为主图的索引
 let timer: NodeJS.Timeout | null = null;
 const items = computed<Novel[]>(() => {
-  const novelItems = props.novels || [];
+  const novelItems = Array.isArray(props.novels) ? props.novels : [];
   const result = [...novelItems].slice(0, 5); // Ensure we don't take more than 5 initially
   
   // 如果不足5个，使用占位符填充
@@ -116,33 +101,6 @@ const getStyle = (itemIndex: number) => {
 //   const relativePosition = (itemIndex - current.value + items.value.length) % items.value.length;
 //   return relativePosition === 0;
 // }
-
-const currentNovelFromItems = computed(() => {
-  if (items.value.length > 0 && items.value[current.value]) {
-    return items.value[current.value];
-  }
-  return null;
-});
-
-watch(currentNovelFromItems, async (activeNovel) => {
-  if (activeNovel && activeNovel._id && !activeNovel._id.startsWith('placeholder-')) {
-    // Fetch full details if not already fetched for this ID or if cache is invalid
-    // The store's fetchNovelData itself handles caching logic.
-    await novelStore.fetchNovelData(activeNovel._id);
-  }
-}, { immediate: true });
-
-const displayedNovelDetails = computed(() => {
-  const activeNovelInCarousel = currentNovelFromItems.value;
-  if (!activeNovelInCarousel) return null;
-
-  // If store has the current novel and its ID matches the active one in carousel, prefer store's version
-  if (novelStore.currentNovel && novelStore.currentNovel._id === activeNovelInCarousel._id) {
-    return novelStore.currentNovel;
-  }
-  // Otherwise, fallback to the novel data from props (items)
-  return activeNovelInCarousel;
-});
 
 const next = () => {
   if (items.value.length > 0) {

@@ -1,5 +1,5 @@
 import { verifyToken } from '~/server/api/auth/jwt'
-import { Bookmark, Novel } from '~/server/models'
+import { BookmarkModel, NovelModel } from '~/server/models'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // 检查小说是否存在
-    const novel = await Novel.findById(novelId)
+    const novel = await NovelModel.findById(novelId)
     if (!novel) {
       return {
         code: 404,
@@ -48,7 +48,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // 尝试查找现有书签
-    let bookmark = await Bookmark.findOne({ 
+    let bookmark = await BookmarkModel.findOne({ 
       userId: decoded.id,
       novelId
     })
@@ -59,7 +59,7 @@ export default defineEventHandler(async (event) => {
       await bookmark.save()
     } else {
       // 创建新书签
-      bookmark = await Bookmark.create({
+      bookmark = await BookmarkModel.create({
         userId: decoded.id,
         novelId,
         chapterId: chapterId || null

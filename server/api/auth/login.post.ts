@@ -1,4 +1,4 @@
-import { User } from '~/server/models/user'
+import { UserModel } from '~/server/models'
 import { generateToken } from './jwt'
 import { rateLimit } from '~/server/middleware/rateLimit'
 
@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
     const { username, password } = await readBody(event)
 
     // 查找用户
-    const user = await User.findOne({ username })
+    const user = await UserModel.findOne({ username })
     if (!user) {
       return {
         code: 400,

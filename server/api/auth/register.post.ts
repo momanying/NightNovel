@@ -1,4 +1,4 @@
-import { User } from "~/server/models/user"
+import { UserModel } from "~/server/models"
 import { generateToken } from "./jwt"
 import { validateInput } from '~/server/utils/validation'
 import { createError } from 'h3'
@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
         const { username, email, password } = await readBody(event)
 
         // 验证用户名和邮箱是否已存在
-        const existingUser = await User.findOne({
+        const existingUser = await UserModel.findOne({
             $or: [
                 { username: { $regex: new RegExp(`^${username}$`, 'i') } },
                 { email: { $regex: new RegExp(`^${email}$`, 'i') } }
@@ -57,7 +57,7 @@ export default defineEventHandler(async (event) => {
         }
 
         // 创建新用户
-        const user = new User({
+        const user = new UserModel({
             username,
             email,
             password,

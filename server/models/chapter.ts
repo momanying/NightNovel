@@ -55,4 +55,4 @@ ChapterSchema.methods.getPrevAndNext = async function() {
   return { prevChapter, nextChapter }
 }
 
-export const Chapter = mongoose.model('Chapter', ChapterSchema) 
+export const ChapterModel = mongoose.model('Chapter', ChapterSchema) 

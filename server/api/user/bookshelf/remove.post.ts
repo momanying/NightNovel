@@ -1,5 +1,5 @@
 import { verifyToken } from '~/server/api/auth/jwt'
-import { Bookmark } from '~/server/models'
+import { BookmarkModel } from '~/server/models'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // 查找并确认书签属于当前用户
-    const bookmark = await Bookmark.findOne({ 
+    const bookmark = await BookmarkModel.findOne({ 
       _id: bookmarkId, 
       userId: decoded.id 
     })
@@ -52,7 +52,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // 删除书签
-    await Bookmark.deleteOne({ _id: bookmarkId })
+    await BookmarkModel.deleteOne({ _id: bookmarkId })
 
     return {
       code: 200,

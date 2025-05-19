@@ -37,4 +37,4 @@ const readingHistorySchema = new mongoose.Schema<IReadingHistory>({
 readingHistorySchema.index({ userId: 1, novelId: 1, chapterId: 1 }, { unique: true })
 readingHistorySchema.index({ userId: 1, readAt: -1 })
 
-export const ReadingHistory = mongoose.model<IReadingHistory>('ReadingHistory', readingHistorySchema) 
+export const ReadingHistoryModel = mongoose.model<IReadingHistory>('ReadingHistory', readingHistorySchema) 

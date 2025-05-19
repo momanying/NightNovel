@@ -1,4 +1,4 @@
-import { Novel } from '~/server/models'
+import { NovelModel } from '~/server/models'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -29,14 +29,14 @@ export default defineEventHandler(async (event) => {
     const skip = (page - 1) * limit
     
     // 查询小说列表
-    const novels = await Novel.find(filter)
+    const novels = await NovelModel.find(filter)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .select('-volumes')
     
     // 获取总数
-    const total = await Novel.countDocuments(filter)
+    const total = await NovelModel.countDocuments(filter)
     
     return {
       code: 200,

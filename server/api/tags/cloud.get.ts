@@ -1,22 +1,22 @@
-import { Novel } from '~/server/models'
+import { NovelModel } from '~/server/models'
 
 export default defineEventHandler(async (event) => {
   event.context.auth = false
 
   try {
     // 从数据库获取所有小说的标签
-    const novels = await Novel.find({}, 'tags')
+    const novels = await NovelModel.find({}, 'tags')
     
     // 解析所有标签并计数
     const tagCounts: Record<string, number> = {}
     
-    novels.forEach(novel => {
+    novels.forEach((novel) => {
       if (!novel.tags) return
       
       // 将标签字符串分割为数组，并计数
       const tags = novel.tags.split(/\s+/).filter(Boolean)
       
-      tags.forEach(tag => {
+      tags.forEach((tag: string) => {
         if (tag) {
           tagCounts[tag] = (tagCounts[tag] || 0) + 1
         }

@@ -1,6 +1,6 @@
 <template>
     <div>
-    <LayoutsTheHeader />
+    <LayoutsHeaderContainer />
     
     <!-- 筛选框 -->
     <div class="bg-gray-900 px-4 py-4 mx-10">
@@ -194,7 +194,7 @@
 
                             <!-- 操作按钮 -->
                             <div class="flex gap-1 text-xs">
-                                <NuxtLink :to="`/novels/${novel._id}/read`" class="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                <NuxtLink :to="`/novels/${novel._id}`" class="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
                                     阅读
                                 </NuxtLink>
                                 <button class="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600" @click="addToBookshelf(novel._id)">

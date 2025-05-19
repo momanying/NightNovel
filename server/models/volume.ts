@@ -18,4 +18,4 @@ const VolumeSchema = new mongoose.Schema({
 VolumeSchema.index({ novelId: 1 })
 VolumeSchema.index({ novelId: 1, order: 1 })
 
-export const Volume = mongoose.model('Volume', VolumeSchema) 
+export const VolumeModel = mongoose.model('Volume', VolumeSchema) 

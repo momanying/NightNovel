@@ -31,4 +31,4 @@ const bookmarkSchema = new mongoose.Schema<IBookmark>({
 // 创建复合索引
 bookmarkSchema.index({ userId: 1, novelId: 1 }, { unique: true })
 
-export const Bookmark = mongoose.model<IBookmark>('Bookmark', bookmarkSchema) 
+export const BookmarkModel = mongoose.model<IBookmark>('Bookmark', bookmarkSchema) 

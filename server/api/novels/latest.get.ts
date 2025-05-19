@@ -1,4 +1,4 @@
-import { Novel } from '~/server/models'
+import { NovelModel } from '~/server/models'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
     const limit = parseInt(query.limit as string) || 10
     
     // 查询最新小说（基于 lastUpdate 字段）
-    const novels = await Novel.find()
+    const novels = await NovelModel.find()
       .sort({ lastUpdate: -1 })
       .limit(limit)
       .select('title author cover_url lastUpdate')
