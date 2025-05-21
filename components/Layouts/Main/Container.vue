@@ -42,19 +42,19 @@ const { data: bestResponse } = await useFetch('/api/novels/best', {
 
 const bestNovels = computed<Novel[]>(() => {
   if (bestResponse.value && 'data' in bestResponse.value && bestResponse.value.code === 200) {
-    return bestResponse.value.data as unknown as Novel[]
+    return bestResponse.value.data as Novel[]
   }
   return []
 });
 
-const { data: finishResponse } = await useFetch<ApiResponse<Novel[]>>('api/novels/finish',{
+const { data: finishResponse } = await useFetch<ApiResponse<Novel[]>>('/api/novels/finish',{
   method: 'GET',
   query: { limit: 12 }
 })
 
 const finishNovels = computed<Novel[]>(() => {
   if (finishResponse.value && 'data' in finishResponse.value && finishResponse.value.code === 200) {
-    return finishResponse.value.data as unknown as Novel[]
+    return finishResponse.value.data as Novel[]
   }
   return []
 })

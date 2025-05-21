@@ -13,10 +13,10 @@
             <p class="mb-1"><span class="font-semibold">作者：</span>{{ novel?.author || '未知' }}</p>
             <p class="mb-1"><span class="font-semibold">分类：</span>{{ novel?.category || '未分类' }}</p>
             <p class="mb-1"><span class="font-semibold">状态：</span>{{ novel?.status || '连载中' }}</p>
-            <p class="mb-1">
-                <span class="font-semibold">评分：</span>
-                <NovelCardEvaluation class="inline-block align-baseline" :rating="novel?.rating || 0" />
-            </p>
+            <div class="flex items-center mb-1">
+                <span class="font-semibold mr-1">评分：</span>
+                <NovelCardEvaluation :rating="novel?.rating || 0" />
+            </div>
             <p class="mb-1"><span class="font-semibold">阅读量：</span>{{ novel?.views || 0 }}</p>
             <p class="mb-1"><span class="font-semibold">更新时间：</span>{{ novel?.lastUpdate || '暂无更新时间' }}</p>
             <div class="mt-2">

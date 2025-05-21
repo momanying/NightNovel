@@ -5,7 +5,7 @@ import type { Novel } from '~/types/novel/novelinfo';
 // 辅助函数：获取已完结小说数据
 async function getFinishedNovels(): Promise<Novel[]> {
     const rawNovels = await NovelModel.find({ status: '已完结' }) // 查询已完结的小说
-      .select('_id title author cover_url status introduction') // 选择需要的字段，增加了简介
+      .select('_id title author cover_url status') // 选择需要的字段，增加了简介
       .lean(); 
   
     // 将原始数据映射到 Novel 结构
@@ -14,8 +14,7 @@ async function getFinishedNovels(): Promise<Novel[]> {
       title: novel.title,
       author: novel.author,
       cover_url: novel.cover_url,
-      status: novel.status || '连载中',
-      introduction: novel.introduction || '', // 确保为字符串
+      status: novel.status || '连载中'
     }));
     return finishedNovels;
 }
