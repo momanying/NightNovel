@@ -84,7 +84,8 @@ async function handleLogin() {
         id: data.data.user.id,
         username: data.data.user.username,
         avatar: data.data.user.avatar,
-        token: data.data.token
+        token: data.data.token,
+        email: data.data.email
       })
       toast.success(data.message)
       await navigateTo('/')

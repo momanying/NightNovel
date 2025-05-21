@@ -1,28 +1,29 @@
 <template>
 <div class="w-full">
-    <!-- 左侧内容区域，包含标题和轮播图 -->
-     <div class="flex">
-        <div class="flex flex-1 overflow-hidden flex-col">
-          <!-- 轮播图区域 -->
-          <div class="bg-sky-500/10 rounded-lg shadow-lg p-5">
-            <LayoutsMainCarousel :novels="bestNovels" />
-          </div>
+
+    <div class="flex">
+      <div class="flex flex-1 overflow-hidden flex-col">
+        <div class="bg-sky-500/10 rounded-lg shadow-lg p-5">
+          <LayoutsMainCarousel :novels="bestNovels" />
         </div>
-     </div>
-    <!-- 更新小说区域 -->
-     <div class="mt-10">
-      <LayoutsMainUpdateNovel :novels="featuredNovels" />
-     </div>
+      </div>
+    </div>
+
+    <LayoutsMainUpdateNovel :novels="featuredNovels" />
+
+    <LayoutsMainFinishNovel :novels="finishNovels" />
+
 </div>
 </template>
 
 <script setup lang="ts">
 import type { Novel } from '~/types/novel/novelinfo';
+import type { ApiResponse } from '~/types/apiresponse';
 
 // 获取最新小说
 const { data: latestResponse } = await useFetch('/api/novels/latest', {
   method: 'GET',
-  query: { limit: 18 }
+  query: { limit: 12 }
 });
 
 
@@ -36,7 +37,7 @@ const featuredNovels = computed<Novel[]>(() => {
 // 获取推荐小说
 const { data: bestResponse } = await useFetch('/api/novels/best', {
   method: 'GET',
-  query: { limit: 18 }
+  query: { limit: 12 }
 });
 
 const bestNovels = computed<Novel[]>(() => {
@@ -45,4 +46,16 @@ const bestNovels = computed<Novel[]>(() => {
   }
   return []
 });
+
+const { data: finishResponse } = await useFetch<ApiResponse<Novel[]>>('api/novels/finish',{
+  method: 'GET',
+  query: { limit: 12 }
+})
+
+const finishNovels = computed<Novel[]>(() => {
+  if (finishResponse.value && 'data' in finishResponse.value && finishResponse.value.code === 200) {
+    return finishResponse.value.data as unknown as Novel[]
+  }
+  return []
+})
 </script>

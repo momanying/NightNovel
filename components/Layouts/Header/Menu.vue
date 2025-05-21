@@ -28,7 +28,6 @@
               <NuxtLink
                 v-for="(subItem, subIndex) in item.subItems"
                 :key="subIndex"
-                :to="item.links[subIndex]"
                 class="block p-2.5 leading-7 text-gray-600 no-underline hover:bg-gray-100"
               >
                 {{ subItem }}
@@ -84,22 +83,18 @@ const menuItems = [
   {
     title: '热门轻小说',
     subItems: ['周排行榜', '月排行榜', '总排行榜', '热门新作', '人气作家'],
-    links: ['/ranking/weekly', '/ranking/monthly', '/ranking/alltime', '/ranking/new', '/ranking/authors']
   },
   {
     title: '动漫化作品',
     subItems: ['TV动画化', 'OVA动画化', '剧场版', '真人电影', '游戏改编'],
-    links: ['/anime/tv', '/anime/ova', '/anime/movie', '/anime/live', '/anime/game']
   },
   {
     title: '今日更新',
     subItems: ['最新上架', '今日更新', '昨日更新', '本周更新', '随机推荐'],
-    links: ['/updates/latest', '/updates/today', '/updates/yesterday', '/updates/thisweek', '/updates/random']
   },
   {
     title: '已完结作品',
     subItems: ['短篇合集', '中篇小说', '长篇小说', '系列作品', '经典重温'],
-    links: ['/completed/short', '/completed/medium', '/completed/long', '/completed/series', '/completed/classic']
   },
 ];
 </script>

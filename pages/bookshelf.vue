@@ -25,7 +25,6 @@
               :src="bookmark.novel.cover_url" 
               :alt="bookmark.novel.title"
               class="w-full h-full object-cover"
-              @error="handleImageError"
             >
           </div>
           <div class="ml-4 flex flex-col flex-grow">
@@ -170,12 +169,6 @@ const continueReading = (bookmark: Bookmark) => {
   } else {
     router.push(`/novels/${bookmark.novelId}`);
   }
-};
-
-// 处理图片加载错误
-const handleImageError = (e: Event) => {
-  const target = e.target as HTMLImageElement;
-  target.src = '/images/default-cover.jpg';
 };
 
 // 格式化日期

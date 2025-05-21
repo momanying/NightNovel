@@ -14,7 +14,7 @@
             class="flex items-center overflow-hidden rounded-full cursor-pointer"
             @click="toggleUserMenu"
         >
-            <img class="flex-1 overflow-hidden rounded-full w-10 h-10 mr-2" src="http://54.255.84.100/i/2025/04/22/68073a35193b6.jpg" alt="avatar">
+            <img class="flex-1 overflow-hidden rounded-full w-10 h-10 mr-2" :src="userdata.avatar" alt="avatar">
             <span class="text-white no-underline hover:text-gray-100">{{ userdata.username }}</span>
         </div>
         <div 
@@ -22,12 +22,12 @@
             class="w-[110px] absolute right-0 top-full mt-1 bg-white border border-gray-200 shadow-md z-50"
         >
             <NuxtLink
-                v-for="(item, index) in userMenu[0].userItems"
+                v-for="(item, index) in userMenuItems"
                 :key="index"
                 class="block p-2.5 leading-7 text-gray-600 no-underline hover:bg-gray-100"
-                @click="userMenu[0].userMethods[index]"
+                @click="item.action"
                 >
-                {{ item }}
+                {{ item.label }}
             </NuxtLink>
         </div>
     </div>
@@ -69,12 +69,10 @@ onMounted(() => {
   });
 });
 
-const userMenu = [
-  {
-    userItems:['个人主页', '我的收藏', '我的评论', '退出登录'],
-    userMethods:['/user/home','/user/collection','/user/comment',logout]
-  }
-]
-
-
+const userMenuItems = [
+  { label: '个人主页', action: () => navigateTo('/user/info') },
+  { label: '我的收藏', action: () => navigateTo('/user/collection') },
+  { label: '我的评论', action: () => navigateTo('/user/comment') },
+  { label: '退出登录', action: logout },
+];
 </script>

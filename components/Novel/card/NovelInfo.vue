@@ -7,7 +7,6 @@
               :src="novel?.cover_url" 
               :alt="novel?.title" 
               class="h-full w-full rounded-md shadow-md"
-              @error="handleImageError"
             >
         </div>
         <div class="flex-1 relative">
@@ -66,13 +65,6 @@ const tagLoading = ref(false)
 const tagError = ref<string | null>(null)
 
 const isCollected = ref(false)
-
-// 处理图片加载错误
-const handleImageError = (e: Event) => {
-  if (e.target instanceof HTMLImageElement) {
-    e.target.src = '/images/default-cover.jpg' // 替换为默认封面图片路径
-  }
-}
 
 // 导航到章节列表页面
 const navigateToChapters = () => {

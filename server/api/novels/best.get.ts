@@ -7,7 +7,7 @@ async function getBestNovels(limit: number): Promise<Novel[]> {
   const rawNovels = await NovelModel.find()
     .sort({ rating: -1 }) // 按评分降序排序
     .limit(limit)
-    .select('_id title author cover_url introduction rating') // 选择需要的字段
+    .select('_id title author cover_url tags introduction rating') // 选择需要的字段
     .lean(); // 使用 lean() 获取普通JS对象
 
   // 将原始数据映射到 Novel 结构
@@ -18,6 +18,7 @@ async function getBestNovels(limit: number): Promise<Novel[]> {
     cover_url: novel.cover_url,
     introduction: novel.introduction || '', // 确保为字符串
     rating: novel.rating || 0,
+    tags: novel.tags || '',
   }));
   return bestNovels;
 }

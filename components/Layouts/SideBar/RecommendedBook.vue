@@ -6,13 +6,15 @@
       <div v-if="loading" class="flex items-center justify-center w-32 h-44">
         <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500" />
       </div>
-      <img 
+      <NuxtImg 
         v-else-if="recommendedNovel"
         :src="coverImage" 
-        :alt="recommendedNovel.title" 
+        :alt="recommendedNovel.title || '推荐小说封面'" 
         class="w-32 h-44 object-cover rounded-md shadow-md" 
-        @error="handleImageError"
-      >
+        format="webp"
+        sizes="128px"
+        loading="eager"
+      />
       <div v-else class="w-32 h-44 flex items-center justify-center bg-gray-700 rounded-md">
         <p class="text-white text-sm">无封面</p>
       </div>
@@ -96,11 +98,6 @@ const navigateToNovel = () => {
   if (newWindow) {
     newWindow.location.href = path;
   }
-};
-
-// 处理图片加载错误
-const handleImageError = (e: Event) => {
-  (e.target as HTMLImageElement).src = 'https://placehold.co/128x176/222/444?text=No+Image';
 };
 
 // 按钮样式

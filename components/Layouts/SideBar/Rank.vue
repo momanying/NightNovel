@@ -6,12 +6,14 @@
           <!-- 第二名 -->
           <div class="flex flex-col items-center relative w-1/3 cursor-pointer" @click="openNovelDetail(rankItem(1)?._id || 0)">
               <div class="w-[90px] h-[115px] relative mb-2.5 rounded-lg overflow-hidden shadow-md transition-transform duration-300 hover:-translate-y-1">
-                  <img 
+                  <NuxtImg 
                     class="w-full h-full object-cover"
                     :src="rankItem(1)?.cover_url || placeholderImage" 
                     :alt="rankItem(1)?.title || '加载中'"
-                    @error="handleImageError"
-                  >
+                    format="webp"
+                    sizes="90px"
+                    loading="eager"
+                  />
                   <div class="truncate absolute bottom-0 left-0 right-0 p-2.5 text-xs bg-gradient-to-t from-black/80 to-transparent text-white">
                       <div>{{ rankItem(1)?.title || '加载中' }}</div>
                   </div>
@@ -21,12 +23,14 @@
           <!-- 第一名 -->
           <div class="flex flex-col items-center relative w-1/3 cursor-pointer" @click="openNovelDetail(rankItem(0)?._id || 0)">
               <div class="w-[90px] h-[115px] relative mb-2.5 rounded-lg overflow-hidden shadow-md transition-transform duration-300 hover:-translate-y-1">
-                  <img
+                  <NuxtImg
                     class="w-full h-full object-cover" 
                     :src="rankItem(0)?.cover_url || placeholderImage" 
                     :alt="rankItem(0)?.title || '加载中'" 
-                    @error="handleImageError"
-                  >
+                    format="webp"
+                    sizes="90px"
+                    loading="eager"
+                  />
                   <div class="truncate absolute bottom-0 left-0 right-0 p-2.5 text-xs bg-gradient-to-t from-black/80 to-transparent text-white">
                       <div>{{ rankItem(0)?.title || '加载中' }}</div>
                   </div>
@@ -36,12 +40,14 @@
           <!-- 第三名 -->
           <div class="flex flex-col items-center relative w-1/3 cursor-pointer" @click="openNovelDetail(rankItem(2)?._id || 0)">
               <div class="w-[90px] h-[115px] relative mb-2.5 rounded-lg overflow-hidden shadow-md transition-transform duration-300 hover:-translate-y-1">
-                  <img
+                  <NuxtImg
                     class="w-full h-full object-cover" 
                     :src="rankItem(2)?.cover_url || placeholderImage" 
                     :alt="rankItem(2)?.title || '加载中'" 
-                    @error="handleImageError"
-                  >
+                    format="webp"
+                    sizes="90px"
+                    loading="eager"
+                  />
                   <div class="truncate absolute bottom-0 left-0 right-0 p-2.5 text-xs bg-gradient-to-t from-black/80 to-transparent text-white">
                       <div>{{ rankItem(2)?.title || '加载中' }}</div>
                   </div>
@@ -113,9 +119,4 @@
       }
   };
   
-  const handleImageError = (e: Event) => {
-      if (e.target instanceof HTMLImageElement) {
-      e.target.src = placeholderImage;
-      }
-  };
   </script>

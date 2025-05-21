@@ -3,7 +3,7 @@
 
     <LayoutsHeaderContainer />
 
-    <div class="mx-[50px] my-[20px]">
+    <div class="mx-[60px] my-[20px]">
       <div class="flex relative">
         <div class="md:flex-auto mr-10">
           <LayoutsMainContainer />

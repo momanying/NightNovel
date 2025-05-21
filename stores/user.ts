@@ -8,6 +8,7 @@ export const useUserStore = defineStore('NightUser', {
     username: '',
     avatar: '',
     token: '',
+    email: ''
   }),
   getters: {
     isLoggedIn: (state) => !!state.id && !!state.token,
@@ -18,12 +19,14 @@ export const useUserStore = defineStore('NightUser', {
       this.username = user.username
       this.avatar = user.avatar
       this.token = user.token
+      this.email = user.email
     },
     logout() {
       this.id = ''
       this.username = ''
       this.avatar = ''
       this.token = ''
+      this.email = ''
     }
   }
 })
