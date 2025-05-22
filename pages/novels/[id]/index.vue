@@ -3,20 +3,26 @@
 
   <LayoutsHeaderContainer />
 
-  <div class="mx-30 p-2.5">
+  <div class="mx-40 p-2.5 mt-5">
     
-    <div class="flex gap-5 mt-5">
 
-      <NovelCard v-if="currentNovel" :novelinfo="currentNovel" />
+    <NovelCard v-if="currentNovel" :novelinfo="currentNovel" />
 
-    </div>
 
-    <div class="flex mt-5 justify-between">
+    <div class="mt-5 flex justify-between">
+
+      <div class="max-w-3xl max-h-full">
       
-        <NovelSameNovel />
+        <NovelCardPopularComment />
     
       
         <NovelSimilarNovel />
+
+      </div>
+
+      <div class="ml-10">
+        <NovelSimilarFinishNovel />
+      </div>
       
     </div>
     
