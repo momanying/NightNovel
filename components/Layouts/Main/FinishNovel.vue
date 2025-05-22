@@ -29,7 +29,7 @@
 <script setup lang="ts">
 import type { Novel } from '~/types/novel/novelinfo';
 
-const props = defineProps({
+defineProps({
     novels: {
         type: Array as () => Novel[],
         required: true,
@@ -45,6 +45,4 @@ const navigateToNovel = (id: number | string) => {
     newWindow.location.href = path;
   }
 };
-
-console.log(props.novels)
 </script>

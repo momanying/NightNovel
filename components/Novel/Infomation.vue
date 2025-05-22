@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="w-full">
         <div class="flex items-center">
             <div class="flex-shrink-0">
                 <div class="p-2 bg-white rounded-xl shadow-lg inline-block">
@@ -42,7 +42,9 @@
 import type { Novel } from '~/types/novel/novelinfo'
 
 const props = defineProps<{
-    novel: Novel
+  novel: Novel,
+  autoplay?: boolean,
+  interval?: number
 }>()
 
 const tagList = computed(() => {

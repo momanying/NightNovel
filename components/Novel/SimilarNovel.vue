@@ -1,9 +1,9 @@
 <template>
-    <div class="w-full mt-5">
+    <div class="w-full">
         <h2 class="title-h2">同类推荐</h2>
-        <div class="grid grid-cols-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+        <div class="grid grid-cols-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
             <div v-for="novel in novels" :key="novel.id" class="flex flex-col cursor-pointer transition-transform duration-300 hover:-translate-y-1">
-                <img :src="novel.img" alt="小说封面" class="object-cover rounded-md mb-2">
+                <img :src="novel.img" alt="小说封面" class="object-cover rounded-md">
                 <h3 class="text-sm font-medium text-white mt-1">{{ novel.title }}</h3>
                 <p class="text-xs text-gray-400">{{ novel.author }}</p>
             </div>

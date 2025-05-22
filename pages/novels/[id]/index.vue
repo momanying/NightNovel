@@ -6,27 +6,28 @@
   <div class="mx-40 p-2.5 mt-5">
     
 
-    <NovelCard v-if="currentNovel" :novelinfo="currentNovel" />
+    <NovelInfomation v-if="currentNovel" :novel="currentNovel" />
 
 
-    <div class="mt-5 flex justify-between">
+    <div class="mt-5 flex">
 
-      <div class="max-w-3xl max-h-full">
-      
-        <NovelCardPopularComment />
-    
-      
+      <div class="max-h-full">
+            
         <NovelSimilarNovel />
+
+        <NovelSimilarFinishNovel />
 
       </div>
 
-      <div class="ml-10">
-        <NovelSimilarFinishNovel />
+      <div class="ml-10 flex-grow max-w-[500px]">
+
+        <NovelPopularComment />
+        
       </div>
       
     </div>
     
-        <NovelComment />
+    <NovelComment />
 
   </div> 
 </div>

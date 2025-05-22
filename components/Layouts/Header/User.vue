@@ -1,32 +1,30 @@
 <template>
-    <div v-if="!userdata.token">
-        <div class="flex items-center">
-          <NuxtLink to="/auth/login">
-            <button class="text-white no-underline hover:text-gray-100">登录</button>
-          </NuxtLink>
-          <NuxtLink to="/auth/register" class="ml-5">
-            <button class="text-white no-underline hover:text-gray-100">注册</button>
-          </NuxtLink>
-        </div>
-        </div>
-        <div v-else class="flex items-center relative">
+    <div v-if="!userdata.token" class="flex items-center">
+        <NuxtLink to="/auth/login">
+            <button class="text-sm md:text-base text-white no-underline hover:text-gray-100">登录</button>
+        </NuxtLink>
+        <NuxtLink to="/auth/register" class="ml-2 md:ml-5">
+            <button class="text-sm md:text-base text-white no-underline hover:text-gray-100">注册</button>
+        </NuxtLink>
+    </div>
+    <div v-else class="flex items-center relative">
         <div
             class="flex items-center overflow-hidden rounded-full cursor-pointer"
             @click="toggleUserMenu"
         >
-            <img class="flex-1 overflow-hidden rounded-full w-10 h-10 mr-2" :src="userdata.avatar" alt="avatar">
-            <span class="text-white no-underline hover:text-gray-100">{{ userdata.username }}</span>
+            <img class="flex-shrink-0 overflow-hidden rounded-full w-8 h-8 md:w-10 md:h-10 mr-1 md:mr-2" :src="userdata.avatar" alt="avatar">
+            <span class="text-sm md:text-base text-white no-underline hover:text-gray-100 hidden sm:inline">{{ userdata.username }}</span>
         </div>
         <div 
             v-show="showUserMenu" 
-            class="w-[110px] absolute right-0 top-full mt-1 bg-white border border-gray-200 shadow-md z-50"
+            class="w-36 md:w-[110px] absolute right-0 top-full mt-1 bg-white border border-gray-200 shadow-md z-50"
         >
             <NuxtLink
                 v-for="(item, index) in userMenuItems"
                 :key="index"
-                class="block p-2.5 leading-7 text-gray-600 no-underline hover:bg-gray-100"
+                class="block p-2 md:p-2.5 leading-7 text-xs md:text-sm text-gray-600 no-underline hover:bg-gray-100"
                 @click="item.action"
-                >
+            >
                 {{ item.label }}
             </NuxtLink>
         </div>
