@@ -130,17 +130,21 @@ const handlePostReply = async (payload: { parentCommentId: string, content: stri
   }
 };
 
-const handleLikeComment = async (comment: Comment) => {
-  console.log('Liking comment:', comment._id);
-  try {
-    const response = await commentApi.likeComment(comment._id);
-    const updatedComment = response.data.comment;
-    const index = comments.value.findIndex(c => c._id === updatedComment._id);
-    if (index !== -1) {
-      comments.value[index].likes = updatedComment.likes;
-    }
-  } catch (error) {
-    console.error("Failed to like comment:", error);
+const handleLikeComment = async (commentOrId: Comment | string) => {
+  // Explicitly extract the commentId string
+  const idToUse: string = typeof commentOrId === 'string' ? commentOrId : commentOrId._id;
+
+  const response = await $fetch<{ data: { comment: Comment } }>(`/api/comments/${idToUse}/like`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${userStore.token}` 
+      }
+  });
+  
+  const updatedComment = response.data.comment;
+  const index = comments.value.findIndex(c => c._id === updatedComment._id);
+  if (index !== -1) {
+    comments.value.splice(index, 1, updatedComment);
   }
 };
 
