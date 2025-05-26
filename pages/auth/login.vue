@@ -49,7 +49,7 @@
     
             <p class="mt-10 text-center text-sm text-white">
             还没有账号？
-            <NuxtLink to="/register" class="font-semibold text-indigo-600 hover:text-indigo-500">立即注册</NuxtLink>
+            <NuxtLink to="/auth/register" class="font-semibold text-indigo-600 hover:text-indigo-500">立即注册</NuxtLink>
             </p>
         </div>
         </div>

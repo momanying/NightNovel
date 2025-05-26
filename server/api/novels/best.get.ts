@@ -33,7 +33,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<Novel[]>> =
       return {
         code: 400,
         message: '无效的 limit 参数，允许范围 1-50',
-        data: null
+        data: []
       };
     }
 
@@ -52,7 +52,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<Novel[]>> =
     return {
       code: 500,
       message: '获取高分小说失败，服务器内部错误',
-      data: null,
+      data: [],
     };
   }
 }); 
