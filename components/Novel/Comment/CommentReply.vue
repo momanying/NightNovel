@@ -29,7 +29,7 @@ import CommentActions from './CommentActions.vue';
 
 defineProps<{
   reply: Reply;
-  currentUserId: string; // To check if current user liked this reply, etc.
+  currentUserId: string;
 }>();
 
 const emit = defineEmits<{ 

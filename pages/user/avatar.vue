@@ -97,7 +97,6 @@ const selectedAvatarFile = ref<File | null>(null);
 const previewUrl = ref<string | null>(null);
 const isUploading = ref(false);
 
-// New properties for image cropping
 const showCropper = ref(false);
 const imageToEditUrl = ref<string | null>(null);
 
@@ -120,36 +119,28 @@ async function handleAvatarSelected(event: Event) {
       return;
     }
     
-    // Instead of directly setting selectedAvatarFile and previewing,
-    // we create an object URL and show the cropper
     imageToEditUrl.value = URL.createObjectURL(file);
     showCropper.value = true;
   } 
 }
 
-// New function to handle cropped image result
 function onCropDone(croppedBlob: Blob) {
-  // Create a file from the blob with original file name if available
   if (avatarInputRef.value?.files?.[0]) {
     const originalFile = avatarInputRef.value.files[0];
     const fileName = originalFile.name;
-    // Create a new file with the cropped blob
     selectedAvatarFile.value = new File([croppedBlob], fileName, {
       type: croppedBlob.type,
       lastModified: new Date().getTime()
     });
   } else {
-    // Fallback if original filename is not available
     selectedAvatarFile.value = new File([croppedBlob], "cropped-avatar.webp", {
       type: croppedBlob.type,
       lastModified: new Date().getTime()
     });
   }
   
-  // Create a preview URL from the blob
   previewUrl.value = URL.createObjectURL(croppedBlob);
   
-  // Hide cropper
   showCropper.value = false;
   imageToEditUrl.value = null;
 }
