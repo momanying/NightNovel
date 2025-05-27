@@ -27,4 +27,5 @@ export interface Comment {
   createdAt: string;
   updatedAt: string;
   isLive?: boolean; // Retained if still used
+  image?: string;
 } 

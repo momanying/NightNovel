@@ -16,7 +16,7 @@
           />
         </div>
         <p class="text-white dark:text-gray-300 text-sm mt-3">{{ comment.content }}</p>
-        
+        <img v-if="comment.image" :src="comment.image" alt="Comment Image" class="w-24 h-24 rounded-lg mt-3">
         <div v-if="showReplyForm && !replyingToUser" class="mt-3">
           <CommentForm 
             ref="replyFormRef"

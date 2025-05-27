@@ -1,7 +1,10 @@
 import { CommentModel } from '../../models/Comment.model';
-import { defineEventHandler, readBody, type H3Event, createError } from 'h3';
+import { defineEventHandler, readMultipartFormData, type H3Event, createError } from 'h3';
 import type { Comment as CommentType } from '../../../types/comment';
 import mongoose from 'mongoose'; // Import mongoose to use Types.ObjectId
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { randomUUID } from 'node:crypto';
 
 // Assuming you have a way to get the authenticated user ID
 const getAuthenticatedUserId = (event: H3Event): string | null => {
@@ -22,8 +25,30 @@ export default defineEventHandler(async (event: H3Event) => {
   }
   const userId = new mongoose.Types.ObjectId(userIdString);
 
-  const body = await readBody(event);
-  const { novelId: novelIdString, content, rating } = body as { novelId: string; content: string; rating?: number };
+  const multipartFormData = await readMultipartFormData(event);
+
+  let novelIdString: string | undefined;
+  let content: string | undefined;
+  let ratingString: string | undefined;
+  let imageFile: Buffer | undefined;
+  let imageFileName: string | undefined;
+  // let imageFileType: string | undefined; // We might not strictly need this for basic saving
+
+  if (multipartFormData) {
+    for (const part of multipartFormData) {
+      if (part.name === 'novelId') {
+        novelIdString = part.data.toString();
+      } else if (part.name === 'content') {
+        content = part.data.toString();
+      } else if (part.name === 'rating') {
+        ratingString = part.data.toString();
+      } else if (part.name === 'image' && part.filename) {
+        imageFile = part.data;
+        imageFileName = part.filename;
+        // imageFileType = part.type; // Store if needed for more advanced validation
+      }
+    }
+  }
 
   if (!novelIdString || !content) {
     throw createError({ statusCode: 400, statusMessage: 'Bad Request', data: { message: 'Novel ID and content are required' } });
@@ -33,36 +58,57 @@ export default defineEventHandler(async (event: H3Event) => {
     throw createError({ statusCode: 400, statusMessage: 'Bad Request', data: { message: 'Invalid Novel ID format.' } });
   }
   const novelId = new mongoose.Types.ObjectId(novelIdString);
+  const rating = ratingString ? parseInt(ratingString, 10) : undefined;
 
-  if (rating !== undefined && (typeof rating !== 'number' || rating < 1 || rating > 5)) {
-     throw createError({ statusCode: 400, statusMessage: 'Bad Request', data: { message: 'Invalid rating. Must be a number between 1 and 5.' } });
+  let imageUrl: string | undefined = undefined;
+
+  if (imageFile && imageFileName) {
+    try {
+      const fileExtension = path.extname(imageFileName);
+      const uniqueFileName = `${randomUUID()}${fileExtension}`;
+      const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'comments');
+      const filePath = path.join(uploadsDir, uniqueFileName);
+
+      await fs.mkdir(uploadsDir, { recursive: true }); // Ensure directory exists
+      await fs.writeFile(filePath, imageFile);
+      
+      imageUrl = `/uploads/comments/${uniqueFileName}`; // URL relative to public directory
+    } catch (uploadError) {
+      console.error('Error saving uploaded image:', uploadError);
+      // Decide if this should be a fatal error or if comment can be saved without image
+      // For now, we'll proceed without image if upload fails
+      // You might want to throw createError here in a real application
+    }
   }
 
   try {
-    // Optional: Check if novel and user exist before creating comment
-    // const novelExists = await mongoose.model('Novel').findById(novelId).lean();
-    // if (!novelExists) throw createError({ statusCode: 404, statusMessage: 'Not Found', data: { message: 'Novel not found.' } });
-    // const userExists = await mongoose.model('User').findById(userId).lean();
-    // if (!userExists) throw createError({ statusCode: 404, statusMessage: 'Not Found', data: { message: 'User not found.' } });
-
     const commentDocument = new CommentModel({
-      novel: novelId, // Use the ObjectId instance
-      user: userId,   // Use the ObjectId instance
+      novel: novelId,
+      user: userId,   
       content,
       rating: rating,
+      image: imageUrl, // Save the image URL
     });
 
     await commentDocument.save();
     
+    // Repopulate to ensure all necessary fields are present for the client
     const populatedComment = await CommentModel.findById(commentDocument._id)
                                   .populate('user', 'username avatar _id')
+                                  .populate({
+                                    path: 'replies',
+                                    populate: [
+                                      { path: 'user', select: 'username avatar _id' },
+                                      { path: 'replyTo', select: 'username avatar _id' }
+                                    ],
+                                    options: { sort: { createdAt: 1 } }
+                                  })
                                   .lean<CommentType>();
     
     if (!populatedComment) {
         throw createError({ statusCode: 404, statusMessage: 'Not Found', data: { message: 'Comment created but could not be retrieved.' } });
     }
 
-    // Match the expected CommentApiResponse structure { data: { comment: ... } }
     return { data: { comment: populatedComment } };
 
   } catch (error) {

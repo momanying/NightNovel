@@ -1,5 +1,5 @@
 <template>
-  <form class="mt-4 mb-6" @submit.prevent="submitForm">
+  <form class="mt-4 mb-6 p-5" @submit.prevent="submitForm">
     <textarea
       ref="textareaRef"
       v-model="content"
@@ -66,7 +66,7 @@
           class="absolute top-0 right-0 -mt-2 -mr-2 p-1 bg-red-500 text-white rounded-full text-xs"
           @click="removeImage"
         >
-          <font-awesome-icon :icon="['fas', 'times']" />
+          <font-awesome-icon :icon="['fas', 'xmark']" :style="{ width: '0.8rem', height: '0.8rem' }" />
         </button>
       </div>
     </div>
@@ -76,7 +76,7 @@
       <button 
         type="submit"
         :disabled="isSubmitting || !content.trim() || contentLength > maxContentLength"
-        class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        class="px-4 py-2 bg-sky-500 hover:bg-primary-700 text-white rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {{ isSubmitting ? '提交中...' : submitButtonText }}
       </button>

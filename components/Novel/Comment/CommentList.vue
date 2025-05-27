@@ -92,17 +92,29 @@ const fetchComments = async (page: number = 1) => {
   }
 };
 
-const submitNewComment = async (formData: { content: string; rating?: number }) => {
+const submitNewComment = async (formData: { content: string; rating?: number; image?: File | null }) => {
   if (!props.novelId) return;
   isSubmittingComment.value = true;
   try {
-    const response = await $fetch(`/api/comments/post`, { 
+    const body = new FormData();
+    body.append('novelId', props.novelId);
+    body.append('content', formData.content);
+    if (formData.rating) {
+      body.append('rating', formData.rating.toString());
+    }
+    if (formData.image) {
+      body.append('image', formData.image);
+    }
+
+    // Type assertion for the response, assuming your backend returns this structure
+    const response = await $fetch<{ data: { comment: Comment } }>('/api/comments/post', { 
       method: 'POST', 
-      body: { novelId: props.novelId, content: formData.content, rating: formData.rating },
+      body: body, 
       headers: {
         'Authorization': `Bearer ${userStore.token}` 
       } 
     });
+
     if (response.data.comment) {
       comments.value.unshift(response.data.comment);
       totalComments.value++;
@@ -110,6 +122,7 @@ const submitNewComment = async (formData: { content: string; rating?: number }) 
     }
   } catch (err) {
     console.error('Failed to post comment:', err);
+    // Handle error display to user if needed
   } finally {
     isSubmittingComment.value = false;
   }

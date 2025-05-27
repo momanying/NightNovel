@@ -7,6 +7,7 @@ const commentSchema = new Schema({
   rating: { type: Number, min: 1, max: 5 },
   likes: [{ type: Types.ObjectId, ref: 'User' }],
   replies: [{ type: Types.ObjectId, ref: 'Reply' }],
+  image: { type: String, default: null },
   isEdited: { type: Boolean, default: false },
   // isArchived / isHidden flags can be added for moderation
 }, { timestamps: true });
