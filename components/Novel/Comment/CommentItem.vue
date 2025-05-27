@@ -9,14 +9,14 @@
             <span class="text-xs text-gray-400 ml-2">{{ new Date(comment.createdAt).toLocaleString() }}</span>
           </div>
           <CommentActions 
-            :likes="comment.likes.length" 
+            :likes="comment.likes.length"
+            :is-liked="comment.likes.some(like => like.toString() === currentUserId)"
             @like="emit('like-comment', comment)" 
             @reply="toggleReplyForm(null)" 
           />
         </div>
         <p class="text-white dark:text-gray-300 text-sm mt-3">{{ comment.content }}</p>
         
-        <!-- Reply Form -->
         <div v-if="showReplyForm && !replyingToUser" class="mt-3">
           <CommentForm 
             ref="replyFormRef"
@@ -40,7 +40,6 @@
           />
         </div>
         
-        <!-- Reply to specific user form -->
          <div v-if="showReplyForm && replyingToUser" class="mt-3 ml-8">
           <CommentForm 
             ref="specificReplyFormRef"
@@ -66,7 +65,7 @@ import CommentForm from './CommentForm.vue';
 
 const props = defineProps<{
   comment: Comment;
-  currentUserId: string; // Needed to determine if user already liked, etc.
+  currentUserId: string; 
 }>();
 
 const emit = defineEmits(['like-comment', 'submit-reply', 'like-reply', 'reply-added']);
@@ -84,7 +83,6 @@ const toggleReplyForm = (userToReplyTo: UserInfo | null) => {
   } else {
       showReplyForm.value = true;
       replyingToUser.value = userToReplyTo;
-      // Focus form if needed after nextTick
   }
 };
 
@@ -108,14 +106,12 @@ const submitReply = async (content: string, replyToUserId?: string) => {
       content, 
       replyToUserId, 
       callback: (newReply: Reply) => {
-        // Emit an event to parent to handle the optimistic update
         emit('reply-added', { commentId: props.comment._id, newReply });
         cancelReplyForm();
       }
     });
   } catch (error) {
     console.error("Failed to submit reply through CommentItem:", error);
-    // Handle error display locally if needed, or let CommentList handle
   } finally {
     isSubmittingReply.value = false;
   }

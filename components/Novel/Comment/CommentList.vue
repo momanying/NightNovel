@@ -2,7 +2,6 @@
   <div class="w-full mt-5">
     <h2 class="title-h2 mb-4">随笔小记 ({{ totalComments }})</h2>
     
-    <!-- New Comment Form -->
     <CommentForm 
       ref="mainCommentForm"
       :is-submitting="isSubmittingComment"
@@ -31,7 +30,6 @@
       />
     </div>
 
-    <!-- Pagination (Basic Example) -->
     <div v-if="totalPages > 1" class="mt-6 flex justify-center space-x-2">
       <button 
         v-for="page in totalPages" 
@@ -119,10 +117,17 @@ const submitNewComment = async (formData: { content: string; rating?: number }) 
 const handlePostReply = async (payload: { parentCommentId: string, content: string, replyToUserId?: string, callback: (newReply: Reply) => void }) => {
   isSubmittingComment.value = true;
   try {
-    const response = await commentApi.replyComment(payload.parentCommentId, payload.content, payload.replyToUserId);
+    const response = await $fetch<{ data: { reply: Reply } }>(`/api/comments/${payload.parentCommentId}/reply`, {
+      method: 'POST',
+      body: { content: payload.content, replyToUserId: payload.replyToUserId },
+      headers: {
+        'Authorization': `Bearer ${userStore.token}`
+      }
+    });
     if (response.data.reply) {
       payload.callback(response.data.reply);
     }
+
   } catch (err) {
     console.error('Failed to post reply:', err);
   } finally {
@@ -130,9 +135,8 @@ const handlePostReply = async (payload: { parentCommentId: string, content: stri
   }
 };
 
-const handleLikeComment = async (commentOrId: Comment | string) => {
-  // Explicitly extract the commentId string
-  const idToUse: string = typeof commentOrId === 'string' ? commentOrId : commentOrId._id;
+const handleLikeComment = async (commentId: Comment | string) => {
+  const idToUse: string = typeof commentId === 'string' ? commentId : commentId._id;
 
   const response = await $fetch<{ data: { comment: Comment } }>(`/api/comments/${idToUse}/like`, {
       method: 'POST',
@@ -140,7 +144,7 @@ const handleLikeComment = async (commentOrId: Comment | string) => {
         'Authorization': `Bearer ${userStore.token}` 
       }
   });
-  
+
   const updatedComment = response.data.comment;
   const index = comments.value.findIndex(c => c._id === updatedComment._id);
   if (index !== -1) {

@@ -2,7 +2,6 @@ import { CommentModel } from '../../../models/Comment.model';
 import { defineEventHandler, type H3Event, createError } from 'h3';
 import mongoose from 'mongoose';
 
-// Helper to get authenticated user ID (assuming it's set in event.context.auth)
 const getAuthenticatedUserId = (event: H3Event): mongoose.Types.ObjectId | null => {
   const userIdString = event.context.auth?.user?._id;
   if (userIdString && mongoose.Types.ObjectId.isValid(userIdString)) {
@@ -23,8 +22,6 @@ export default defineEventHandler(async (event: H3Event) => {
     });
   }
 
-  // Retrieve commentId from route parameters
-  // This assumes your file is named something like like.[commentId].post.ts
   const commentIdString = event.context.params?.commentId;
 
   if (!commentIdString || !mongoose.Types.ObjectId.isValid(commentIdString)) {
@@ -51,17 +48,15 @@ export default defineEventHandler(async (event: H3Event) => {
     
     let updateOperation;
     if (alreadyLiked) {
-      // User has liked, so unlike (remove userId from likes array)
       updateOperation = { $pull: { likes: userId } };
     } else {
-      // User has not liked, so like (add userId to likes array if not already present)
       updateOperation = { $addToSet: { likes: userId } };
     }
 
     const updatedComment = await CommentModel.findByIdAndUpdate(
       commentId,
       updateOperation,
-      { new: true } // Return the updated document
+      { new: true }
     ).populate('user').populate({
       path: 'replies',
       populate: { path: 'user' }
@@ -93,7 +88,6 @@ export default defineEventHandler(async (event: H3Event) => {
       statusCode = 400;
       statusMessage = 'Bad Request';
     } else if (typeof error === 'object' && error !== null) {
-      // Check if it looks like an H3Error or a similar error structure
       if ('statusCode' in error && typeof error.statusCode === 'number') {
         statusCode = error.statusCode;
       }
@@ -101,7 +95,6 @@ export default defineEventHandler(async (event: H3Event) => {
         statusMessage = error.statusMessage;
       }
       
-      // Attempt to get message from error.data.message or error.message
       if ('data' in error && 
           typeof error.data === 'object' && 
           error.data !== null && 
