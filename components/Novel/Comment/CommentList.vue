@@ -156,13 +156,18 @@ const handleLikeComment = async (commentId: Comment | string) => {
 const handleLikeReply = async (reply: Reply, parentComment: Comment) => {
   console.log('Liking reply:', reply._id, 'to comment:', parentComment._id);
   try {
-    const response = await commentApi.likeReply(reply._id);
+    const response = await $fetch<{ data: { reply: Reply } }>(`/api/reply/${reply._id}/like`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${userStore.token}`
+      }
+    });
     const updatedReply = response.data.reply;
     const commentIndex = comments.value.findIndex(c => c._id === parentComment._id);
     if (commentIndex !== -1) {
       const replyIndex = comments.value[commentIndex].replies.findIndex(r => r._id === updatedReply._id);
       if (replyIndex !== -1) {
-        comments.value[commentIndex].replies[replyIndex].likes = updatedReply.likes;
+        comments.value[commentIndex].replies[replyIndex] = updatedReply;
       }
     }
 

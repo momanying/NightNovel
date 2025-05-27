@@ -9,6 +9,7 @@
         </div>
         <CommentActions 
           :likes="reply.likes.length" 
+          :is-liked="reply.likes.some(like => like.toString() === currentUserId)"
           @like="emit('like-reply', reply)" 
           @reply="emit('reply-to-user', reply.user)"
         />
@@ -27,7 +28,7 @@
 import type { Reply, UserInfo } from '~/types/comment';
 import CommentActions from './CommentActions.vue';
 
-const props = defineProps<{
+defineProps<{
   reply: Reply;
   currentUserId: string;
 }>();
@@ -36,6 +37,4 @@ const emit = defineEmits<{
   (e: 'like-reply', reply: Reply): void;
   (e: 'reply-to-user', user: UserInfo): void;
 }>();
-
-console.log(props.reply);
 </script> 

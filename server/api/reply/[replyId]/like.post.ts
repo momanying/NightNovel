@@ -1,4 +1,4 @@
-import { CommentModel } from '../../../models/Comment.model';
+import { ReplyModel } from '../../../models/Reply.model';
 import { defineEventHandler, type H3Event, createError } from 'h3';
 import mongoose from 'mongoose';
 
@@ -22,29 +22,29 @@ export default defineEventHandler(async (event: H3Event) => {
     });
   }
 
-  const commentIdString = event.context.params?.commentId;
+  const replyIdString = event.context.params?.replyId;
 
-  if (!commentIdString || !mongoose.Types.ObjectId.isValid(commentIdString)) {
+  if (!replyIdString || !mongoose.Types.ObjectId.isValid(replyIdString)) {
     throw createError({
       statusCode: 400,
       statusMessage: 'Bad Request',
-      data: { message: '无效的评论ID格式。' },
+      data: { message: '无效的回复ID格式。' },
     });
   }
-  const commentId = new mongoose.Types.ObjectId(commentIdString);
+  const replyId = new mongoose.Types.ObjectId(replyIdString);
 
   try {
-    const comment = await CommentModel.findById(commentId);
+    const reply = await ReplyModel.findById(replyId);
 
-    if (!comment) {
+    if (!reply) {
       throw createError({
         statusCode: 404,
         statusMessage: 'Not Found',
-        data: { message: '评论不存在。' },
+        data: { message: '回复不存在。' },
       });
     }
 
-    const alreadyLiked = comment.likes.some((id => id.toString() === userId.toString()));
+    const alreadyLiked = reply.likes.some(id => id.toString() === userId.toString());
     
     let updateOperation;
     if (alreadyLiked) {
@@ -53,37 +53,30 @@ export default defineEventHandler(async (event: H3Event) => {
       updateOperation = { $addToSet: { likes: userId } };
     }
 
-    const updatedComment = await CommentModel.findByIdAndUpdate(
-      commentId,
+    const updatedReply = await ReplyModel.findByIdAndUpdate(
+      replyId,
       updateOperation,
       { new: true }
     )
     .populate('user')
-    .populate({
-      path: 'replies',
-      populate: [
-        { path: 'user', select: 'username avatar _id' },
-        { path: 'replyTo', select: 'username avatar _id' }
-      ],
-      options: { sort: { createdAt: 1 } }
-    });
+    .populate('replyTo');
     
-    if (!updatedComment) {
+    if (!updatedReply) {
         throw createError({
             statusCode: 404,
             statusMessage: 'Not Found',
-            data: { message: '更新评论失败，评论可能已被删除。'},
+            data: { message: '更新回复失败，回复可能已被删除。'},
         });
     }
 
     return {
       success: true,
       message: alreadyLiked ? '取消点赞成功！' : '点赞成功！',
-      data: { comment: updatedComment },
+      data: { reply: updatedReply },
     };
 
   } catch (error) {
-    console.error('Error liking/unliking comment:', error);
+    console.error('Error liking/unliking reply:', error);
     
     let errorMessage = '处理点赞请求时发生服务器内部错误。';
     let statusCode = 500;
