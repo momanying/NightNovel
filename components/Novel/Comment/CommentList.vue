@@ -27,6 +27,7 @@
         @like-comment="handleLikeComment"
         @submit-reply="handlePostReply"
         @like-reply="handleLikeReply"
+        @reply-added="handleReplyAdded"
       />
     </div>
 
@@ -119,7 +120,7 @@ const handlePostReply = async (payload: { parentCommentId: string, content: stri
   try {
     const response = await $fetch<{ data: { reply: Reply } }>(`/api/comments/${payload.parentCommentId}/reply`, {
       method: 'POST',
-      body: { content: payload.content, replyToUserId: payload.replyToUserId },
+      body: { parentCommentId: payload.parentCommentId, content: payload.content, replyToUserId: payload.replyToUserId },
       headers: {
         'Authorization': `Bearer ${userStore.token}`
       }
@@ -167,6 +168,13 @@ const handleLikeReply = async (reply: Reply, parentComment: Comment) => {
 
   } catch (error) {
      console.error("Failed to like reply:", error);
+  }
+};
+
+const handleReplyAdded = (payload: { commentId: string, newReply: Reply }) => {
+  const commentIndex = comments.value.findIndex(c => c._id === payload.commentId);
+  if (commentIndex !== -1) {
+    comments.value[commentIndex].replies.push(payload.newReply);
   }
 };
 

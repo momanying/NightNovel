@@ -12,7 +12,7 @@
             :likes="comment.likes.length"
             :is-liked="comment.likes.some(like => like.toString() === currentUserId)"
             @like="emit('like-comment', comment)" 
-            @reply="toggleReplyForm(null)" 
+            @reply="toggleReplyForm(comment.user)" 
           />
         </div>
         <p class="text-white dark:text-gray-300 text-sm mt-3">{{ comment.content }}</p>
@@ -106,7 +106,7 @@ const submitReply = async (content: string, replyToUserId?: string) => {
       content, 
       replyToUserId, 
       callback: (newReply: Reply) => {
-        emit('reply-added', { commentId: props.comment._id, newReply });
+        emit('reply-added', { commentId: props.comment._id, newReply }); 
         cancelReplyForm();
       }
     });
@@ -116,5 +116,4 @@ const submitReply = async (content: string, replyToUserId?: string) => {
     isSubmittingReply.value = false;
   }
 };
-
 </script> 

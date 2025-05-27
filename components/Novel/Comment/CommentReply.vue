@@ -5,7 +5,7 @@
       <div class="flex items-center justify-between w-full">
         <div>
           <span class="font-bold text-white dark:text-gray-200 text-sm">{{ reply.user.username }}</span>
-          <span class="text-xs text-gray-400 ml-2">{{ reply.createdAt }}</span>
+          <span class="text-xs text-gray-400 ml-2">{{ new Date(reply.createdAt).toLocaleString() }}</span>
         </div>
         <CommentActions 
           :likes="reply.likes.length" 
@@ -15,7 +15,7 @@
       </div>
       <div class="mt-2">
         <p class="text-white dark:text-gray-300 text-sm">
-          <span v-if="reply.replyTo" class="text-blue-300">@{{ reply.replyTo }} </span>
+          <span v-if="reply.replyTo" class="text-blue-300">@{{ reply.replyTo.username }} </span>
           {{ reply.content }}
         </p>
       </div>
@@ -27,7 +27,7 @@
 import type { Reply, UserInfo } from '~/types/comment';
 import CommentActions from './CommentActions.vue';
 
-defineProps<{
+const props = defineProps<{
   reply: Reply;
   currentUserId: string;
 }>();
@@ -36,4 +36,6 @@ const emit = defineEmits<{
   (e: 'like-reply', reply: Reply): void;
   (e: 'reply-to-user', user: UserInfo): void;
 }>();
+
+console.log(props.reply);
 </script> 
