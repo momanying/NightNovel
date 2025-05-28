@@ -11,10 +11,8 @@ const PUBLIC_ROUTES: string[] = [
   '/login',              // 登录页
   '/register',           // 注册页
   '/api/novels',         // 小说列表
-  '/api/novels/featured', // 推荐小说
-  '/api/novels/latest',   // 最新小说
-  '/api/novels/top',      // 热门小说
   '/api/tags/cloud',
+  '/api/comments',
 ]
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-very-secret-key'

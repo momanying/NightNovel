@@ -33,60 +33,48 @@ const similarNovelsState = computed(() => useSimilarFinishNovels(novelId.value))
 const isLoaded = ref(false)
 
 const fetchSimilarNovels = async () => {
-  if (!currentNovel.value || !currentNovel.value.tags) return;
-  
-  const sessionStorageKey = `similarFinishNovels_${novelId.value}`
+    if (!currentNovel.value || !currentNovel.value.tags) return;
 
-  // 如果 useState 里已有值，直接用，不请求
-  if (similarNovelsState.value.value.length > 0) {
-    isLoaded.value = true
-    return
-  }
+    const sessionStorageKey = `similarFinishNovels_${novelId.value}`
 
-  if (import.meta.client) {
-    const cache = sessionStorage.getItem(sessionStorageKey)
-    if (cache) {
-      try {
-        const parsed: Novel[] = JSON.parse(cache)
-        similarNovelsState.value.value = parsed
+    // 如果 useState 里已有值，直接用，不请求
+    if (similarNovelsState.value.value.length > 0) {
         isLoaded.value = true
         return
-      } catch (e) {
-        console.error('Failed to parse local cache', e)
-      }
     }
-  }
 
-  try {
+    if (import.meta.client) {
+        const cache = sessionStorage.getItem(sessionStorageKey)
+    if (cache) {
+            const parsed: Novel[] = JSON.parse(cache)
+            similarNovelsState.value.value = parsed
+            isLoaded.value = true
+            return
+        }
+    }
+
     const params: Record<string, string> = {
-      tags: currentNovel.value.tags.trim().replace(/\s+/g, ',') || '',
+        tags: currentNovel.value.tags.trim().replace(/\s+/g, ',') || '',
     }
     if (novelId.value) {
-      params.currentNovelId = novelId.value
+        params.currentNovelId = novelId.value
     }
 
     const { data, error } = await useFetch<{ data: Novel[] }>('/api/novels/similarfinish', {
-      query: params,
+        query: params,
     })
 
     if (error.value) throw error.value
     if (data.value && data.value.data) {
-      similarNovelsState.value.value = data.value.data
-      // 存入 localStorage
-      if (import.meta.client) {
+        similarNovelsState.value.value = data.value.data
+        // 存入 localStorage
+        if (import.meta.client) {
         sessionStorage.setItem(sessionStorageKey, JSON.stringify(data.value.data))
-      }
+        }
     } else {
-      similarNovelsState.value.value = []
+        similarNovelsState.value.value = []
     }
-  } catch (err) {
-    console.error('Fetch failed:', err)
-    similarNovelsState.value.value = []
-  } finally {
-    isLoaded.value = true
-  }
-}
-
+} 
 // 监听 novelId 变化，触发一次
 watch(() => novelId.value, (newId) => {
   if (newId) fetchSimilarNovels()

@@ -1,26 +1,30 @@
-import { NovelModel } from '~/server/models'
+import { defineEventHandler } from 'h3'
+import { NovelModel } from '../../models/novel' // Adjust path if your model is located elsewhere
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (_event) => {
   try {
-    // 聚合查询，获取所有分类及其小说数量
-    const categories = await NovelModel.aggregate([
-      { $group: { _id: '$category', count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-      { $project: { _id: 0, name: '$_id', count: 1 } }
-    ])
+    // Fetch distinct categories.
+    // Filter out null, undefined, or empty string categories directly in the query if possible,
+    // or filter the result array.
+    const categories = await NovelModel.distinct('category').exec();
     
+    // Ensure categories are valid strings and not empty
+    const validCategories = categories.filter(category => category && typeof category === 'string' && category.trim() !== '');
+
     return {
-      code: 200,
-      message: '获取小说分类成功',
-      data: categories
-    }
+      status: 200,
+      message: 'Categories fetched successfully.',
+      data: validCategories.sort(), // Return sorted categories
+    };
   } catch (error: unknown) {
-    const err = error as Error
-    console.error('获取小说分类失败:', err)
+    console.error('[API /novels/categories] Error fetching categories:', error);
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    // Consider using createError for proper error handling in Nuxt 3
     return {
-      code: 500,
-      message: '获取小说分类失败',
-      error: err.message
-    }
+      status: 500,
+      message: 'Failed to fetch categories.',
+      error: message,
+      data: [],
+    };
   }
-}) 
+}); 

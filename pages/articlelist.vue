@@ -228,13 +228,15 @@
 
 <script setup lang="ts">
 import type { Novel } from '~/types/novel/novelinfo'
-// import CommonPagination from '~/components/Common/Pagination.vue'; // Nuxt 3 自动导入
+import { useRoute, useRouter } from 'vue-router'
 
 const loading = ref(true)
 const error = ref('')
 const novels = ref<Novel[]>([])
+const route = useRoute()
+const router = useRouter()
 
-// 筛选相关状态
+// Filter states
 const typeFilter = ref('全部类型')
 const languageFilter = ref('全部语言')
 const platformFilter = ref('全部平台')
@@ -243,7 +245,7 @@ const monthFilter = ref('全部月份')
 const sortOption = ref('资源更新时间')
 const sortDirection = ref('降序')
 
-// 筛选选项
+// Filter options
 const typeOptions = ['全部类型', '日本轻小说', '华文轻小说', 'Web轻小说', '轻改漫画', '韩国轻小说']
 const languageOptions = ['全部语言']
 const platformOptions = ['全部平台', 'GA文库', 'MF文库J', '角川文库', '电击文库', '富士见文库', '小学馆']
@@ -251,17 +253,42 @@ const yearOptions = ['全部年份', '2025', '2024', '2023', '2022', '2021']
 const monthOptions = ['全部月份', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 const sortOptions = ['周点击', '月点击', '周推荐', '月推荐', '周鲜花', '月鲜花', '收藏数', '资源更新时间', '入库时间']
 
-// 分页状态
+// Pagination states
 const currentPage = ref(1)
 const totalPages = ref(1)
 const itemsPerPage = ref(10)
 const total = ref(0)
 
-// 处理筛选变化
 const handleFilterChange = () => {
-  currentPage.value = 1
-  fetchNovels()
-}
+  currentPage.value = 1;
+
+  // Build newQuery from scratch based on filter refs
+  const newQuery: Record<string, string | undefined> = {};
+
+  if (typeFilter.value !== '全部类型') newQuery.category = typeFilter.value;
+  if (platformFilter.value !== '全部平台') newQuery.platform = platformFilter.value;
+  if (yearFilter.value !== '全部年份') newQuery.year = yearFilter.value;
+  if (monthFilter.value !== '全部月份') newQuery.month = monthFilter.value;
+  if (sortOption.value !== '资源更新时间') newQuery.sort = sortOption.value;
+  newQuery.order = sortDirection.value === '降序' ? 'desc' : 'asc';
+  
+  // Preserve any other existing query parameters that are not part of these filters
+  // and ensure they are strings or undefined.
+  for (const key in route.query) {
+    if (!['category', 'platform', 'year', 'month', 'sort', 'order', 'page'].includes(key)) {
+      const value = route.query[key];
+      if (typeof value === 'string') {
+        newQuery[key] = value;
+      } else if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'string') {
+        newQuery[key] = value[0]; // Take the first value if it's an array of strings
+      }
+      // null or other types will be omitted, effectively deleting them or use newQuery[key] = undefined;
+    }
+  }
+
+  router.push({ query: newQuery as Record<string, string> }); // Nuxt router query often expects Record<string, string>
+  // fetchNovels() will be called by the watcher on route.query
+};
 
 // 处理排序方向变化
 const handleSortOrderToggle = () => {
@@ -269,58 +296,38 @@ const handleSortOrderToggle = () => {
   handleFilterChange()
 }
 
-// 构建查询参数
 const buildQueryParams = () => {
   const params: Record<string, string | number> = {
     page: currentPage.value,
     limit: itemsPerPage.value
   }
+  // Use route.query to build params, ensuring filters are driven by URL
+  if (route.query.category) params.category = route.query.category as string;
+  
+  if (route.query.platform) params.platform = route.query.platform as string;
 
-  // 添加分类筛选
-  if (typeFilter.value !== '全部类型') {
-    params.category = typeFilter.value
-  }
+  if (route.query.year) params.year = route.query.year as string;
 
-  // 添加平台筛选
-  if (platformFilter.value !== '全部平台') {
-    params.platform = platformFilter.value
-  }
+  if (route.query.month) params.month = route.query.month as string;
+  
+  if (route.query.sort) params.sort = route.query.sort as string;
 
-  // 添加年份筛选
-  if (yearFilter.value !== '全部年份') {
-    params.year = yearFilter.value
-  }
-
-  // 添加月份筛选
-  if (monthFilter.value !== '全部月份') {
-    params.month = monthFilter.value
-  }
-
-  // 添加排序参数
-  if (sortOption.value !== '资源更新时间') {
-    params.sort = sortOption.value
-  }
-
-  // 添加排序方向
-  params.order = sortDirection.value === '降序' ? 'desc' : 'asc'
+  if (route.query.order) params.order = route.query.order as string;
 
   return params
 }
 
-// 获取小说列表数据
 const fetchNovels = async () => {
   loading.value = true
   error.value = ''
-  
   try {
-    const params = buildQueryParams()
+    const params = buildQueryParams() // buildQueryParams now reads from route.query
     const response = await useFetch('/api/novels/list', {
       method: 'GET',
       query: params
     })
     
     if (response.data.value && response.data.value.code === 200) {
-      // 将 response.data.value 断言为明确的成功响应类型
       const successfulResponse = response.data.value as {
         code: 200;
         message: string;
@@ -334,10 +341,7 @@ const fetchNovels = async () => {
           };
         };
       };
-      
       novels.value = successfulResponse.data.novels || []
-      
-      // 更新分页信息
       const paginationData = successfulResponse.data.pagination;
       total.value = paginationData.total;
       currentPage.value = paginationData.page;
@@ -346,34 +350,53 @@ const fetchNovels = async () => {
     } else {
       error.value = response.data.value?.message || '获取小说列表失败'
       novels.value = []
-      // 重置分页信息
-      total.value = 0;
-      currentPage.value = 1;
-      totalPages.value = 0;
+      total.value = 0; currentPage.value = 1; totalPages.value = 0;
     }
   } catch (err) {
     console.error('获取小说列表失败:', err)
     error.value = '获取小说列表失败，请稍后再试'
     novels.value = []
-     // 重置分页信息
-      total.value = 0;
-      currentPage.value = 1;
-      totalPages.value = 0;
+    total.value = 0; currentPage.value = 1; totalPages.value = 0;
   } finally {
     loading.value = false
   }
 }
 
-// 改变页码 (现在由 Pagination 组件触发)
 const handlePageChange = (page: number) => {
   if (page >= 1 && page <= totalPages.value && page !== currentPage.value) {
-    currentPage.value = page
-    fetchNovels()
-     // 更新路由
-    const router = useRouter()
-    router.push({ query: { ...useRoute().query, page: page } })
+    // currentPage.value = page; // currentPage will be updated by watcher reacting to route change
+    router.push({ query: { ...route.query, page: String(page) } });
+    // fetchNovels() will be called by watcher
   }
-}
+};
+
+// Function to update filter refs based on route query. To be called on mount and route change.
+const updateFiltersFromRoute = () => {
+  const query = route.query;
+  typeFilter.value = (query.category as string) || '全部类型';
+  platformFilter.value = (query.platform as string) || '全部平台';
+  yearFilter.value = (query.year as string) || '全部年份';
+  monthFilter.value = (query.month as string) || '全部月份';
+  sortOption.value = (query.sort as string) || '资源更新时间';
+  sortDirection.value = query.order === 'asc' ? '升序' : '降序';
+  currentPage.value = parseInt(query.page as string) || 1;
+};
+
+onMounted(() => {
+  updateFiltersFromRoute(); // Initialize filters from URL query first
+  // fetchNovels(); // fetchNovels will be called by the watcher if query changes significantly enough or initially
+});
+
+// Watch for changes in route.query to refetch novels and update filters
+watch(() => route.fullPath, // Watch fullPath to react to any query change
+  async (newFullPath, oldFullPath) => {
+    if (newFullPath !== oldFullPath) { // Ensure it actually changed
+        updateFiltersFromRoute();
+        await fetchNovels();
+    }
+  },
+  { immediate: true } // immediate: true will call fetchNovels on component mount
+);
 
 // 添加到书架
 const addToBookshelf = (novelId: string | undefined) => {
@@ -390,29 +413,6 @@ const recommendNovel = (novelId: string | undefined) => {
   // TODO: 实现推荐小说的逻辑
   console.log('推荐小说:', novelId)
 }
-
-// 生命周期钩子
-onMounted(() => {
-  // 从路由查询参数初始化页码
-  const routePage = parseInt(useRoute().query.page as string);
-  if (!isNaN(routePage) && routePage > 0) {
-    currentPage.value = routePage;
-  }
-  fetchNovels()
-})
-
-// 监听路由变化，但不直接调用 fetchNovels，因为页码变化会通过 handlePageChange 处理
-watch(() => useRoute().query.page, (newPage) => {
-  const pageNumber = parseInt(newPage as string);
-  if (!isNaN(pageNumber) && pageNumber > 0 && pageNumber !== currentPage.value) {
-    // currentPage.value = pageNumber; // 由 handlePageChange 更新
-    // fetchNovels(); // fetchNovels 会在 handlePageChange 中调用
-    // 确保在浏览器前进后退时，如果页码变化，数据能正确加载
-    if (String(currentPage.value) !== newPage) {
-        handlePageChange(pageNumber);
-    }
-  }
-});
 
 // SEO优化
 useHead({
