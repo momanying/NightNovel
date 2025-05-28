@@ -1,7 +1,6 @@
 <template>
-    <div>
+  <div>
     <LayoutsHeaderContainer />
-    
     <!-- 筛选框 -->
     <div class="bg-gray-900 px-4 py-4 mx-10">
       <div class="max-w-7xl mx-auto">
@@ -108,7 +107,7 @@
     </div>
       
       <!-- 主内容区 -->
-      <div class="mx-10 py-5">
+      <div class="mx-20 py-5">
         <!-- 小说列表 -->
         <div class="space-y-6">
         <div v-if="loading" class="py-8 text-center">
@@ -147,11 +146,11 @@
                                 <h2 class="text-base font-semibold text-blue-800 hover:text-blue-600 mb-1">
                                     <NuxtLink :to="`/novels/${novel._id}`">{{ novel.title }}</NuxtLink>
                                 </h2>
-                                <div class="text-xs text-gray-600">
-                                    作者：<NuxtLink :to="`/authors/${novel.author}`" class="hover:text-blue-500">{{ novel.author }}</NuxtLink>
+                                <div class="text-xs text-white">
+                                    作者：<span>{{ novel.author }}</span>
                                 </div>
-                                <div class="text-xs text-gray-600">
-                                    分类：<NuxtLink :to="`/categories/${novel.category}`" class="hover:text-blue-500">{{ novel.category }}</NuxtLink>
+                                <div class="text-xs text-white">
+                                    分类：<NuxtLink :to="`/articlelist?category=${novel.category}`" class="hover:text-blue-500">{{ novel.category }}</NuxtLink>
                                 </div>
                                 
                                 <!-- 更新信息 -->
@@ -297,22 +296,20 @@ const handleSortOrderToggle = () => {
 }
 
 const buildQueryParams = () => {
-  const params: Record<string, string | number> = {
+  const params: Record<string, string | number | boolean> = {
     page: currentPage.value,
     limit: itemsPerPage.value
   }
   // Use route.query to build params, ensuring filters are driven by URL
   if (route.query.category) params.category = route.query.category as string;
-  
   if (route.query.platform) params.platform = route.query.platform as string;
-
   if (route.query.year) params.year = route.query.year as string;
-
   if (route.query.month) params.month = route.query.month as string;
-  
   if (route.query.sort) params.sort = route.query.sort as string;
-
   if (route.query.order) params.order = route.query.order as string;
+  if (route.query.animation === 'true') params.animation = true;
+  if (route.query.tag) params.tag = route.query.tag as string;
+  if (route.query.status) params.status = route.query.status as string;
 
   return params
 }
@@ -380,6 +377,9 @@ const updateFiltersFromRoute = () => {
   sortOption.value = (query.sort as string) || '资源更新时间';
   sortDirection.value = query.order === 'asc' ? '升序' : '降序';
   currentPage.value = parseInt(query.page as string) || 1;
+  // Note: We don't have specific filter refs for 'animation', 'tag', or 'status' 
+  // in the UI apart from the menu links. If these were to be displayed/changeable 
+  // in the filter UI, you'd add refs for them here and update them.
 };
 
 onMounted(() => {

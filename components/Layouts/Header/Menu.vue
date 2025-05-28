@@ -10,11 +10,16 @@
           v-for="(item, index) in dynamicMenuItems" 
           :key="index"
           class="flex mr-2.5 items-center justify-center mt-1.5 leading-5 float-left inline-block mx-[-0.5px] px-1 relative cursor-pointer"
-          @mouseenter="openMenu(index)"
-          @mouseleave="delayedCloseMenu"
+          @mouseenter="item.subItems && openMenu(index)" 
+          @mouseleave="item.subItems && delayedCloseMenu"
         >
-          <span class="text-white px-2 pb-1 flex place-items-center">{{ item.title }}</span>
+          <NuxtLink v-if="item.path" :to="item.path" class="text-white px-2 pb-1 flex place-items-center">
+            {{ item.title }}
+          </NuxtLink>
+          <span v-else class="text-white px-2 pb-1 flex place-items-center">{{ item.title }}</span>
+          
           <transition
+            v-if="item.subItems" 
             name="dropdown"
             @enter="onEnter"
           >
@@ -51,28 +56,38 @@
       轻小说全集
     </NuxtLink>
     
-    <div v-for="(item, index) in dynamicMenuItems" :key="index" class="mb-3">
-      <div 
-        class="flex justify-between items-center py-3 text-white border-b border-blue-800 cursor-pointer"
-        @click="toggleMobileSubmenu(index)"
+    <div v-for="(item, index) in dynamicMenuItems" :key="index" class="mb-1">
+      <NuxtLink 
+        v-if="item.path"
+        :to="item.path"
+        class="block py-3 text-white border-b border-blue-800"
+        @click="navigate"
       >
-        <span>{{ item.title }}</span>
-        <font-awesome-icon 
-          :icon="['fas', mobileActiveIndex === index ? 'chevron-up' : 'chevron-down']" 
-          class="w-4 h-4" 
-        />
-      </div>
-      
-      <div v-if="mobileActiveIndex === index" class="pl-4 py-2 bg-blue-800 bg-opacity-50 rounded">
-        <NuxtLink
-          v-for="(subItem, subIndex) in item.subItems"
-          :key="subIndex"
-          :to="typeof subItem === 'string' ? `/articlelist?category=${encodeURIComponent(subItem)}` : subItem.path"
-          class="block py-2 text-gray-100 hover:text-white"
-          @click="navigateAndCloseMenu"
+        {{ item.title }}
+      </NuxtLink>
+      <div v-else-if="item.subItems">
+        <div 
+          class="flex justify-between items-center py-3 text-white border-b border-blue-800 cursor-pointer"
+          @click="toggleMobileSubmenu(index)"
         >
-          {{ typeof subItem === 'string' ? subItem : subItem.name }}
-        </NuxtLink>
+          <span>{{ item.title }}</span>
+          <font-awesome-icon 
+            :icon="['fas', mobileActiveIndex === index ? 'chevron-up' : 'chevron-down']" 
+            class="w-4 h-4" 
+          />
+        </div>
+        
+        <div v-if="mobileActiveIndex === index" class="pl-4 py-2 bg-blue-800 bg-opacity-50 rounded">
+          <NuxtLink
+            v-for="(subItem, subIndex) in item.subItems"
+            :key="subIndex"
+            :to="typeof subItem === 'string' ? `/articlelist?category=${encodeURIComponent(subItem)}` : subItem.path"
+            class="block py-2 text-gray-100 hover:text-white"
+            @click="navigateAndCloseMenu"
+          >
+            {{ typeof subItem === 'string' ? subItem : subItem.name }}
+          </NuxtLink>
+        </div>
       </div>
     </div>
   </div>
@@ -88,8 +103,9 @@ interface SubItemObject {
 
 interface MenuItem {
   title: string;
-  subItems: string[] | SubItemObject[];
-  isDynamic: boolean;
+  subItems?: string[] | SubItemObject[];
+  path?: string;
+  isDynamic?: boolean;
 }
 
 interface Props {
@@ -147,35 +163,12 @@ const baseMenuItems: MenuItem[] = [
   },
   {
     title: '动漫化作品',
-    subItems: [
-        { name: 'TV动画化', path: '/articlelist?tag=TV动画化' }, 
-        { name: 'OVA动画化', path: '/articlelist?tag=OVA动画化' }, 
-        { name: '剧场版', path: '/articlelist?tag=剧场版' }, 
-        { name: '真人电影', path: '/articlelist?tag=真人电影' }, 
-        { name: '游戏改编', path: '/articlelist?tag=游戏改编' }
-    ],
-    isDynamic: false,
-  },
-  {
-    title: '今日更新',
-    subItems: [
-        { name: '最新上架', path: '/articlelist?sort=new' }, 
-        { name: '今日更新', path: '/articlelist?sort=today' }, 
-        { name: '昨日更新', path: '/articlelist?sort=yesterday' }, 
-        { name: '本周更新', path: '/articlelist?sort=thisweek' }, 
-        { name: '随机推荐', path: '/articlelist?sort=random' }
-    ],
+    path: '/articlelist?animation=true',
     isDynamic: false,
   },
   {
     title: '已完结作品',
-    subItems: [
-        { name: '短篇合集', path: '/articlelist?status=finished&tag=短篇' }, 
-        { name: '中篇小说', path: '/articlelist?status=finished&tag=中篇' }, 
-        { name: '长篇小说', path: '/articlelist?status=finished&tag=长篇' }, 
-        { name: '系列作品', path: '/articlelist?status=finished&tag=系列' }, 
-        { name: '经典重温', path: '/articlelist?status=finished&tag=经典' }
-    ],
+    path: '/articlelist?status=已完结',
     isDynamic: false,
   },
 ];
