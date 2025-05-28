@@ -63,37 +63,21 @@
                     @click="selectResult(novel)"
                 >
                     <div class="flex justify-between">
-                        <span class="font-medium text-gray-800 dark:text-gray-200">
-                            {{ highlightTitle(novel.title) }}
-                        </span>
+                        <span 
+                            class="font-medium text-gray-800 dark:text-gray-200"
+                            v-html="highlightTitle(novel.title)"
+                        />
                         <span class="text-xs text-gray-500 dark:text-gray-400">{{ novel.author }}</span>
                     </div>
                     <div class="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{{ novel.introduction }}</div>
                 </div>
-            </div>
-            <div v-if="hasMoreResults" class="text-center p-2 text-sm text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700">
-                <nuxt-link 
-                    :to="`/search?keyword=${encodeURIComponent(searchQuery)}`"
-                    class="hover:underline hover:text-primary-600 dark:hover:text-primary-400"
-                    @click="closeSearch"
-                >
-                    查看更多结果
-                </nuxt-link>
             </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-interface Novel {
-  _id: string;
-  title: string;
-  author: string;
-  category: string;
-  status: string;
-  cover_url: string;
-  introduction: string;
-}
+import type { Novel } from '~/types/novel/novelinfo';
 
 const isOpen = ref(false);
 const searchQuery = ref('');
@@ -147,7 +131,9 @@ const handleInput = debounce(() => {
 const highlightTitle = (title: string) => {
     if (!searchQuery.value) return title;
     
-    const regex = new RegExp(`(${searchQuery.value})`, 'gi');
+    // Ensure that special characters in searchQuery are escaped for RegExp
+    const escapedQuery = searchQuery.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(${escapedQuery})`, 'gi');
     return title.replace(regex, '<strong class="text-primary-600 dark:text-primary-400">$1</strong>');
 }
 
@@ -239,10 +225,5 @@ onMounted(() => {
 .search-leave-to {
     opacity: 0;
     transform: translateY(-10px);
-}
-
-/* 允许HTML内容渲染 */
-:deep(strong) {
-    font-weight: 700;
 }
 </style>
