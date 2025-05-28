@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import CommentList from './Comment/CommentList.vue';
+import CommentList from '~/components/Comment/CommentList.vue';
 import { useNovelStore } from '~/stores/novel';
 
 const novelStore = useNovelStore();

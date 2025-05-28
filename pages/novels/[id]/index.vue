@@ -15,7 +15,7 @@
             
         <NovelSimilarNovel />
 
-        <NovelSimilarFinishNovel />
+        <NovelSimilarFinishNovel :novel="currentNovel" />
 
       </div>
 

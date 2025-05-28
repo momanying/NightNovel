@@ -216,7 +216,7 @@
 
         <!-- 分页 -->
         <div class="mt-8 flex justify-center">
-          <CommonPagination 
+          <PageNation 
             :current-page="currentPage"
             :total-pages="totalPages"
             @page-changed="handlePageChange"
