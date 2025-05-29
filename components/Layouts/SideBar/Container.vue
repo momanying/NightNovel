@@ -1,29 +1,28 @@
 <template>
-  <div class="flex flex-col space-y-7 rounded-r-lg shadow-lg relative h-full">
-
+  <div class="flex flex-col space-y-6 bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-lg p-4">
+    <!-- 推荐书籍组件 -->
     <LayoutsSideBarRecommendedBook
       class="w-full"
     />
 
-    <LayoutsSideBarRank 
-      :novels="topNovels"
-      class="w-full"
-    />
+    <!-- 排行榜组件 - 在移动设备上可以考虑特殊处理 -->
+    <div class="w-full">
+      <LayoutsSideBarRank 
+        :novels="topNovels"
+        class="w-full"
+      />
+    </div>
 
-    <LayoutsSideBarPersonList
-      class="w-full"
-    />
-
+    <!-- 完结书籍组件 -->
     <LayoutsSideBarFinishBook
       :novels="finishNovels"
       class="w-full"
     />
 
-    <LayoutsSideBarNewNovel class="w-full absolute bottom-0" />
-
+    <!-- 新书组件 - 移除absolute定位 -->
+    <LayoutsSideBarNewNovel class="w-full" />
   </div>
 </template>
-
   
 <script setup lang="ts">
 import type { Novel } from '~/types/novel/novelinfo';
