@@ -13,6 +13,7 @@ const PUBLIC_ROUTES: string[] = [
   '/api/novels',         // 小说列表
   '/api/tags/cloud',
   '/api/comments',
+  // '/api/user/password',
 ]
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-very-secret-key'

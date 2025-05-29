@@ -89,7 +89,7 @@ import { useUserStore } from '~/stores/user';
 import type { LayoutKey } from '#build/types/layouts';
 
 definePageMeta({
-  layout: 'user-center' as LayoutKey,
+  layout: 'user' as LayoutKey,
   // middleware: ['auth-user'], // Assuming you have an auth middleware for user pages
 });
 
@@ -133,7 +133,7 @@ const handleChangePassword = async () => {
         newPassword: newPassword.value,
       },
       headers: {
-        'Authorization': `Bearer \${userStore.token}`,
+        'Authorization': `Bearer ${userStore.token}`,
       },
     });
 
@@ -142,7 +142,6 @@ const handleChangePassword = async () => {
       oldPassword.value = '';
       newPassword.value = '';
       confirmPassword.value = '';
-      // Optionally redirect or perform other actions
     } else {
       passwordError.value = response.message || '无法更新密码，请检查您输入的当前密码是否正确。';
       toast.error(response.message || '无法更新密码，请检查您输入的当前密码是否正确。');

@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Assuming you have userId in event.context.auth or similar from your auth middleware
-  const userId = event.context.auth?.userId; 
+  const userId = event.context.auth?.userId || event.context.auth?.user?._id;
   if (!userId) {
     event.node.res.statusCode = 401;
     return { success: false, message: '用户未授权或会话已过期。' };
@@ -35,9 +35,7 @@ export default defineEventHandler(async (event) => {
       return { success: false, message: '当前密码不正确。' };
     }
 
-    // Hash the new password
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(newPassword, salt);
+    user.password = newPassword;
     await user.save();
 
     return { success: true, message: '密码已成功更新。' };

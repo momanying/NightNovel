@@ -74,7 +74,7 @@
       </div>
     </div>
     
-    <AvatarCropper 
+    <CommonAvatarCropper 
       v-if="showCropper && imageToEditUrl" 
       :image-src="imageToEditUrl" 
       @crop="onCropDone" 
