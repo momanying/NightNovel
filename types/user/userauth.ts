@@ -3,4 +3,5 @@ export type LoginResponseData = {
     username: string
     avatar: string
     token: string
+    email: string
 }

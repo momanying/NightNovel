@@ -37,5 +37,8 @@ export default defineNuxtConfig({
     public: {
       // 如果需要在客户端使用一些配置，可以放在这里
     }
+  },
+  build: {
+    transpile: ['vue-toastification']
   }
 })

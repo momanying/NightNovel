@@ -1,4 +1,4 @@
-import { Novel } from '~/server/models'
+import { NovelModel } from '~/server/models'
 
 /**
  * 增加小说浏览量
@@ -6,7 +6,7 @@ import { Novel } from '~/server/models'
  */
 export const incrementNovelViews = async (novelId: string) => {
   try {
-    await Novel.findByIdAndUpdate(novelId, { $inc: { views: 1 } })
+    await NovelModel.findByIdAndUpdate(novelId, { $inc: { views: 1 } })
     return true
   } catch (error) {
     console.error('增加小说浏览量失败:', error)
@@ -21,7 +21,7 @@ export const incrementNovelViews = async (novelId: string) => {
  */
 export const updateNovelRating = async (novelId: string, rating: number) => {
   try {
-    const novel = await Novel.findById(novelId)
+    const novel = await NovelModel.findById(novelId)
     if (!novel) return false
     
     // 计算新的评分
@@ -29,7 +29,7 @@ export const updateNovelRating = async (novelId: string, rating: number) => {
     const newRating = ((novel.rating * novel.ratingCount) + rating) / newRatingCount
     
     // 更新评分
-    await Novel.findByIdAndUpdate(novelId, {
+    await NovelModel.findByIdAndUpdate(novelId, {
       rating: newRating,
       ratingCount: newRatingCount
     })

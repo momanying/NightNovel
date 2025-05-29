@@ -1,6 +1,7 @@
+import 'vue-toastification/dist/index.css'
 import { defineNuxtPlugin } from '#app'
 import Toast, { type PluginOptions, POSITION } from 'vue-toastification'
-import 'vue-toastification/dist/index.css'
+import { useToast } from 'vue-toastification'
 
 export default defineNuxtPlugin((nuxtApp) => {
   const options: PluginOptions = {
@@ -29,4 +30,10 @@ export default defineNuxtPlugin((nuxtApp) => {
   }
 
   nuxtApp.vueApp.use(Toast, options)
+  
+  return {
+    provide: {
+      toast: useToast
+    }
+  }
 })

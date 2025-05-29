@@ -1,5 +1,5 @@
 import { verifyToken } from '~/server/api/auth/jwt'
-import { Bookmark } from '~/server/models'
+import { BookmarkModel } from '~/server/models'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // 获取用户书架中的小说数量
-    const count = await Bookmark.countDocuments({ userId: decoded.id })
+    const count = await BookmarkModel.countDocuments({ userId: decoded.id })
 
     return {
       code: 200,

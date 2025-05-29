@@ -1,4 +1,4 @@
-import { Chapter } from '~/server/models'
+import { ChapterModel } from '~/server/models'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
     }
     
     // 获取章节内容
-    const chapter = await Chapter.findById(chapterId)
+    const chapter = await ChapterModel.findById(chapterId)
     
     if (!chapter) {
       return {
@@ -23,12 +23,12 @@ export default defineEventHandler(async (event) => {
     }
     
     // 获取前一章和后一章
-    const prevChapter = await Chapter.findOne({
+    const prevChapter = await ChapterModel.findOne({
       volumeId: chapter.volumeId,
       order: { $lt: chapter.order }
     }).sort({ order: -1 })
 
-    const nextChapter = await Chapter.findOne({
+    const nextChapter = await ChapterModel.findOne({
       volumeId: chapter.volumeId,
       order: { $gt: chapter.order }
     }).sort({ order: 1 })

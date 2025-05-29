@@ -1,5 +1,6 @@
-import { verifyToken } from '../api/auth/jwt'
-import { User } from '../models/user'
+import { UserModel } from '../models'
+import { defineEventHandler, getRequestHeader, createError } from 'h3'
+import jwt from 'jsonwebtoken'
 
 // 定义公开路由列表
 const PUBLIC_ROUTES: string[] = [
@@ -10,61 +11,63 @@ const PUBLIC_ROUTES: string[] = [
   '/login',              // 登录页
   '/register',           // 注册页
   '/api/novels',         // 小说列表
-  '/api/novels/featured', // 推荐小说
-  '/api/novels/latest',   // 最新小说
-  '/api/novels/top',      // 热门小说
-  '/api/tags/cloud'       // 标签云
+  '/api/tags/cloud',
+  '/api/comments',
+  // '/api/user/password',
 ]
 
+const JWT_SECRET = process.env.JWT_SECRET || 'your-very-secret-key'
+
 export default defineEventHandler(async (event) => {
-  // 检查是否是公开路由
-  if (PUBLIC_ROUTES.includes(event.path) || event.path.startsWith('/api/novels/')) {
-    return
+  const requestPath = event.path
+
+  const isPublicRoute = PUBLIC_ROUTES.includes(requestPath) || requestPath.startsWith('/api/novels/')
+  
+  if (isPublicRoute) {
+    return // 公开路由，不进行认证
   }
 
-  // 在开发环境中跳过认证
-  if (process.env.NODE_ENV === 'development') {
-    // 设置一个默认用户用于开发
-    event.context.user = {
-      id: 'dev-user-id',
-      username: 'dev-user',
-      email: 'dev@example.com'
+  const authHeader = getRequestHeader(event, 'Authorization')
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7)
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as { id: string } // 你的token payload 使用 'id'
+
+      if (decoded && decoded.id) {
+        const user = await UserModel.findById(decoded.id).select('-password')
+        if (user) {
+          event.context.auth = { user } // 设置 event.context.auth.user
+          return // 用户已认证，中间件处理完毕
+        } else {
+          console.warn(`[Auth Middleware] User not found for token ID: ${decoded.id} on path ${requestPath}.`)
+          throw createError({ statusCode: 401, statusMessage: 'User not found for provided token.' })
+        }
+      } else {
+         console.warn(`[Auth Middleware] Token decoded but no ID found for path ${requestPath}.`)
+         throw createError({ statusCode: 401, statusMessage: 'Invalid token payload.' })
+      }
+    } catch (error: unknown) {
+      console.error(`[Auth Middleware] Invalid token for path ${requestPath}:`, error instanceof Error ? error.message : 'Unknown error')
+      throw createError({ statusCode: 401, statusMessage: 'Invalid or expired token.' })
     }
-    return
   }
 
-  try {
-    const token = event.headers.get('Authorization')?.replace('Bearer ', '')
-
-    if (!token) {
-      throw createError({
-        statusCode: 401,
-        message: '未提供认证令牌'
-      })
+  if (process.env.NODE_ENV === 'development' && !event.context.auth?.user) {
+    console.warn(`[Auth Middleware] DEV MODE: No valid token for protected route ${requestPath}. Setting mock user.`)
+    const mockUserId = 'dev-user-id-xxxxxxxx'
+    event.context.auth = {
+      user: {
+        _id: mockUserId as string,
+        id: mockUserId,
+        username: 'dev-user',
+        email: 'dev@example.com',
+      }
     }
-
-    const decoded = verifyToken(token)
-    const user = await User.findById(decoded.id)
-
-    if (!user) {
-      throw createError({
-        statusCode: 401,
-        message: '用户不存在'
-      })
-    }
-
-    // 将用户信息添加到事件上下文
-    event.context.user = {
-      id: user._id,
-      username: user.username,
-      email: user.email
-    }
-
-  } catch (error: unknown) {
-    console.error('认证失败:', error)
-    throw createError({
-      statusCode: 401,
-      message: error instanceof Error ? error.message : '认证失败'
-    })
+    return // 开发模式下设置了模拟用户，则返回
   }
+
+  throw createError({
+    statusCode: 401,
+    statusMessage: 'Authorization token is missing or invalid.'
+  })
 })

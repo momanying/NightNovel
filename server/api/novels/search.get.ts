@@ -1,4 +1,4 @@
-import { Novel } from '~/server/models'
+import { NovelModel } from '~/server/models'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -59,7 +59,7 @@ export default defineEventHandler(async (event) => {
     
     if (keyword && keyword.length >= 2 && searchConditions.$text) {
       // 使用全文索引搜索时，按相关度排序
-      novels = await Novel.find(
+      novels = await NovelModel.find(
         searchConditions,
       { score: { $meta: 'textScore' } }
     )
@@ -69,7 +69,7 @@ export default defineEventHandler(async (event) => {
       .select('-volumes')
     } else {
       // 使用其他条件搜索时，按更新时间排序
-      novels = await Novel.find(searchConditions)
+      novels = await NovelModel.find(searchConditions)
         .sort({ updatedAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -77,12 +77,12 @@ export default defineEventHandler(async (event) => {
     }
     
     // 获取总数
-    const total = await Novel.countDocuments(searchConditions)
+    const total = await NovelModel.countDocuments(searchConditions)
     
     // 处理没有搜索结果但有拼写错误的情况
     if (keyword && novels.length === 0 && !category && !status) {
       // 尝试使用更宽松的搜索条件再次搜索
-      const relaxedSearch = await Novel.find(
+      const relaxedSearch = await NovelModel.find(
         { $or: [
           { title: new RegExp(keyword.split('').join('.*'), 'i') },
           { author: new RegExp(keyword.split('').join('.*'), 'i') }
@@ -119,7 +119,7 @@ export default defineEventHandler(async (event) => {
     if (novels.length > 0 && !category) {
       // 统计搜索结果中的分类
       const categoryMap = new Map<string, number>()
-      novels.forEach(novel => {
+      novels.forEach((novel) => {
         if (novel.category) {
           if (!categoryMap.has(novel.category)) {
             categoryMap.set(novel.category, 1)
@@ -139,7 +139,7 @@ export default defineEventHandler(async (event) => {
     if (novels.length > 0 && !status) {
       // 统计搜索结果中的状态
       const statusMap = new Map<string, number>()
-      novels.forEach(novel => {
+      novels.forEach((novel) => {
         if (novel.status) {
           if (!statusMap.has(novel.status)) {
             statusMap.set(novel.status, 1)

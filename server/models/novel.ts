@@ -42,4 +42,4 @@ NovelSchema.index({ title: 'text', author: 'text', introduction: 'text' })
 NovelSchema.index({ category: 1 })
 NovelSchema.index({ 'tags.name': 1 })
 
-export const Novel = mongoose.model('Novel', NovelSchema) 
+export const NovelModel = mongoose.model('Novel', NovelSchema) 

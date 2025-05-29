@@ -1,24 +1,34 @@
 <template>
 <div>
-  <LayoutsTheHeader />
-  <div class="mx-30 p-2.5">
-    <div class="flex gap-5 mt-5">
-      <NovelCard v-if="currentNovel" :novelinfo="currentNovel" />
-      <div v-else-if="loadingNovel" class="w-full text-center py-10">
-        <p>正在加载小说信息...</p>
-      </div>
-      <div v-else-if="novelError" class="w-full text-center py-10">
-        <p class="text-red-500">{{ novelError }}</p>
-      </div>
-    </div>
-    <div class="flex mt-5 justify-between">
-      <div>
-        <NovelSameNovel />
-      </div>
-      <div>
+
+  <LayoutsHeaderContainer />
+
+  <div class="mx-40 p-2.5 mt-5">
+    
+
+    <NovelInfomation v-if="currentNovel" :novel="currentNovel" />
+
+
+    <div class="mt-5 flex">
+
+      <div class="max-h-full">
+            
         <NovelSimilarNovel />
+
+        <NovelSimilarFinishNovel :novel="currentNovel" />
+
       </div>
+
+      <div class="ml-10 flex-grow max-w-[500px]">
+
+        <NovelPopularComment />
+        
+      </div>
+      
     </div>
+    
+    <NovelComment />
+
   </div> 
 </div>
 </template>
@@ -32,7 +42,16 @@ const novelId = computed(() => route.params.id as string)
 const novelStore = useNovelStore()
 
 // 从store中获取响应式状态
-const { currentNovel, loadingNovel, novelError } = storeToRefs(novelStore)
+const { currentNovel } = storeToRefs(novelStore)
+
+useHead({
+  title: currentNovel.value?.title || '小说详情',
+  meta: [
+    {
+      name: 'title',
+    },
+  ],
+})
 
 // 监听novelId变化，获取小说数据
 watch(novelId, async (newId) => {

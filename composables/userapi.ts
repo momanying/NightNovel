@@ -6,11 +6,11 @@ import type { IBookmarkData } from '~/types/novel/bookmark';
 export const userApi = {
     // 用户登录
     login: (username: string, password: string) =>
-      $fetch<ApiResponse<{token: string, user: User}>>('/api/auth/login', { method: 'POST', body: { username, password } }),
+      $fetch<ApiResponse<{token: string, user: User, email: string}>>('/api/auth/login', { method: 'POST', body: { username, password } }),
     
     // 用户注册
     register: (username: string, email: string, password: string) => 
-      $fetch<ApiResponse<{token: string, user: User}>>('/api/auth/register', { method: 'POST', body: { username, email, password } }),
+      $fetch<ApiResponse<{token: string, user: User, email: string}>>('/api/auth/register', { method: 'POST', body: { username, email, password } }),
   
     // 退出登录
     logout: () => 

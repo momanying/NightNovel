@@ -1,5 +1,5 @@
 import { verifyToken } from '~/server/api/auth/jwt'
-import { ReadingHistory } from '~/server/models'
+import { ReadingHistoryModel } from '~/server/models'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
       }
 
       // 获取用户阅读历史数量
-      const count = await ReadingHistory.countDocuments({ userId: decoded.id })
+      const count = await ReadingHistoryModel.countDocuments({ userId: decoded.id })
 
       return {
         code: 200,

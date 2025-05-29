@@ -1,8 +1,8 @@
-import { Novel } from '~/server/models/novel';
+import { NovelModel } from '~/server/models';
 
 export default defineEventHandler(async () => {
   try {
-    const newNovels = await Novel.aggregate([
+    const newNovels = await NovelModel.aggregate([
       {
         $addFields: {
           // 从 cover_url 中提取倒数第二个路径部分作为排序依据

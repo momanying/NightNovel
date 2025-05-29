@@ -1,4 +1,4 @@
-import { Novel } from '~/server/models'
+import { NovelModel } from '~/server/models'
 import type { Types } from 'mongoose'
 
 // 定义缓存小说的接口
@@ -48,7 +48,7 @@ const expandCacheAsync = async () => {
     const existingIds = new Set(novelCache.map(novel => novel._id.toString()));
     
     // 跳过已有的小说，获取热门小说作为补充
-    const additionalNovels = await Novel.find({
+    const additionalNovels = await NovelModel.find({
       _id: { $nin: Array.from(existingIds) } // 排除已缓存的ID
     })
       .sort({ views: -1, rating: -1 })
@@ -84,7 +84,7 @@ const initializeCache = async () => {
     const now = Date.now();
     
     // 获取初始小说缓存（最新更新的50本）
-    const latestNovels = await Novel.find()
+    const latestNovels = await NovelModel.find()
       .sort({ lastUpdate: -1 }) // 按更新时间降序排序
       .limit(INITIAL_CACHE_SIZE)
       .select('_id title author cover_url views rating lastUpdate')
@@ -135,7 +135,7 @@ export default defineEventHandler(async (_event) => {
     }
     
     // 如果缓存为空，回退到轻量级查询
-    const totalNovels = await Novel.countDocuments();
+    const totalNovels = await NovelModel.countDocuments();
     
     if (totalNovels === 0) {
       return {
@@ -149,7 +149,7 @@ export default defineEventHandler(async (_event) => {
     const randomIndex = Math.floor(Math.random() * totalNovels);
     
     // 使用skip跳过随机数量的文档，然后获取一个文档
-    const novel = await Novel.findOne()
+    const novel = await NovelModel.findOne()
       .skip(randomIndex)
       .select('_id title author cover_url views rating')
       .lean();

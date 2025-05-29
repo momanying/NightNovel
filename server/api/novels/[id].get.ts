@@ -1,4 +1,4 @@
-import { Novel, Volume } from '~/server/models'
+import { NovelModel, VolumeModel } from '~/server/models'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
     }
     
     // 获取小说详情
-    const novel = await Novel.findById(id)
+    const novel = await NovelModel.findById(id)
     
     if (!novel) {
       return {
@@ -22,10 +22,10 @@ export default defineEventHandler(async (event) => {
     }
     
     // 增加浏览量
-    await Novel.findByIdAndUpdate(id, { $inc: { views: 1 } })
+    await NovelModel.findByIdAndUpdate(id, { $inc: { views: 1 } })
     
     // 获取卷列表
-    const volumes = await Volume.find({ novelId: id })
+    const volumes = await VolumeModel.find({ novelId: id })
       .sort({ order: 1 })
       .populate({
         path: 'chapters',
