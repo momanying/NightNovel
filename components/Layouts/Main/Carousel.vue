@@ -96,11 +96,11 @@ const getAnimations = () => {
   } else {
     // 桌面设备上的位置设置
     return [
-      { left: '55px', top: '8%', opacity: 1, zIndex: 5, width: '180px', height: '230px' }, 
-      { left: '50px', top: '70%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },
-      { left: '100px', top: '70%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },
+      { left: '160px', top: '8%', opacity: 1, zIndex: 5, width: '180px', height: '230px' }, 
       { left: '150px', top: '70%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },
       { left: '200px', top: '70%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },
+      { left: '250px', top: '70%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },
+      { left: '300px', top: '70%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },
     ];
   }
 };
