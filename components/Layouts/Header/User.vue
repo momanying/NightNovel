@@ -21,7 +21,7 @@
                     class="flex items-center overflow-hidden rounded-full cursor-pointer"
                     @click="toggle"
                 >
-                    <img class="flex-shrink-0 overflow-hidden rounded-full w-8 h-8 md:w-10 md:h-10 mr-1 md:mr-2" :src="userdata.avatar" alt="avatar">
+                    <img class="flex-shrink-0 overflow-hidden rounded-full w-10 h-10 md:w-10 md:h-10 mr-1 md:mr-2" :src="userdata.avatar" alt="avatar">
                     <span class="text-sm md:text-base text-white no-underline hover:text-gray-100 hidden sm:inline">{{ userdata.username }}</span>
                     <!-- Optionally show a chevron or indicator based on isOpen -->
                 </div>

@@ -13,14 +13,16 @@
         class="flex flex-col cursor-pointer transition-transform duration-300 hover:-translate-y-1"
         @click="navigateToNovel(novel._id || 0)"
       >
-        <NuxtImg
-          class="w-28 h-40 object-cover rounded-md mb-2"
-          :src="novel.cover_url"
-          :alt="novel.title"
-          loading="lazy"
-          format="webp"
-          sizes="112px"
-        />
+        <div class="w-28 h-40 rounded-md overflow-hidden">
+          <NuxtImg
+            class="w-full h-full object-cover rounded-md"
+            :src="novel.cover_url || '/images/default-cover.webp'"
+            :alt="novel.title"
+            loading="lazy"
+            format="webp"
+            sizes="112px"
+          />
+        </div>
         <h3 class="text-sm font-medium text-white mt-1 line-clamp-1">{{ novel.title }}</h3>
         <p class="text-xs text-gray-400 line-clamp-1">{{ novel.author }}</p>
       </div>

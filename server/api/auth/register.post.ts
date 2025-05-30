@@ -61,7 +61,7 @@ export default defineEventHandler(async (event) => {
             username,
             email,
             password,
-            avatar: `/public/images/default-cover.jpg` // 设置默认头像
+            avatar: `/images/default-cover.webp` // 设置默认头像
         })
 
         // 保存用户到数据库

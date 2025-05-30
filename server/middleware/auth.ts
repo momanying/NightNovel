@@ -12,20 +12,38 @@ const PUBLIC_ROUTES: string[] = [
   '/register',           // 注册页
   '/api/novels',         // 小说列表
   '/api/tags/cloud',
-  '/api/comments',
+  '/api/comments', // Base comments route
+  '/api/comments/popular', // For GETting popular comments
+  '/api/comments/popular/post', // For POSTing popular comments
   // '/api/user/password',
 ]
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-very-secret-key'
 
 export default defineEventHandler(async (event) => {
-  const requestPath = event.path
+  const requestPath = event.path;
+  console.log(`[Auth Middleware] Request path: ${requestPath}`); // DEBUG LINE
 
-  const isPublicRoute = PUBLIC_ROUTES.includes(requestPath) || requestPath.startsWith('/api/novels/')
+  // Explicit check for the problematic route
+  if (requestPath === '/api/comments/popular/post') {
+    console.log('[Auth Middleware] Allowing /api/comments/popular/post as public (debug check).');
+    return; // Explicitly allow for debugging
+  }
+
+  // Check if the request path or its base (for dynamic routes) is in PUBLIC_ROUTES
+  const isPublicRoute = PUBLIC_ROUTES.some(publicRoute => {
+    if (requestPath.startsWith('/api/novels/') && publicRoute === '/api/novels/') {
+      return true; // Specific handling for /api/novels/*
+    }
+    return requestPath === publicRoute;
+  });
   
   if (isPublicRoute) {
+    console.log(`[Auth Middleware] Path ${requestPath} is public.`); // DEBUG LINE
     return // 公开路由，不进行认证
   }
+  
+  console.log(`[Auth Middleware] Path ${requestPath} is NOT public. Proceeding with auth check.`); // DEBUG LINE
 
   const authHeader = getRequestHeader(event, 'Authorization')
   if (authHeader && authHeader.startsWith('Bearer ')) {

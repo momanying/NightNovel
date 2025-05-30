@@ -16,7 +16,7 @@
       
       <!-- 右侧图标区域 -->
       <div class="flex items-center shrink-0">
-        <LayoutsHeaderSearch class="mr-3 md:mr-5" />
+        <LayoutsHeaderSearch class="mr-3" />
         <LayoutsHeaderUser />
       </div>
     </div>

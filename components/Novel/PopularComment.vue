@@ -1,76 +1,452 @@
 <template>
-  <div>
+  <div class="min-h-[400px]">
     <div class="flex items-center justify-between">
       <h2 class="title-h2">精华书评</h2>
-      <button class="text-sm text-gray-500 hover:text-primary-500 transition-colors" @click="navigateTo('/comments')">
+      <button class="text-sm text-gray-500 hover:text-primary-500 transition-colors" @click="navigateToComments">
         查看全部点评
       </button>
     </div>
     
-    <div class="flex flex-col mt-4">
+    <div class="flex flex-col">
+      <!-- 加载状态 -->
+      <div v-if="isLoading" class="flex justify-center items-center py-10">
+        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500"></div>
+      </div>
+      
+      <!-- 无数据状态 -->
+      <div v-else-if="comments.length === 0" class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-center my-4">
+        <Icon name="ph:book-open-text" class="w-12 h-12 text-gray-400 mx-auto mb-2" />
+        <p class="text-gray-500 dark:text-gray-400 mb-2">还没有书评，快来写下你的感想吧！</p>
+        <button 
+          class="mt-2 px-4 py-2 bg-sky-500 hover:bg-primary-600 text-white rounded-md transition-colors duration-200"
+          @click="openCommentModal"
+        >
+          写第一条评论
+        </button>
+      </div>
+      
+      <!-- 评论列表 -->
       <div 
-        v-for="(comment, index) in comments" 
-        :key="index" 
-        :class="[
-          'bg-gray-50 dark:bg-gray-800 rounded-lg p-4 shadow-sm mb-5',
-          index === comments.length - 1 ? 'mt-auto' : ''
-        ]"
+        v-else
+        v-for="comment in comments" 
+        :key="comment._id" 
+        class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 shadow-sm mb-5"
       >
         <div class="flex items-center justify-between mb-2">
           <div class="flex items-center">
-            <img :src="comment.avatar" :alt="comment.username" class="w-8 h-8 rounded-full mr-2">
-            <span class="font-medium text-gray-800 dark:text-gray-200 text-sm truncate max-w-[80px]">{{ comment.username }}</span>
+            <img :src="comment.user.avatar" :alt="comment.user.username" class="w-8 h-8 rounded-full mr-2">
+            <span class="font-medium text-gray-800 dark:text-gray-200 text-sm truncate max-w-[80px]">{{ comment.user.username }}</span>
           </div>
-          <span class="text-xs text-gray-500">{{ comment.date }}</span>
+          <span class="text-xs text-gray-500">{{ formatDate(comment.createdAt) }}</span>
         </div>
-        <div class="flex mb-2">
-          <div v-for="i in 5" :key="i" class="text-yellow-400">
-            <Icon :name="i <= comment.rating ? 'ph:star-fill' : 'ph:star'" class="w-4 h-4" />
-          </div>
+        
+        <!-- 渲染 Markdown 内容 -->
+        <div v-if="isExpanded[comment._id]" class="comment-content">
+          <MdPreview modelValue={comment.content} previewTheme="default" />
         </div>
-        <p class="text-gray-700 dark:text-gray-300 text-xs line-clamp-3 flex-grow overflow-hidden">{{ comment.content }}</p>
+        
+        <!-- 折叠预览 -->
+        <div v-else class="line-clamp-3 text-gray-700 dark:text-gray-300 text-xs overflow-hidden mb-2">
+          {{ stripMarkdown(comment.content) }}
+        </div>
+        
+        <!-- 展开/收起按钮 -->
+        <button 
+          @click="toggleExpand(comment._id)" 
+          class="text-xs text-sky-500 hover:text-sky-600 transition-colors mt-1"
+        >
+          {{ isExpanded[comment._id] ? '收起' : '展开全文' }}
+        </button>
+        
       </div>
     </div>
+
+    <!-- 添加评论按钮 -->
+    <div v-if="comments.length > 0" class="flex justify-end">
+      <button 
+        class="px-4 py-2 bg-sky-500 hover:bg-primary-700 text-white rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        @click="openCommentModal"
+      >
+        写评论
+      </button>
+    </div>
+
+    <!-- 评论编辑器模态框 -->
+    <Teleport to="body">
+      <div 
+        v-if="showModal" 
+        class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto"
+      >
+        <!-- 遮罩层 -->
+        <div 
+          class="fixed inset-0 transition-opacity bg-gray-900/60 backdrop-blur-md" 
+          @click="closeCommentModal"
+        />
+        
+        <!-- 模态框内容 -->
+        <div 
+          class="relative z-10 bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-3xl m-4 max-h-[90vh] overflow-y-auto"
+          @click.stop
+        >
+          <div class="p-5">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="font-medium text-xl text-gray-800 dark:text-gray-200">写书评</h3>
+              <button 
+                class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                @click="closeCommentModal"
+              >
+                <Icon name="ph:x" class="w-6 h-6" />
+              </button>
+            </div>
+            
+            <!-- 评分 -->
+            <div class="mb-4">
+              <div class="flex items-center mb-2">
+                <span class="text-sm text-gray-700 dark:text-gray-300 mr-2">评分:</span>
+                <div class="flex">
+                  <button 
+                    v-for="i in 5" 
+                    :key="i" 
+                    class="text-yellow-400 focus:outline-none"
+                    @click="newComment.rating = i"
+                  >
+                    <Icon :name="i <= newComment.rating ? 'ph:star-fill' : 'ph:star'" class="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 标签 -->
+            <div class="mb-4">
+              <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">标签:</label>
+              <div class="flex flex-wrap gap-2">
+                <div 
+                  v-for="(tag, index) in availableTags" 
+                  :key="index"
+                  @click="toggleTag(tag)"
+                  :class="[
+                    'px-2 py-1 rounded-full text-xs cursor-pointer transition-colors',
+                    newComment.tags.includes(tag) 
+                      ? 'bg-sky-500 text-white' 
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  ]"
+                >
+                  {{ tag }}
+                </div>
+              </div>
+            </div>
+            
+            <!-- Markdown编辑器 -->
+            <MdEditor
+              v-model="newComment.content"
+              :editorId="editorId"
+              :toolbars="toolbars"
+              @onSave="submitComment"
+              class="mb-4"
+              :style="{ height: '350px' }"
+              previewTheme="default"
+            />
+            
+            <div class="flex justify-end">
+              <button 
+                class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors mr-3"
+                @click="closeCommentModal"
+              >
+                取消
+              </button>
+              <button 
+                class="px-4 py-2 bg-sky-500 text-white rounded-md hover:bg-primary-600 transition-colors"
+                @click="submitComment"
+                :disabled="isSubmitting"
+              >
+                {{ isSubmitting ? '提交中...' : '提交评论' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-interface Comment {
-  username: string;
-  avatar: string;
-  rating: number;
-  date: string;
-  content: string;
-}
+import { ref, onMounted, reactive } from 'vue';
+import { MdEditor, MdPreview, type ToolbarNames } from 'md-editor-v3';
+import 'md-editor-v3/lib/style.css';
+import type { Comment } from '~/types/comment';
 
-const navigateTo = (path: string) => {
-  navigateTo(path);
+const props = defineProps({
+  novelId: {
+    type: String,
+    default: ''
+  }
+});
+
+const editorId = 'comment-editor';
+const isSubmitting = ref(false);
+const showModal = ref(false);
+const comments = ref<Comment[]>([]);
+const isLoading = ref(true);
+const isExpanded = reactive<Record<string, boolean>>({});
+const isDarkMode = ref(false);
+
+// 可用标签
+const availableTags = [
+  '推荐', '剧情', '人物', '世界观', '文笔', '情感', '设定', '画面感', '节奏'
+];
+
+// 获取热门评论
+const fetchPopularComments = async () => {
+  try {
+    isLoading.value = true;
+    const params: Record<string, string> = { limit: '3' };
+    
+    // 如果有小说ID，则获取该小说的热门评论
+    if (props.novelId) {
+      params.novelId = props.novelId;
+    }
+    
+    const response = await $fetch<{ comments: Comment[] }>('/api/comments/popular', { 
+      method: 'GET',
+      params
+    });
+    
+    if (response && response.comments) {
+      comments.value = response.comments;
+      
+      // 初始化所有评论为折叠状态
+      comments.value.forEach(comment => {
+        isExpanded[comment._id] = false;
+      });
+    }
+  } catch (error) {
+    console.error('获取热门评论失败:', error);
+  } finally {
+    isLoading.value = false;
+  }
 };
 
-// 模拟评论数据
-const comments = ref<Comment[]>([
-  {
-    username: "吧诶专属",
-    avatar: "http://54.255.84.100/i/2025/04/25/680b4a5499364.jpg",
-    rating: 5,
-    date: "3天前",
-    content: "《夏日口袋》久岛鸣线感想（含剧透）《夏日口袋》冒险，是孩子们的憧憬。夏日口袋作为一款优秀的galgame，其中的线是我最喜欢的线之一，它让我体验了一场充满回忆的旅程。dadasdasdasdasd《夏日口袋》久岛鸣线感想（含剧透）《夏日口袋》冒险，是孩子们的憧憬。夏日口袋作为一款优秀的galgame，其中的线是我最喜欢的线之一，它让我体验了一场充满回忆的旅程。"
-  },
-  {
-    username: "ssss_233z",
-    avatar: "http://54.255.84.100/i/2025/04/25/680b4a524e4a8.jpg",
-    rating: 5,
-    date: "3天前",
-    content: "哭了，回味吧夏日口袋我最钟爱的信仰历方在且鸟白鸟眼泪蒙名在流淌状态记得奇可梦还有给力的乒乓球故人都轮番打进舞算通宵也不累，它让我体验了一场充满回忆的旅程。《夏日口袋》久岛鸣线感想（含剧透）《夏日口袋》冒险，是孩子们的憧憬。夏日口袋作为一款优秀的galgame，其中的线是我最喜欢的线之一，它让我体验了一场充满回忆的旅程。"
-  },
-  {
-    username: "春与修罗",
-    avatar: "http://54.255.84.100/i/2025/04/25/680b4a53a9d39.jpg",
-    rating: 5,
-    date: "3天前",
-    content: "好玩好，第二集正式进入剧情了，这集观感很好，bgm插入的也环节能令我接受，毕竟要照顾时长不能全部放完，白羽好好看，臊也好可爱 (*´∀｀*).《夏日口袋》久岛鸣线感想（含剧透）《夏日口袋》冒险，是孩子们的憧憬。夏日口袋作为一款优秀的galgame，其中的线是我最喜欢的线之一，它让我体验了一场充满回忆的旅程。"
-  },
-]);
+// 初始化时获取评论
+onMounted(() => {
+  fetchPopularComments();
+  
+  // Check if dark mode is enabled
+  isDarkMode.value = document.documentElement.classList.contains('dark');
+  
+  // Listen for theme changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    isDarkMode.value = e.matches;
+  });
+});
+
+// 切换评论展开/折叠状态
+const toggleExpand = (commentId: string) => {
+  isExpanded[commentId] = !isExpanded[commentId];
+};
+
+// 切换标签选择
+const toggleTag = (tag: string) => {
+  if (newComment.value.tags.includes(tag)) {
+    newComment.value.tags = newComment.value.tags.filter(t => t !== tag);
+  } else {
+    newComment.value.tags.push(tag);
+  }
+};
+
+// 页面导航
+const navigateToComments = () => {
+  navigateTo('/comments');
+};
+
+// 打开评论模态框
+const openCommentModal = () => {
+  showModal.value = true;
+  // 阻止背景滚动
+  document.body.style.overflow = 'hidden';
+};
+
+// 关闭评论模态框
+const closeCommentModal = () => {
+  showModal.value = false;
+  // 恢复背景滚动
+  document.body.style.overflow = '';
+};
+
+// 编辑器配置
+const toolbars: ToolbarNames[] = [
+  'bold', 'italic', 'strikeThrough', 'title', 'sub', 'sup', 'quote', 'unorderedList',
+  'orderedList', 'codeRow', 'code', 'link', 'image', 'table', 'revoke', 'next', 'save'
+];
+
+// 新评论数据
+const newComment = ref({
+  rating: 5,
+  content: '',
+  tags: [] as string[]
+});
+
+// 移除Markdown语法以获得纯文本预览
+const stripMarkdown = (md: string) => {
+  return md
+    .replace(/#+\s+/g, '') // 移除标题
+    .replace(/(?:\*\*|__)(.*?)\1/g, '$1') // 移除加粗
+    .replace(/(?:\*|_)(.*?)\1/g, '$1') // 移除斜体
+    .replace(/(?:~~)(.*?)~~/g, '$1') // 移除删除线
+    .replace(/(?:`)(.*?)`/g, '$1') // 移除行内代码
+    .replace(/(?:```)([\s\S]*?)```/g, '$1') // 移除代码块
+    .replace(/\[(.*?)\]\(.*?\)/g, '$1') // 移除链接，保留链接文本
+    .replace(/!\[(.*?)\]\(.*?\)/g, '[图片: $1]') // 替换图片为描述
+    .replace(/^\s*>+\s+/gm, '') // 移除引用符号
+    .replace(/^\s*[-+*]\s+/gm, '') // 移除无序列表符号
+    .replace(/^\s*\d+\.\s+/gm, '') // 移除有序列表序号
+    .replace(/^\s*[-*=_]{3,}\s*$/gm, '') // 移除水平线
+    .replace(/\n{2,}/g, '\n'); // 将多个换行替换为单个换行
+};
+
+// 格式化日期
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  
+  if (diffDays < 1) {
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    if (diffHours < 1) {
+      const diffMinutes = Math.floor(diffMs / (1000 * 60));
+      return diffMinutes < 1 ? '刚刚' : `${diffMinutes}分钟前`;
+    }
+    return `${diffHours}小时前`;
+  } else if (diffDays < 30) {
+    return `${diffDays}天前`;
+  } else {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+  }
+};
+
+// 提交评论
+const submitComment = async () => {
+  if (!newComment.value.content.trim()) {
+    alert('请输入评论内容');
+    return;
+  }
+  
+  try {
+    isSubmitting.value = true;
+    
+    // 创建表单数据
+    const formData = new FormData();
+    formData.append('content', newComment.value.content);
+    formData.append('rating', newComment.value.rating.toString());
+    
+    // 如果有标签，添加到表单
+    if (newComment.value.tags.length > 0) {
+      formData.append('tags', JSON.stringify(newComment.value.tags));
+    }
+    
+    // 如果有小说ID，添加到表单
+    if (props.novelId) {
+      formData.append('novelId', props.novelId);
+    }
+    
+    // 提交到后端 - 使用专门的精华评论API
+    await fetch('/api/comments/popular/post', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+    
+    console.log('评论提交成功');
+    
+    // 重新获取热门评论，可能已经变化
+    await fetchPopularComments();
+    
+    // 重置表单
+    newComment.value.content = '';
+    newComment.value.rating = 5;
+    newComment.value.tags = [];
+    
+    // 关闭模态框
+    closeCommentModal();
+    
+  } catch (error) {
+    console.error('提交评论失败:', error);
+    alert('提交评论失败，请稍后重试');
+  } finally {
+    isSubmitting.value = false;
+  }
+};
 </script>
+
+<style>
+/* 添加Markdown内容的样式 */
+.comment-content {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.comment-content img {
+  max-width: 100%;
+  border-radius: 4px;
+  margin: 0.5rem 0;
+}
+
+.comment-content a {
+  color: #0ea5e9;
+  text-decoration: none;
+}
+
+.comment-content a:hover {
+  text-decoration: underline;
+}
+
+.comment-content pre {
+  background-color: #f3f4f6;
+  border-radius: 4px;
+  padding: 0.5rem;
+  overflow-x: auto;
+  margin: 0.5rem 0;
+}
+
+.dark .comment-content pre {
+  background-color: #1f2937;
+}
+
+.comment-content blockquote {
+  border-left: 3px solid #d1d5db;
+  padding-left: 0.75rem;
+  color: #6b7280;
+  margin: 0.5rem 0;
+}
+
+.dark .comment-content blockquote {
+  border-left-color: #4b5563;
+  color: #9ca3af;
+}
+
+.comment-content h1, .comment-content h2, .comment-content h3,
+.comment-content h4, .comment-content h5, .comment-content h6 {
+  font-weight: 600;
+  margin: 0.75rem 0 0.5rem;
+}
+
+.comment-content h1 { font-size: 1.5rem; }
+.comment-content h2 { font-size: 1.25rem; }
+.comment-content h3 { font-size: 1.125rem; }
+.comment-content h4, .comment-content h5, .comment-content h6 { font-size: 1rem; }
+
+.comment-content ul, .comment-content ol {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.comment-content ul { list-style-type: disc; }
+.comment-content ol { list-style-type: decimal; }
+</style>
   
   

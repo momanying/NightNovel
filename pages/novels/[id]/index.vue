@@ -11,17 +11,17 @@
 
     <div class="mt-5 flex">
 
-      <div class="max-h-full">
+      <div class="w-[700px] flex-shrink-0">
             
         <NovelSimilarNovel />
 
-        <NovelSimilarFinishNovel :novel="currentNovel" />
+        <NovelSimilarFinishNovel/>
 
       </div>
 
-      <div class="ml-10 flex-grow max-w-[500px]">
+      <div class="ml-10 flex-grow">
 
-        <NovelPopularComment />
+        <NovelPopularComment :novel-id="novelId" />
         
       </div>
       
