@@ -1,67 +1,73 @@
 <template>
-  <div class="container mx-auto p-4">
-    <h1 class="text-3xl font-bold mb-6 text-gray-800 dark:text-gray-200">所有长评</h1>
+  <div>
+    <LayoutsHeaderContainer/>
+    
+    <NovelInfoMation :novel="currentNovel" />
 
-    <div v-if="isLoading" class="flex justify-center items-center py-10">
-      <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-primary-500"></div>
-      <p class="ml-4 text-lg text-gray-600 dark:text-gray-400">加载中...</p>
-    </div>
+    <div class="container mx-auto p-4">
+      <h1 class="text-3xl font-bold mb-6 text-white dark:text-gray-200">所有长评</h1>
 
-    <div v-else-if="comments.length === 0" class="bg-gray-50 dark:bg-gray-800 rounded-lg p-8 text-center my-8 shadow">
-      <Icon name="ph:chat-circle-dots-light" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
-      <p class="text-xl text-gray-500 dark:text-gray-400">还没有任何长评。</p>
-      <p class="text-gray-400 dark:text-gray-500 mt-2">成为第一个分享你感想的人吧！</p>
-    </div>
+      <div v-if="isLoading" class="flex justify-center items-center py-10">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-primary-500"/>
+        <p class="ml-4 text-lg text-gray-600 dark:text-gray-400">加载中...</p>
+      </div>
 
-    <div v-else class="space-y-6">
-      <div 
-        v-for="comment in comments" 
-        :key="comment._id" 
-        class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-shadow hover:shadow-lg"
-      >
-        <div class="flex items-start justify-between mb-3">
-          <div class="flex items-center">
-            <img 
-              :src="comment.user?.avatar || '/images/default-avatar.png'" 
-              :alt="comment.user?.username || '用户'" 
-              class="w-10 h-10 rounded-full mr-3 border-2 border-gray-200 dark:border-gray-700"
-            >
-            <div>
-              <span class="font-semibold text-gray-800 dark:text-gray-200 text-md">{{ comment.user?.username || '匿名用户' }}</span>
-              <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-1">
-                <Icon name="ph:calendar-blank-light" class="w-3 h-3 mr-1" />
-                {{ formatDate(comment.createdAt) }}
+      <div v-else-if="comments.length === 0" class="bg-gray-50 dark:bg-gray-800 rounded-lg p-8 text-center my-8 shadow">
+        <Icon name="ph:chat-circle-dots-light" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
+        <p class="text-xl text-gray-500 dark:text-gray-400">还没有任何长评。</p>
+        <p class="text-gray-400 dark:text-gray-500 mt-2">成为第一个分享你感想的人吧！</p>
+      </div>
+
+      <div v-else class="space-y-6">
+        <div 
+          v-for="comment in comments" 
+          :key="comment._id" 
+          class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-shadow hover:shadow-lg"
+        >
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex items-center">
+              <img 
+                :src="comment.user?.avatar || '/images/default-avatar.png'" 
+                :alt="comment.user?.username || '用户'" 
+                class="w-10 h-10 rounded-full mr-3 border-2 border-gray-200 dark:border-gray-700"
+              >
+              <div>
+                <span class="font-semibold text-gray-800 dark:text-gray-200 text-md">{{ comment.user?.username || '匿名用户' }}</span>
+                <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <Icon name="ph:calendar-blank-light" class="w-3 h-3 mr-1" />
+                  {{ formatDate(comment.createdAt) }}
+                </div>
               </div>
             </div>
+            <div v-if="comment.rating" class="flex items-center text-sm text-yellow-500">
+              <Icon 
+                v-for="i in 5" 
+                :key="i" 
+                :name="i <= (comment.rating || 0) ? 'ph:star-fill' : 'ph:star-light'" 
+                class="w-4 h-4" 
+              />
+              <span class="ml-1 font-medium">({{ comment.rating }})</span>
+            </div>
           </div>
-          <div v-if="comment.rating" class="flex items-center text-sm text-yellow-500">
-            <Icon 
-              v-for="i in 5" 
-              :key="i" 
-              :name="i <= (comment.rating || 0) ? 'ph:star-fill' : 'ph:star-light'" 
-              class="w-4 h-4" 
+          
+          <div class="prose prose-sm dark:prose-invert max-w-none comment-markdown-content">
+            <MdPreview 
+              :modelValue="comment.content"
+              :editorId="`preview-${comment._id}`" 
+              previewTheme="default" 
             />
-            <span class="ml-1 font-medium">({{ comment.rating }})</span>
           </div>
-        </div>
-        
-        <div class="prose prose-sm dark:prose-invert max-w-none comment-markdown-content">
-          <MdPreview 
-            :modelValue="comment.content"
-            :editorId="`preview-${comment._id}`" 
-            previewTheme="default" 
-          />
-        </div>
 
-        <div v-if="comment.tags && comment.tags.length > 0" class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
-          <span class="text-xs font-semibold text-gray-600 dark:text-gray-400 mr-2">标签:</span>
-          <span 
-            v-for="tag in comment.tags" 
-            :key="tag"
-            class="inline-block bg-sky-100 text-sky-700 dark:bg-sky-700 dark:text-sky-200 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full"
-          >
-            {{ tag }}
-          </span>
+          <div v-if="comment.tags && comment.tags.length > 0" class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+            <span class="text-xs font-semibold text-gray-600 dark:text-gray-400 mr-2">标签:</span>
+            <span 
+              v-for="tag in comment.tags" 
+              :key="tag"
+              class="inline-block bg-sky-100 text-sky-700 dark:bg-sky-700 dark:text-sky-200 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full"
+            >
+              {{ tag }}
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -73,6 +79,9 @@ import { ref, onMounted } from 'vue';
 import { MdPreview } from 'md-editor-v3';
 import 'md-editor-v3/lib/style.css';
 import type { Comment } from '~/types/comment'; // Ensure this path is correct
+import { useNovelStore } from '#imports';
+
+const currentNovel = useNovelStore();
 
 interface UserInfo {
   _id: string;

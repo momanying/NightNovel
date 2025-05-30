@@ -10,7 +10,7 @@
     <div class="flex flex-col">
       <!-- 加载状态 -->
       <div v-if="isLoading" class="flex justify-center items-center py-10">
-        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500"></div>
+        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500"/>
       </div>
       
       <!-- 无数据状态 -->
@@ -26,9 +26,9 @@
       </div>
       
       <!-- 评论列表 -->
-      <div 
-        v-else
+      <div
         v-for="comment in comments" 
+        v-else 
         :key="comment._id" 
         class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 shadow-sm mb-5"
       >
@@ -49,14 +49,6 @@
         <div v-else class="line-clamp-3 text-gray-700 dark:text-gray-300 text-xs overflow-hidden mb-2">
           {{ stripMarkdown(comment.content) }}
         </div>
-        
-        <!-- 展开/收起按钮 -->
-        <button 
-          @click="toggleExpand(comment._id)" 
-          class="text-xs text-sky-500 hover:text-sky-600 transition-colors mt-1"
-        >
-          {{ isExpanded[comment._id] ? '收起' : '展开全文' }}
-        </button>
         
       </div>
     </div>
@@ -123,13 +115,13 @@
                 <div 
                   v-for="(tag, index) in availableTags" 
                   :key="index"
-                  @click="toggleTag(tag)"
                   :class="[
                     'px-2 py-1 rounded-full text-xs cursor-pointer transition-colors',
                     newComment.tags.includes(tag) 
                       ? 'bg-sky-500 text-white' 
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                   ]"
+                  @click="toggleTag(tag)"
                 >
                   {{ tag }}
                 </div>
@@ -139,12 +131,12 @@
             <!-- Markdown编辑器 -->
             <MdEditor
               v-model="newComment.content"
-              :editorId="editorId"
-              :toolbars="toolbars"
-              @onSave="submitComment"
               class="mb-4"
               :style="{ height: '350px' }"
               previewTheme="default"
+              :editorId="editorId"
+              :toolbars="toolbars"
+              @onSave="submitComment"
             />
             
             <div class="flex justify-end">
@@ -156,8 +148,8 @@
               </button>
               <button 
                 class="px-4 py-2 bg-sky-500 text-white rounded-md hover:bg-primary-600 transition-colors"
-                @click="submitComment"
                 :disabled="isSubmitting"
+                @click="submitComment"
               >
                 {{ isSubmitting ? '提交中...' : '提交评论' }}
               </button>
@@ -238,11 +230,6 @@ onMounted(() => {
     isDarkMode.value = e.matches;
   });
 });
-
-// 切换评论展开/折叠状态
-const toggleExpand = (commentId: string) => {
-  isExpanded[commentId] = !isExpanded[commentId];
-};
 
 // 切换标签选择
 const toggleTag = (tag: string) => {

@@ -35,7 +35,7 @@
 
       <!-- 分页 -->
       <div class="mt-8 flex justify-center">
-        <PageNation 
+        <CommonPageNation 
           :current-page="currentPage"
           :total-pages="totalPages"
           @page-changed="handlePageChange"
@@ -47,9 +47,6 @@
 
 <script setup lang="ts">
 import type { Novel } from '~/types/novel/novelinfo';
-import { useRoute, useRouter } from 'vue-router';
-import ArticleListFilterBar from '~/components/ArticleList/FilterBar.vue';
-import ArticleListNovelCard from '~/components/ArticleList/NovelCard.vue';
 
 const loading = ref(true);
 const error = ref('');

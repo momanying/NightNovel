@@ -5,8 +5,8 @@
   <!-- 使用响应式布局 -->
   <div class="flex flex-col lg:flex-row w-full lg:h-[400px] text-white overflow-hidden justify-between">
     <!-- 左侧：轮播区域 - 在移动设备上占满宽度，在桌面上占40% -->
-    <div class="w-full lg:w-2/5 h-[300px] lg:h-full mb-6 lg:mb-0">
-      <ul class="relative w-auto h-full">
+    <div class="w-full lg:w-2/6 h-[300px] lg:h-full mb-6 lg:mb-0">
+      <ul class="relative w-full h-full overflow-hidden rounded-lg">
         <li 
           v-for="(novel, index) in items" 
           :key="novel._id"
@@ -27,7 +27,7 @@
     </div>
 
     <!-- 右侧：小说详情区域 - 在移动设备上占满宽度，在桌面上占60% -->
-    <div v-if="items.length > 0 && items[current]" class="w-full lg:w-3/5 h-full flex flex-col py-4 lg:py-7 lg:pr-10">
+    <div v-if="items.length > 0 && items[current]" class="w-full lg:w-4/6 h-full flex flex-col py-4 lg:py-7 lg:pr-10">
         <h2 class="text-xl lg:text-2xl font-semibold mb-2 lg:mb-3 text-purple-400 truncate w-full break-words">{{ items[current].title }}</h2>
         <p class="text-sm text-gray-300 mb-1">作者: {{ items[current].author }}</p>
         <p class="text-sm text-gray-300 mb-1">标签: {{ items[current].tags }}</p>
@@ -96,11 +96,11 @@ const getAnimations = () => {
   } else {
     // 桌面设备上的位置设置
     return [
-      { left: '160px', top: '8%', opacity: 1, zIndex: 5, width: '180px', height: '230px' }, 
-      { left: '150px', top: '70%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },
-      { left: '200px', top: '70%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },
-      { left: '250px', top: '70%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },
-      { left: '300px', top: '70%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },
+      { left: '20%', top: '8%', opacity: 1, zIndex: 5, width: '180px', height: '230px' }, 
+      { left: '16%', top: '70%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },
+      { left: '31%', top: '70%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },
+      { left: '46%', top: '70%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },
+      { left: '61%', top: '70%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },
     ];
   }
 };
