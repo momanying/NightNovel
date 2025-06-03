@@ -1,16 +1,16 @@
 <template>
   <div class="flex justify-center items-center h-screen">
-    <div class="auth-container flex flex-col w-[50%] h-[80%]">
-        <div class="sm:mx-auto sm:w-full sm:max-w-sm">
-        <img class="mx-auto h-10 w-auto" src="http://54.255.84.100/i/2025/05/14/6823f89a2e094.webp" alt="NightNovel">
-        <h2 class="mt-10 text-center text-2xl font-bold tracking-tight text-gray-900">注册账号</h2>
+    <div class="auth-container flex flex-col w-[50%] h-[80%] z-1 rounded-lg">
+        <div class="sm:mx-auto sm:w-full sm:max-w-sm mt-5">
+            <img class="mx-auto h-20 w-auto" src="http://54.255.84.100/i/2025/05/14/6823f89a2e094.webp" alt="NightNovel">
+            <h2 class="mt-5 text-center text-2xl font-bold tracking-tight text-black">欢迎来到夜幕，请注册</h2>
         </div>
 
         <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
         <form class="space-y-6" @submit.prevent="handleRegister">
             <div>
             <label for="username" class="block text-sm font-medium text-gray-900">用户名</label>
-            <div class="mt-2">
+            <div>
                 <input
                 id="username"
                 v-model="formData.username"
@@ -23,7 +23,7 @@
 
             <div>
             <label for="email" class="block text-sm font-medium text-gray-900">邮箱</label>
-            <div class="mt-2">
+            <div>
                 <input
                 id="email"
                 v-model="formData.email"
@@ -36,7 +36,7 @@
 
             <div>
             <label for="password" class="block text-sm font-medium text-gray-900">密码</label>
-            <div class="mt-2">
+            <div>
                 <input
                 id="password"
                 v-model="formData.password"
@@ -49,7 +49,7 @@
 
             <div>
             <label for="confirmPassword" class="block text-sm font-medium text-gray-900">确认密码</label>
-            <div class="mt-2">
+            <div>
                 <input
                 id="confirmPassword"
                 v-model="formData.confirmPassword"
@@ -70,7 +70,7 @@
             </div>
         </form>
 
-        <p class="mt-10 text-center text-sm text-gray-500">
+        <p class="mt-5 text-center text-sm text-gray-500">
             已有账号？
             <NuxtLink to="/auth/login" class="font-semibold text-indigo-600 hover:text-indigo-500">立即登录</NuxtLink>
         </p>

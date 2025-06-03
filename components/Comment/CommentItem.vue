@@ -1,11 +1,11 @@
 <template>
   <div class="pb-4 border-b border-gray-100 dark:border-gray-700 last:border-0">
     <div class="flex mb-2">
-      <img :src="comment.user.avatar" :alt="comment.user.username" class="w-10 h-10 rounded-lg mr-4">
+      <img :src="comment.user?.avatar || ''" :alt="comment.user?.username || 'User'" class="w-10 h-10 rounded-lg mr-4">
       <div class="flex flex-col flex-grow mt-2 w-full">
         <div class="flex items-center justify-between w-full">
           <div>
-            <span class="font-bold text-white dark:text-gray-200 text-sm">{{ comment.user.username }}</span>
+            <span class="font-bold text-white dark:text-gray-200 text-sm">{{ comment.user?.username || 'Anonymous' }}</span>
             <span class="text-xs text-gray-400 ml-2">{{ new Date(comment.createdAt).toLocaleString() }}</span>
           </div>
           <CommentActions 
@@ -20,7 +20,7 @@
         <div v-if="showReplyForm && !replyingToUser" class="mt-3">
           <CommentForm 
             ref="replyFormRef"
-            :placeholder="`回复 @${comment.user.username}...`" 
+            :placeholder="`回复 @${comment.user?.username || 'Anonymous'}...`" 
             submit-text="发表回复"
             :is-submitting="isSubmittingReply"
             :show-cancel-button="true"
@@ -43,7 +43,7 @@
          <div v-if="showReplyForm && replyingToUser" class="mt-3 ml-8">
           <CommentForm 
             ref="specificReplyFormRef"
-            :placeholder="`回复 @${replyingToUser.username}...`" 
+            :placeholder="`回复 @${replyingToUser?.username || 'Anonymous'}...`" 
             submit-text="发表回复"
             :is-submitting="isSubmittingReply"
             :show-cancel-button="true"
