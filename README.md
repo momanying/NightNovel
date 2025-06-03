@@ -1,4 +1,4 @@
-# NightNovel
+# 夜幕轻小说
 A novel websiete by using nuxt3
 =======
 # Nuxt Minimal Starter
