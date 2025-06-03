@@ -21,21 +21,24 @@
         
         <template v-if="activeTab === 'similar'">
           <div id="similar">
-            <div class="flex flex-col md:flex-row md:space-x-6 mb-8">
+            <div v-if="currentNovel" class="flex flex-col md:flex-row md:space-x-6 mb-8">
               <div class="w-full md:w-1/2 mb-6 md:mb-0">
-                <ClientOnly>
+
                   <NovelSimilarNovel />
-                </ClientOnly>
+
               </div>
 
               <div class="w-full md:w-1/2">
-                <ClientOnly>
+
                   <NovelSimilarFinishNovel />
-                </ClientOnly>
+
               </div>
             </div>
+            <div v-else class="text-center py-8">
+              <p class="text-gray-400">正在加载推荐内容...</p>
+            </div>
 
-            <div class="max-w-[1200px] mx-auto my-8"> <!-- Ensured vertical margin for separator -->
+            <div v-if="currentNovel" class="max-w-[1200px] mx-auto my-8"> <!-- Ensured vertical margin for separator -->
               <div class="h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent"/>
             </div>
 

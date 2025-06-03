@@ -1,8 +1,8 @@
 <template>
-    <div class="w-full">
+    <div v-if="isLoaded && novels.length > 0"  class="w-full">
         <h2 class="title-h2">同类完本推荐</h2>
         <div class="grid grid-cols-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            <NuxtLink v-for="novel in novels" :key="novel._id" :to="`/novels/${novel._id}`" class="flex flex-col cursor-pointer transition-transform duration-300 hover:-translate-y-1">
+            <NuxtLink v-for="novel in novels" :key="novel.id || novel._id" :to="`/novels/${novel.id}`" class="flex flex-col cursor-pointer transition-transform duration-300 hover:-translate-y-1">
                 <div class="relative aspect-[3/4] w-full overflow-hidden rounded-md bg-gray-800">
                     <img 
                         :src="novel.cover_url" 
@@ -22,61 +22,79 @@
 
 <script setup lang="ts">
 import type { Novel } from '~/types/novel/novelinfo';
-import { storeToRefs } from 'pinia'
-import { useNovelStore } from '~/stores/novel'
+import { storeToRefs } from 'pinia';
+import { useNovelStore } from '~/stores/novel';
 
-const novelStore = useNovelStore()
-const { currentNovel } = storeToRefs(novelStore)
+const novelStore = useNovelStore();
+const { currentNovel } = storeToRefs(novelStore);
 
-const novelId = computed(() => currentNovel.value?._id || '')
-const { novels, set: setNovels, clear: clearNovels } = useSimilarFinishNovels(novelId.value)
-const isLoaded = ref(false)
+const novelId = computed(() => currentNovel.value?._id || '');
+const novelTags = computed(() => currentNovel.value?.tags || '');
+
+const novels = ref<Novel[]>([]);
+const isLoaded = ref(false);
 
 const fetchSimilarNovels = async () => {
-    if (!currentNovel.value || !currentNovel.value.tags) return;
-
-    const sessionStorageKey = `similarFinishNovels_${novelId.value}`
-
-    // 如果已有值，直接用，不请求
-    if (novels.value.length > 0) {
-        isLoaded.value = true
-        return
+    if (!novelId.value || !novelTags.value) {
+        novels.value = [];
+        isLoaded.value = true;
+        return;
     }
+
+    const sessionStorageKey = `similarFinishNovels_${novelId.value}`;
 
     if (import.meta.client) {
-        const cache = sessionStorage.getItem(sessionStorageKey)
+        const cache = sessionStorage.getItem(sessionStorageKey);
         if (cache) {
-            const parsed: Novel[] = JSON.parse(cache)
-            setNovels(parsed)
-            isLoaded.value = true
-            return
+            try {
+                const parsed: Novel[] = JSON.parse(cache);
+                novels.value = parsed;
+                isLoaded.value = true;
+                return;
+            } catch (e) {
+                console.error(`Failed to parse sessionStorage for ${sessionStorageKey}:`, e);
+                sessionStorage.removeItem(sessionStorageKey);
+            }
         }
     }
 
-    const params: Record<string, string> = {
-        tags: currentNovel.value.tags.trim().replace(/\s+/g, ',') || '',
-    }
-    if (novelId.value) {
-        params.currentNovelId = novelId.value
-    }
+    try {
+        const params = {
+            tags: novelTags.value.trim().replace(/\s+/g, ','),
+            currentNovelId: novelId.value,
+        };
 
-    const { data, error } = await useFetch<{ data: Novel[] }>('/api/novels/similarfinish', {
-        query: params,
-    })
+        const response = await $fetch<{ data: Novel[] }>('/api/novels/similarfinish', {
+            query: params,
+        });
 
-    if (error.value) throw error.value
-    if (data.value && data.value.data) {
-        setNovels(data.value.data)
-        // 存入 localStorage
-        if (import.meta.client) {
-            sessionStorage.setItem(sessionStorageKey, JSON.stringify(data.value.data))
+        if (response && response.data) {
+            novels.value = response.data;
+            if (import.meta.client) {
+                sessionStorage.setItem(sessionStorageKey, JSON.stringify(response.data));
+            }
+        } else {
+            novels.value = [];
+        }
+    } catch (error) {
+        console.error('Error fetching similar finish novels:', error);
+        novels.value = [];
+    } finally {
+        isLoaded.value = true;
+    }
+};
+
+watch([novelId, novelTags], ([newNovelId, newNovelTags], [oldNovelId, oldNovelTags]) => {
+    if (newNovelId && newNovelTags) {
+        if (newNovelId !== oldNovelId || newNovelTags !== oldNovelTags || !isLoaded.value) {
+            novels.value = [];
+            isLoaded.value = false;
+            fetchSimilarNovels();
         }
     } else {
-        clearNovels()
+        novels.value = [];
+        isLoaded.value = false;
     }
-} 
-// 监听 novelId 变化，触发一次
-watch(() => novelId.value, (newId) => {
-  if (newId) fetchSimilarNovels()
-}, { immediate: true })
+}, { immediate: true });
+
 </script>

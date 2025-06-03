@@ -6,19 +6,19 @@
           <li 
             v-for="tab in tabs" 
             :key="tab.id" 
-            @click="$emit('change', tab.id)"
             class="cursor-pointer transition-colors duration-200 relative py-2 px-1"
             :class="[
               activeTab === tab.id 
                 ? 'text-sky-500 font-medium' 
                 : 'text-gray-300 hover:text-gray-100'
             ]"
+            @click="$emit('change', tab.id)"
           >
             <span>{{ tab.label }}</span>
             <div 
               v-if="activeTab === tab.id" 
               class="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-500 rounded-full"
-            ></div>
+            />
           </li>
         </ul>
       </div>
