@@ -23,17 +23,7 @@ interface PopularCommentDocument {
 }
 
 export default defineEventHandler(async (event: H3Event) => {
-  const { limit = '3', novelId } = getQuery(event);
-  
-  const limitNum = parseInt(limit as string, 10);
-  
-  if (isNaN(limitNum) || limitNum < 1) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Bad Request',
-      data: { message: 'Invalid limit parameter' },
-    });
-  }
+  const { novelId } = getQuery(event);
 
   try {
     // Base query to find popular comments
@@ -59,7 +49,6 @@ export default defineEventHandler(async (event: H3Event) => {
         rating: -1,       // Then by rating
         'likes.length': -1 // Then by most likes
       })
-      .limit(limitNum)
       .populate('user', 'username avatar _id')
       .lean() as unknown as PopularCommentDocument[];
     
@@ -70,7 +59,6 @@ export default defineEventHandler(async (event: H3Event) => {
           rating: -1,
           'likes.length': -1
         })
-        .limit(limitNum)
         .populate('user', 'username avatar _id')
         .lean() as unknown as PopularCommentDocument[];
     }

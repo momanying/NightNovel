@@ -1,13 +1,20 @@
 <template>
   <div class="min-h-[400px]">
     <div class="flex items-center justify-between">
-      <h2 class="title-h2">精华书评</h2>
-      <button class="text-sm text-gray-500 hover:text-primary-500 transition-colors" @click="navigateToComments">
-        查看全部点评
-      </button>
+      <div>
+        <h2 class="title-h2">精华书评</h2>
+      </div>
+      <div v-if="comments.length > 0" class="flex justify-end">
+        <button 
+          class="px-4 py-2 bg-sky-500 hover:bg-primary-700 text-white rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          @click="openCommentModal"
+        >
+          写评论
+        </button>
+      </div>
     </div>
     
-    <div class="flex flex-col">
+    <div class="flex flex-col mt-2 border-4 rounded-lg">
       <!-- 加载状态 -->
       <div v-if="isLoading" class="flex justify-center items-center py-10">
         <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500"/>
@@ -30,7 +37,7 @@
         v-for="comment in comments" 
         v-else 
         :key="comment._id" 
-        class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 shadow-sm mb-5"
+        class="bg-gray-50 dark:bg-gray-800 p-4 shadow-sm border-b border-dashed border-gray-700"
       >
         <div class="flex items-center justify-between mb-2">
           <div class="flex items-center">
@@ -52,16 +59,7 @@
         
       </div>
     </div>
-
-    <!-- 添加评论按钮 -->
-    <div v-if="comments.length > 0" class="flex justify-end">
-      <button 
-        class="px-4 py-2 bg-sky-500 hover:bg-primary-700 text-white rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-        @click="openCommentModal"
-      >
-        写评论
-      </button>
-    </div>
+    
 
     <!-- 评论编辑器模态框 -->
     <Teleport to="body">
@@ -90,6 +88,17 @@
                 <Icon name="ph:x" class="w-6 h-6" />
               </button>
             </div>
+
+            <div class="mb-4">
+              <div class="flex items-center mb-2">
+                <span class="text-sm text-gray-700 dark:text-gray-300 mr-2">标题:</span>
+                <input 
+                  v-model="newComment.title"
+                  class="w-1/2 px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500  placeholder-gray-400 text-black"
+                  placeholder="请输入标题"
+                >
+              </div>
+            </div>
             
             <!-- 评分 -->
             <div class="mb-4">
@@ -104,26 +113,6 @@
                   >
                     <Icon :name="i <= newComment.rating ? 'ph:star-fill' : 'ph:star'" class="w-5 h-5" />
                   </button>
-                </div>
-              </div>
-            </div>
-            
-            <!-- 标签 -->
-            <div class="mb-4">
-              <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">标签:</label>
-              <div class="flex flex-wrap gap-2">
-                <div 
-                  v-for="(tag, index) in availableTags" 
-                  :key="index"
-                  :class="[
-                    'px-2 py-1 rounded-full text-xs cursor-pointer transition-colors',
-                    newComment.tags.includes(tag) 
-                      ? 'bg-sky-500 text-white' 
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                  ]"
-                  @click="toggleTag(tag)"
-                >
-                  {{ tag }}
                 </div>
               </div>
             </div>
@@ -182,16 +171,12 @@ const isLoading = ref(true);
 const isExpanded = reactive<Record<string, boolean>>({});
 const isDarkMode = ref(false);
 
-// 可用标签
-const availableTags = [
-  '推荐', '剧情', '人物', '世界观', '文笔', '情感', '设定', '画面感', '节奏'
-];
 
 // 获取热门评论
 const fetchPopularComments = async () => {
   try {
     isLoading.value = true;
-    const params: Record<string, string> = { limit: '3' };
+    const params: Record<string, string> = {};
     
     // 如果有小说ID，则获取该小说的热门评论
     if (props.novelId) {
@@ -230,21 +215,6 @@ onMounted(() => {
     isDarkMode.value = e.matches;
   });
 });
-
-// 切换标签选择
-const toggleTag = (tag: string) => {
-  if (newComment.value.tags.includes(tag)) {
-    newComment.value.tags = newComment.value.tags.filter(t => t !== tag);
-  } else {
-    newComment.value.tags.push(tag);
-  }
-};
-
-// 页面导航
-const navigateToComments = () => {
-  navigateTo('/comments');
-};
-
 // 打开评论模态框
 const openCommentModal = () => {
   showModal.value = true;
@@ -269,6 +239,7 @@ const toolbars: ToolbarNames[] = [
 const newComment = ref({
   rating: 5,
   content: '',
+  title: '',
   tags: [] as string[]
 });
 
