@@ -1,7 +1,7 @@
 <template>
     <div>
         <LayoutsTheHeader />
-        <div class="mx-auto max-w-4xl px-4 py-8 mt-4 bg-gray-900 rounded-lg">
+        <div class="mx-auto max-w-4xl px-4 py-8 mt-4 bg-gray-800 rounded-lg">
             <div v-if="currentNovel" class="mb-4">
                 <div class="flex items-center justify-between mb-2">
                     <NuxtLink :to="`/novels/${novelId}/list`" class="text-sm text-gray-400 hover:text-gray-300">

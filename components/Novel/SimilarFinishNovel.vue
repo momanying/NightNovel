@@ -9,9 +9,6 @@
                         alt="小说封面" 
                         class="w-full h-full object-cover rounded-md hover:scale-105 transition-transform duration-300"
                     >
-                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 opacity-0 hover:opacity-100 transition-opacity duration-300">
-                        <h3 class="text-sm font-medium text-white">{{ novel.title }}</h3>
-                    </div>
                 </div>
                 <h3 class="text-sm font-medium text-white mt-1 truncate">{{ novel.title }}</h3>
                 <p class="text-xs text-gray-400 truncate">{{ novel.author }}</p>

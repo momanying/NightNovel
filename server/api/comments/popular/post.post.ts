@@ -1,9 +1,6 @@
 import { PopularCommentModel } from '../../../models/PopularComment.model';
 import { defineEventHandler, readMultipartFormData, type H3Event, createError } from 'h3';
 import mongoose from 'mongoose';
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import { randomUUID } from 'node:crypto';
 
 // Assuming you have a way to get the authenticated user ID
 const getAuthenticatedUserId = (event: H3Event): string | null => {
@@ -31,33 +28,45 @@ export default defineEventHandler(async (event: H3Event) => {
   let htmlContent: string | undefined;
   let ratingString: string | undefined;
   let tagsString: string | undefined;
-  let imageFile: Buffer | undefined;
-  let imageFileName: string | undefined;
+  let title: string | undefined;
+  let imagesString: string | undefined;
 
   if (multipartFormData) {
     for (const part of multipartFormData) {
-      if (part.name === 'novelId') {
-        novelIdString = part.data.toString();
-      } else if (part.name === 'content') {
-        content = part.data.toString();
-      } else if (part.name === 'htmlContent') {
-        htmlContent = part.data.toString();
-      } else if (part.name === 'rating') {
-        ratingString = part.data.toString();
-      } else if (part.name === 'tags') {
-        tagsString = part.data.toString();
-      } else if (part.name === 'image' && part.filename) {
-        imageFile = part.data;
-        imageFileName = part.filename;
+      const partName = part.name;
+      const partData = part.data.toString();
+
+      switch (partName) {
+        case 'novelId':
+          novelIdString = partData;
+          break;
+        case 'content':
+          content = partData;
+          break;
+        case 'htmlContent':
+          htmlContent = partData;
+          break;
+        case 'rating':
+          ratingString = partData;
+          break;
+        case 'tags':
+          tagsString = partData;
+          break;
+        case 'title':
+          title = partData;
+          break;
+        case 'images':
+          imagesString = partData;
+          break;
       }
     }
   }
 
-  if (!novelIdString || !content) {
+  if (!novelIdString || !content || !title) {
     throw createError({ 
       statusCode: 400, 
       statusMessage: 'Bad Request', 
-      data: { message: 'Novel ID and content are required' } 
+      data: { message: 'Novel ID, title, and content are required' } 
     });
   }
 
@@ -72,33 +81,17 @@ export default defineEventHandler(async (event: H3Event) => {
   const novelId = new mongoose.Types.ObjectId(novelIdString);
   const rating = ratingString ? parseInt(ratingString, 10) : 5;
   const tags = tagsString ? JSON.parse(tagsString) : [];
-
-  let imageUrl: string | undefined = undefined;
-
-  if (imageFile && imageFileName) {
-    try {
-      const fileExtension = path.extname(imageFileName);
-      const uniqueFileName = `${randomUUID()}${fileExtension}`;
-      const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'comments');
-      const filePath = path.join(uploadsDir, uniqueFileName);
-
-      await fs.mkdir(uploadsDir, { recursive: true }); // Ensure directory exists
-      await fs.writeFile(filePath, imageFile);
-      
-      imageUrl = `/uploads/comments/${uniqueFileName}`; // URL relative to public directory
-    } catch (uploadError) {
-      console.error('Error saving uploaded image:', uploadError);
-    }
-  }
+  const images = imagesString ? JSON.parse(imagesString) : [];
 
   try {
     const popularCommentDocument = new PopularCommentModel({
       novel: novelId,
       user: userId,   
+      title,
       content,
       htmlContent,
       rating,
-      image: imageUrl,
+      images,
       tags,
       isPopular: true,
       featuredOrder: 0 // Default to lowest priority

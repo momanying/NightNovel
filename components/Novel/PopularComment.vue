@@ -14,14 +14,9 @@
       </div>
     </div>
     
-    <div class="flex flex-col mt-2 border-4 rounded-lg">
-      <!-- 加载状态 -->
-      <div v-if="isLoading" class="flex justify-center items-center py-10">
-        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500"/>
-      </div>
-      
+    <div class="flex flex-col mt-2 rounded-lg overflow-hidden">
       <!-- 无数据状态 -->
-      <div v-else-if="comments.length === 0" class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-center my-4">
+      <div v-if="comments.length === 0" class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-center my-4">
         <Icon name="ph:book-open-text" class="w-12 h-12 text-gray-400 mx-auto mb-2" />
         <p class="text-gray-500 dark:text-gray-400 mb-2">还没有书评，快来写下你的感想吧！</p>
         <button 
@@ -33,11 +28,12 @@
       </div>
       
       <!-- 评论列表 -->
-      <div
-        v-for="comment in comments" 
-        v-else 
+      <NuxtLink
+        v-for="comment in comments"
+        v-else
         :key="comment._id" 
-        class="bg-gray-50 dark:bg-gray-800 p-4 shadow-sm border-b border-dashed border-gray-700"
+        :to="`/comments/${comment._id}`"
+        class="bg-gray-50 dark:bg-gray-800 p-4 shadow-sm border-b border-dashed border-gray-700 last:border-b-0"
       >
         <div class="flex items-center justify-between mb-2">
           <div class="flex items-center">
@@ -57,7 +53,7 @@
           {{ stripMarkdown(comment.content) }}
         </div>
         
-      </div>
+      </NuxtLink>
     </div>
     
 
@@ -90,28 +86,30 @@
             </div>
 
             <div class="mb-4">
-              <div class="flex items-center mb-2">
-                <span class="text-sm text-gray-700 dark:text-gray-300 mr-2">标题:</span>
-                <input 
-                  v-model="newComment.title"
-                  class="w-1/2 px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500  placeholder-gray-400 text-black"
-                  placeholder="请输入标题"
-                >
-              </div>
+              <label for="comment-title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">标题</label>
+              <input 
+                id="comment-title"
+                v-model="newComment.title"
+                type="text"
+                class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-gray-100"
+                placeholder="给你的书评起个响亮的标题吧！"
+              >
             </div>
             
             <!-- 评分 -->
             <div class="mb-4">
-              <div class="flex items-center mb-2">
-                <span class="text-sm text-gray-700 dark:text-gray-300 mr-2">评分:</span>
-                <div class="flex">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">评分</label>
+              <div class="flex items-center">
+                <span class="text-lg font-semibold text-yellow-400 mr-2">{{ newComment.rating.toFixed(1) }}</span>
+                <div class="flex space-x-1">
                   <button 
                     v-for="i in 5" 
                     :key="i" 
-                    class="text-yellow-400 focus:outline-none"
+                    class="text-gray-300 dark:text-gray-600 hover:text-yellow-400 dark:hover:text-yellow-500 transition-colors duration-200"
                     @click="newComment.rating = i"
                   >
-                    <Icon :name="i <= newComment.rating ? 'ph:star-fill' : 'ph:star'" class="w-5 h-5" />
+                    <Icon :name="i <= newComment.rating ? 'ph:star-fill' : 'ph:star'" class="w-6 h-6" 
+                          :class="{ 'text-yellow-400': i <= newComment.rating }" />
                   </button>
                 </div>
               </div>
@@ -125,6 +123,7 @@
               previewTheme="default"
               :editorId="editorId"
               :toolbars="toolbars"
+              @onUploadImg="onUploadImg"
               @onSave="submitComment"
             />
             
@@ -155,6 +154,8 @@ import { ref, onMounted, reactive } from 'vue';
 import { MdEditor, MdPreview, type ToolbarNames } from 'md-editor-v3';
 import 'md-editor-v3/lib/style.css';
 import type { Comment } from '~/types/comment';
+import { useUserStore } from '~/stores/user';
+
 
 const props = defineProps({
   novelId: {
@@ -163,6 +164,7 @@ const props = defineProps({
   }
 });
 
+const userstore = useUserStore();
 const editorId = 'comment-editor';
 const isSubmitting = ref(false);
 const showModal = ref(false);
@@ -183,13 +185,16 @@ const fetchPopularComments = async () => {
       params.novelId = props.novelId;
     }
     
-    const response = await $fetch<{ comments: Comment[] }>('/api/comments/popular', { 
+    const response = await useFetch<{ comments: Comment[] }>('/api/comments/popular', { 
       method: 'GET',
-      params
+      params,
+      headers: {
+        'Authorization': `Bearer ${userstore.token}`
+      }
     });
     
-    if (response && response.comments) {
-      comments.value = response.comments;
+    if (response && response.data.value?.comments) {
+      comments.value = response.data.value.comments;
       
       // 初始化所有评论为折叠状态
       comments.value.forEach(comment => {
@@ -243,7 +248,6 @@ const newComment = ref({
   tags: [] as string[]
 });
 
-// 移除Markdown语法以获得纯文本预览
 const stripMarkdown = (md: string) => {
   return md
     .replace(/#+\s+/g, '') // 移除标题
@@ -259,6 +263,36 @@ const stripMarkdown = (md: string) => {
     .replace(/^\s*\d+\.\s+/gm, '') // 移除有序列表序号
     .replace(/^\s*[-*=_]{3,}\s*$/gm, '') // 移除水平线
     .replace(/\n{2,}/g, '\n'); // 将多个换行替换为单个换行
+};
+
+// 从Markdown内容中提取图片链接
+const extractImageUrls = (markdown: string): string[] => {
+  const regex = /!\[.*?\]\((.*?)\)/g;
+  const matches = markdown.match(regex);
+  if (!matches) {
+    return [];
+  }
+  return matches.map(match => {
+    const urlMatch = /!\[.*?\]\((.*?)\)/.exec(match);
+    return urlMatch ? urlMatch[1] : '';
+  }).filter(url => url);
+};
+
+// 上传图片
+const onUploadImg = async (files: File[], callback: (urls: string[]) => void) => {
+  const formData = new FormData();
+  files.forEach(file => formData.append('files', file));
+
+  try {
+    const res = await $fetch<string[]>('/api/upload', {
+      method: 'POST',
+      body: formData
+    });
+    callback(res);
+  } catch (error) {
+    console.error('图片上传失败:', error);
+    alert('图片上传失败，请稍后重试');
+  }
 };
 
 // 格式化日期
@@ -285,6 +319,14 @@ const formatDate = (dateString: string) => {
   }
 };
 
+interface PostCommentResponse {
+  code: number;
+  message: string;
+  data: {
+    comment: Comment;
+  };
+}
+
 // 提交评论
 const submitComment = async () => {
   if (!newComment.value.content.trim()) {
@@ -299,7 +341,14 @@ const submitComment = async () => {
     const formData = new FormData();
     formData.append('content', newComment.value.content);
     formData.append('rating', newComment.value.rating.toString());
+    formData.append('title', newComment.value.title);
     
+    // 提取并添加图片链接
+    const imageUrls = extractImageUrls(newComment.value.content);
+    if (imageUrls.length > 0) {
+      formData.append('images', JSON.stringify(imageUrls));
+    }
+
     // 如果有标签，添加到表单
     if (newComment.value.tags.length > 0) {
       formData.append('tags', JSON.stringify(newComment.value.tags));
@@ -311,11 +360,11 @@ const submitComment = async () => {
     }
     
     // 提交到后端 - 使用专门的精华评论API
-    await fetch('/api/comments/popular/post', {
+    await $fetch<PostCommentResponse>('/api/comments/popular/post', {
       method: 'POST',
       body: formData,
       headers: {
-        'Accept': 'application/json'
+        'Authorization': `Bearer ${userstore.token}`
       }
     });
     
@@ -326,6 +375,7 @@ const submitComment = async () => {
     
     // 重置表单
     newComment.value.content = '';
+    newComment.value.title = '';
     newComment.value.rating = 5;
     newComment.value.tags = [];
     

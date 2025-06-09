@@ -17,15 +17,52 @@ interface PopularCommentDocument {
     avatar?: string;
   };
   likes?: mongoose.Types.ObjectId[];
-  image?: string;
+  images?: string[];
   tags?: string[];
   featuredOrder?: number;
+  title?: string;
 }
 
 export default defineEventHandler(async (event: H3Event) => {
-  const { novelId } = getQuery(event);
+  const { novelId, id: commentId } = getQuery(event);
 
   try {
+    // Handle request for a single comment by its ID
+    if (commentId && typeof commentId === 'string' && mongoose.Types.ObjectId.isValid(commentId)) {
+      const comment = await PopularCommentModel.findById(commentId)
+        .populate('user', 'username avatar _id')
+        .lean() as unknown as PopularCommentDocument;
+
+      if (!comment) {
+        throw createError({
+          statusCode: 404,
+          statusMessage: 'Not Found',
+          data: { message: 'Comment not found' },
+        });
+      }
+      
+      const user = comment.user || { _id: undefined, username: '', avatar: '' };
+      const transformedComment = {
+        _id: comment._id?.toString() || '',
+        title: comment.title || '',
+        content: comment.content || '',
+        htmlContent: comment.htmlContent || '',
+        rating: comment.rating || 0,
+        createdAt: comment.createdAt || new Date(),
+        updatedAt: comment.updatedAt || new Date(),
+        user: {
+          _id: user._id?.toString() || '',
+          username: user.username,
+          avatar: user.avatar
+        },
+        likesCount: comment.likes?.length || 0,
+        images: comment.images || [],
+        tags: comment.tags || []
+      };
+
+      return { comment: transformedComment };
+    }
+
     // Base query to find popular comments
     const queryConditions: Record<string, mongoose.Types.ObjectId> = {};
     
@@ -71,18 +108,19 @@ export default defineEventHandler(async (event: H3Event) => {
       return {
         _id: comment._id?.toString() || '',
         content: comment.content || '',
-        htmlContent: comment.htmlContent || '', // Include HTML content if available
+        htmlContent: comment.htmlContent || '',
         rating: comment.rating || 0,
         createdAt: comment.createdAt || new Date(),
         updatedAt: comment.updatedAt || new Date(),
         user: {
           _id: user._id?.toString() || '',
-          username: user.username || '匿名用户',
-          avatar: user.avatar || '/images/default-cover.webp'
+          username: user.username,
+          avatar: user.avatar
         },
         likesCount: comment.likes?.length || 0,
-        image: comment.image || null,
-        tags: comment.tags || []
+        images: comment.images || [],
+        tags: comment.tags || [],
+        title: comment.title || ''
       };
     });
 

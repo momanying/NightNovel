@@ -59,10 +59,6 @@ const userMenuItems = computed(() => [
   { label: '个人主页', path: '/user/info' },
   { label: '我的收藏', path: '/user/collection' },
   { label: '我的评论', path: '/user/comment' },
-  { label: '退出登录', action: logout }, // action is handled by DropdownMenu
+  { label: '退出登录', action: logout },
 ]);
-
-// Click outside to close is now implicitly handled by how the trigger slot interacts with DropdownMenu 
-// (if trigger doesn't stop propagation) or by the user clicking an item / pressing Esc.
-// The more complex global click-outside listener was removed from DropdownMenu for simplicity with slotted triggers.
 </script>
