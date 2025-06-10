@@ -31,7 +31,14 @@
                 <p class="mb-2 text-xs leading-[20px]"><span class="font-semibold">简介：</span>{{ novel?.introduction || '暂无简介' }}</p>
                 <div class="flex gap-4 mt-4">
                     <button class="px-5 py-2 bg-orange-600 hover:bg-orange-700 rounded-md transition duration-200" @click="navigateToChapters">开始阅读</button>
-                    <button class="px-5 py-2 bg-gray-600 hover:bg-gray-700 rounded-md transition duration-200" @click="toggleCollect">{{ isCollected ? '已收藏' : '加入书架' }}</button>
+                    <button 
+                      class="px-5 py-2 rounded-md transition duration-200 text-white"
+                      :class="isCollected ? 'bg-gray-400 hover:bg-gray-500' : 'bg-sky-600 hover:bg-sky-700'"
+                      :disabled="isTogglingCollect"
+                      @click="toggleCollect"
+                    >
+                      {{ buttonText }}
+                    </button>
                 </div>
             </div>
         </div>  
@@ -40,12 +47,17 @@
 
 <script setup lang="ts">
 import type { Novel } from '~/types/novel/novelinfo'
+import { useUserStore } from '~/stores/user';
+import { useToast } from 'vue-toastification';
 
 const props = defineProps<{
   novel: Novel,
   autoplay?: boolean,
   interval?: number
 }>()
+
+const userStore = useUserStore();
+const toast = useToast();
 
 const tagList = computed(() => {
     if (!props.novel || !props.novel.tags) return []
@@ -54,6 +66,36 @@ const tagList = computed(() => {
 
 
 const isCollected = ref(false)
+const isTogglingCollect = ref(false);
+
+const buttonText = computed(() => {
+  if (isTogglingCollect.value) return '处理中...';
+  return isCollected.value ? '已在书架' : '加入书架';
+});
+
+const checkCollectionStatus = async () => {
+  if (!userStore.token || !props.novel?._id) {
+    isCollected.value = false;
+    return;
+  }
+  try {
+    const response = await $fetch<{ isCollected: boolean }>('/api/user/bookshelf/status', {
+      query: { novelId: props.novel._id },
+      headers: { Authorization: `Bearer ${userStore.token}` }
+    });
+    isCollected.value = response.isCollected;
+  } catch (error) {
+    console.error('Failed to check collection status:', error);
+    isCollected.value = false;
+  }
+};
+
+watch(() => props.novel?._id, (newId) => {
+  if (newId) {
+    checkCollectionStatus();
+  }
+}, { immediate: true });
+
 
 // 导航到章节列表页面
 const navigateToChapters = () => {
@@ -62,9 +104,42 @@ const navigateToChapters = () => {
 };
 
 // 切换收藏状态
-const toggleCollect = () => {
-  isCollected.value = !isCollected.value;
-  // 实际应用中应调用API保存收藏状态
+const toggleCollect = async () => {
+  if (!userStore.token) {
+    toast.info('请先登录再操作');
+    return navigateTo('/auth/login');
+  }
+
+  if (!props.novel?._id || isTogglingCollect.value) return;
+
+  isTogglingCollect.value = true;
+  try {
+    if (isCollected.value) {
+      // Remove
+      await $fetch('/api/user/bookshelf/remove', {
+        method: 'POST',
+        body: { novelId: props.novel._id },
+        headers: { Authorization: `Bearer ${userStore.token}` }
+      });
+      isCollected.value = false;
+      toast.success('已从书架移除');
+    } else {
+      // Add
+      await $fetch('/api/user/bookshelf/add', {
+        method: 'POST',
+        body: { novelId: props.novel._id },
+        headers: { Authorization: `Bearer ${userStore.token}` }
+      });
+      isCollected.value = true;
+      toast.success('成功加入书架');
+    }
+  } catch (error: unknown) {
+    console.error('Failed to toggle collection status:', error);
+    const errorMessage = (error as { data?: { message: string } })?.data?.message || '操作失败';
+    toast.error(errorMessage);
+  } finally {
+    isTogglingCollect.value = false;
+  }
 };
 
 // 导航到标签页面

@@ -1,16 +1,13 @@
 import { verifyToken } from '~/server/api/auth/jwt'
 import { BookmarkModel } from '~/server/models'
+import mongoose from 'mongoose'
 
 export default defineEventHandler(async (event) => {
   try {
     // 获取Authorization头
     const authorization = event.headers.get('Authorization')
     if (!authorization) {
-      return {
-        code: 401,
-        message: '未登录',
-        data: null
-      }
+      throw createError({ statusCode: 401, statusMessage: 'Unauthorized', data: { message: '请先登录' } })
     }
 
     // 验证token
@@ -18,54 +15,34 @@ export default defineEventHandler(async (event) => {
     const decoded = verifyToken(token)
     
     if (!decoded || !decoded.id) {
-      return {
-        code: 401,
-        message: '无效的token',
-        data: null
-      }
+      throw createError({ statusCode: 401, statusMessage: 'Unauthorized', data: { message: '无效的凭证' } })
     }
+    const userId = new mongoose.Types.ObjectId(decoded.id)
 
     // 获取请求体
     const body = await readBody(event)
-    const { bookmarkId } = body
+    const { novelId } = body
 
-    if (!bookmarkId) {
-      return {
-        code: 400,
-        message: '参数错误',
-        data: null
-      }
+    if (!novelId) {
+      throw createError({ statusCode: 400, statusMessage: 'Bad Request', data: { message: '无效的小说ID' } })
     }
 
     // 查找并确认书签属于当前用户
-    const bookmark = await BookmarkModel.findOne({ 
-      _id: bookmarkId, 
-      userId: decoded.id 
-    })
+    const result = await BookmarkModel.deleteOne({ userId, novelId })
 
-    if (!bookmark) {
-      return {
-        code: 404,
-        message: '书签不存在或无权限删除',
-        data: null
-      }
+    if (result.deletedCount === 0) {
+      // This might happen if the user clicks twice, not a server error.
+      throw createError({ statusCode: 404, statusMessage: 'Not Found', data: { message: '小说未在书架中' } })
     }
-
-    // 删除书签
-    await BookmarkModel.deleteOne({ _id: bookmarkId })
 
     return {
       code: 200,
-      message: '移除成功',
-      data: { bookmarkId }
+      message: '已成功从书架移除',
     }
-  } catch (error: unknown) {
-    const errMsg = error instanceof Error ? error.message : '未知错误'
-    console.error('移除书架失败:', errMsg)
-    return {
-      code: 500,
-      message: '服务器错误',
-      error: errMsg
-    }
+  } catch (error) {
+    const h3Error = error as { statusCode?: number }
+    if (h3Error.statusCode) throw error
+    console.error('从书架移除失败:', error)
+    throw createError({ statusCode: 500, statusMessage: 'Internal Server Error', data: { message: '服务器内部错误' } })
   }
 }) 

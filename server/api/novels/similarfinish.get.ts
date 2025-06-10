@@ -1,6 +1,6 @@
 import { defineEventHandler, getQuery } from 'h3'
 import { NovelModel } from '../../models/novel'
-import type mongoose from 'mongoose'
+import mongoose from 'mongoose'
 import type { Types, PipelineStage, FilterQuery } from 'mongoose'
 
 // Define a local INovel interface for the fields used in this API
@@ -16,7 +16,7 @@ interface INovel extends mongoose.Document {
 
 interface QueryParams {
   tags?: string; // Comma-separated tags from the detail novel
-  // limit is now fixed to 5 internally
+  novelId?: string;
 }
 
 // Helper function to escape special characters for regex
@@ -35,7 +35,7 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 export default defineEventHandler(async (event) => {
-  const { tags: currentTagsString } = getQuery<QueryParams>(event);
+  const { tags: currentTagsString, novelId } = getQuery<QueryParams>(event);
 
   const internalLimit = 5;
 
@@ -56,10 +56,11 @@ export default defineEventHandler(async (event) => {
     type TagCondition = { tags: { $regex: string, $options: string } };
     type StatusCondition = { status: string }; // For the '已完结' status
     
-    interface MatchConditions extends FilterQuery<INovel> {
-      $and?: (TagCondition | StatusCondition)[]; // Conditions will be ANDed
+    const matchConditions: FilterQuery<INovel> = {};
+
+    if (novelId) {
+      matchConditions._id = { $ne: new mongoose.Types.ObjectId(novelId) };
     }
-    const matchConditions: MatchConditions = {};
     
     // Start with the status condition, then add tag conditions
     const queryConditions: (TagCondition | StatusCondition)[] = [

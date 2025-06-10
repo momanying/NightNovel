@@ -25,6 +25,7 @@
                        : 'w-10 text-transparent bg-transparent placeholder-transparent cursor-pointer'
                 ]"
                 @input="handleInput"
+                @keydown.enter="submitSearch"
             >
 
             <!-- 清除按钮   -->
@@ -181,6 +182,22 @@ const performSearch = async () => {
         isLoading.value = false;
     }
 }
+
+const submitSearch = () => {
+    if (!searchQuery.value.trim()) return;
+    
+    const keyword = searchQuery.value.trim();
+    
+    closeSearch();
+    searchQuery.value = '';
+    
+    navigateTo({
+        path: '/articlelist',
+        query: {
+            keyword: keyword
+        }
+    });
+};
 
 const selectResult = (novel: Novel) => {
     closeSearch();

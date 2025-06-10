@@ -1,70 +1,55 @@
 import { verifyToken } from '~/server/api/auth/jwt'
 import { BookmarkModel, NovelModel } from '~/server/models'
+import mongoose from 'mongoose';
 
 export default defineEventHandler(async (event) => {
   try {
-    // 获取Authorization头
     const authorization = event.headers.get('Authorization')
     if (!authorization) {
-      return {
-        code: 401,
-        message: '未登录',
-        data: null
-      }
+      throw createError({
+        statusCode: 401,
+        statusMessage: 'Unauthorized',
+        data: { message: '请先登录' }
+      });
     }
 
-    // 验证token
     const token = authorization.replace('Bearer ', '')
     const decoded = verifyToken(token)
     
     if (!decoded || !decoded.id) {
-      return {
-        code: 401,
-        message: '无效的token',
-        data: null
-      }
+      throw createError({
+        statusCode: 401,
+        statusMessage: 'Unauthorized',
+        data: { message: '无效的凭证' }
+      });
     }
+    const userId = new mongoose.Types.ObjectId(decoded.id);
 
-    // 获取请求体
     const body = await readBody(event)
     const { novelId, chapterId } = body
 
     if (!novelId) {
-      return {
-        code: 400,
-        message: '参数错误，需要提供小说ID',
-        data: null
-      }
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Bad Request',
+        data: { message: '无效的小说ID' }
+      });
     }
 
-    // 检查小说是否存在
-    const novel = await NovelModel.findById(novelId)
+    const novel = await NovelModel.findById(novelId).lean();
     if (!novel) {
-      return {
-        code: 404,
-        message: '小说不存在',
-        data: null
-      }
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Not Found',
+        data: { message: '小说不存在' }
+      });
     }
 
-    // 尝试查找现有书签
-    let bookmark = await BookmarkModel.findOne({ 
-      userId: decoded.id,
-      novelId
-    })
-
-    if (bookmark) {
-      // 更新现有书签
-      bookmark.chapterId = chapterId || bookmark.chapterId
-      await bookmark.save()
-    } else {
-      // 创建新书签
-      bookmark = await BookmarkModel.create({
-        userId: decoded.id,
-        novelId,
-        chapterId: chapterId || null
-      })
-    }
+    const bookmark = await BookmarkModel.findOneAndUpdate(
+        { userId, novelId },
+        { $set: { chapterId: chapterId || null }, $setOnInsert: { userId, novelId } },
+        { upsert: true, new: true, runValidators: true }
+    );
 
     return {
       code: 200,
@@ -72,12 +57,16 @@ export default defineEventHandler(async (event) => {
       data: { bookmarkId: bookmark._id }
     }
   } catch (error: unknown) {
-    const errMsg = error instanceof Error ? error.message : '未知错误'
-    console.error('添加书架失败:', errMsg)
-    return {
-      code: 500,
-      message: '服务器错误',
-      error: errMsg
+    console.error('添加书架失败:', error)
+    
+    if (error instanceof Error && 'statusCode' in error) {
+        throw error;
     }
+    
+    throw createError({
+        statusCode: 500,
+        statusMessage: 'Internal Server Error',
+        data: { message: '服务器内部错误' }
+    });
   }
 }) 

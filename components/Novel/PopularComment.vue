@@ -39,6 +39,9 @@
           <div class="flex items-center">
             <img :src="comment.user.avatar" :alt="comment.user.username" class="w-8 h-8 rounded-full mr-2">
             <span class="font-medium text-gray-800 dark:text-gray-200 text-sm truncate max-w-[80px]">{{ comment.user.username }}</span>
+            <div class="ml-4 flex items-center space-x-1">
+              <font-awesome-icon v-for="i in 5" :key="i" :icon="['fas', 'star']" :class="i <= comment.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'" :style="{ width: '0.875rem', height: '0.875rem' }"/>
+            </div>
           </div>
           <span class="text-xs text-gray-500">{{ formatDate(comment.createdAt) }}</span>
         </div>
@@ -88,21 +91,23 @@
             </div>
 
             <div class="mb-4">
-              <label for="comment-title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">标题</label>
+              <div class="flex justify-between items-center mb-1">
+                <label for="comment-title" class="block text-sm font-medium text-gray-700 dark:text-gray-300">标题</label>
+                <span class="text-xs text-gray-500 dark:text-gray-400">{{ newComment.title.length }}/40</span>
+              </div>
               <input 
                 id="comment-title"
                 v-model="newComment.title"
                 type="text"
+                maxlength="40"
                 class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-gray-100"
-                placeholder="给你的书评起个响亮的标题吧！"
+                placeholder="请输入标题 (建议30字以内)"
               >
             </div>
             
             <!-- 评分 -->
             <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">评分</label>
               <div class="flex items-center">
-                <span class="text-lg font-semibold text-yellow-400 mr-2">{{ newComment.rating.toFixed(1) }}</span>
                 <div class="flex space-x-1">
                   <button 
                     v-for="i in 5" 
@@ -110,8 +115,7 @@
                     class="text-gray-300 dark:text-gray-600 hover:text-yellow-400 dark:hover:text-yellow-500 transition-colors duration-200"
                     @click="newComment.rating = i"
                   >
-                    <Icon :name="i <= newComment.rating ? 'ph:star-fill' : 'ph:star'" class="w-6 h-6" 
-                          :class="{ 'text-yellow-400': i <= newComment.rating }" />
+                    <font-awesome-icon :icon="['fas', 'star']" :class="i <= newComment.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'" :style="{ width: '1rem',height: '1rem' }"/>
                   </button>
                 </div>
               </div>
@@ -157,6 +161,7 @@ import { MdEditor, MdPreview, type ToolbarNames } from 'md-editor-v3';
 import 'md-editor-v3/lib/style.css';
 import type { PopularComment, PostCommentResponse } from '~/types/comment/long';
 import { useUserStore } from '~/stores/user';
+import { useToast } from 'vue-toastification';
 
 
 const props = defineProps({
@@ -167,6 +172,7 @@ const props = defineProps({
 });
 
 const userstore = useUserStore();
+const toast = useToast();
 const editorId = 'comment-editor';
 const isSubmitting = ref(false);
 const showModal = ref(false);
@@ -323,11 +329,16 @@ const formatDate = (dateString: string) => {
 
 // 提交评论
 const submitComment = async () => {
-  if (!newComment.value.content.trim()) {
-    alert('请输入评论内容');
+  if (!newComment.value.title.trim()) {
+    toast.error('请填写标题');
     return;
   }
-  
+
+  if (stripMarkdown(newComment.value.content).trim().length < 50) {
+    toast.error('评论内容不能少于50字');
+    return;
+  }
+
   try {
     isSubmitting.value = true;
     
@@ -376,7 +387,7 @@ const submitComment = async () => {
     
   } catch (error) {
     console.error('提交评论失败:', error);
-    alert('提交评论失败，请稍后重试');
+    toast.error('提交评论失败，请稍后重试');
   } finally {
     isSubmitting.value = false;
   }

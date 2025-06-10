@@ -18,27 +18,15 @@ export default defineEventHandler(async (event) => {
     }
     
     // 构建搜索条件
-    type SearchCondition = {
-      $text?: { $search: string };
-      $or?: Array<Record<string, RegExp>>;
+    const searchConditions: {
+      title?: RegExp;
       category?: string;
       status?: string;
-    }
-    
-    const searchConditions: SearchCondition = {}
+    } = {}
     
     // 关键词搜索
     if (keyword) {
-      // 1. 首先尝试全文索引搜索
-      if (keyword.length >= 2) {
-        searchConditions.$text = { $search: keyword }
-      } else {
-        // 2. 对于单字搜索，使用正则表达式搜索标题和作者
-        searchConditions.$or = [
-          { title: new RegExp(keyword, 'i') },
-          { author: new RegExp(keyword, 'i') }
-        ]
-      }
+      searchConditions.title = new RegExp(keyword, 'i')
     }
     
     // 添加分类筛选
@@ -55,26 +43,11 @@ export default defineEventHandler(async (event) => {
     const skip = (page - 1) * limit
     
     // 执行搜索查询
-    let novels
-    
-    if (keyword && keyword.length >= 2 && searchConditions.$text) {
-      // 使用全文索引搜索时，按相关度排序
-      novels = await NovelModel.find(
-        searchConditions,
-      { score: { $meta: 'textScore' } }
-    )
-      .sort({ score: { $meta: 'textScore' } })
+    const novels = await NovelModel.find(searchConditions)
+      .sort({ updatedAt: -1 })
       .skip(skip)
       .limit(limit)
       .select('-volumes')
-    } else {
-      // 使用其他条件搜索时，按更新时间排序
-      novels = await NovelModel.find(searchConditions)
-        .sort({ updatedAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .select('-volumes')
-    }
     
     // 获取总数
     const total = await NovelModel.countDocuments(searchConditions)
@@ -83,10 +56,7 @@ export default defineEventHandler(async (event) => {
     if (keyword && novels.length === 0 && !category && !status) {
       // 尝试使用更宽松的搜索条件再次搜索
       const relaxedSearch = await NovelModel.find(
-        { $or: [
-          { title: new RegExp(keyword.split('').join('.*'), 'i') },
-          { author: new RegExp(keyword.split('').join('.*'), 'i') }
-        ]},
+        { title: new RegExp(keyword.split('').join('.*'), 'i') },
       )
         .limit(limit)
         .select('-volumes')

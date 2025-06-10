@@ -71,6 +71,14 @@ export default defineEventHandler(async (event: H3Event) => {
     });
   }
 
+  if (title.length > 40) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Bad Request',
+      data: { message: 'Title cannot be longer than 40 characters.' }
+    });
+  }
+
   if (!mongoose.Types.ObjectId.isValid(novelIdString)) {
     throw createError({ 
       statusCode: 400, 

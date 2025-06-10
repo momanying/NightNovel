@@ -78,6 +78,7 @@ const buildQueryParams = () => {
   if (route.query.animation === 'true') params.animation = true;
   if (route.query.tag) params.tag = route.query.tag as string;
   if (route.query.status) params.status = route.query.status as string;
+  if (route.query.keyword) params.keyword = route.query.keyword as string;
 
   return params;
 };
@@ -87,7 +88,8 @@ const fetchNovels = async () => {
   error.value = '';
   try {
     const params = buildQueryParams();
-    const response = await useFetch('/api/novels/list', {
+    const endpoint = route.query.keyword ? '/api/novels/search' : '/api/novels/list';
+    const response = await useFetch(endpoint, {
       method: 'GET',
       query: params,
       watch: false
@@ -140,8 +142,8 @@ const updatePaginationFromRoute = () => {
 };
 
 onMounted(() => {
-  updatePaginationFromRoute();
-  fetchNovels();
+  // updatePaginationFromRoute();
+  // fetchNovels();
 });
 
 // Watch for changes in route.fullPath to refetch novels and update pagination
@@ -156,10 +158,12 @@ watch(() => route.fullPath,
 );
 
 // SEO optimization
-useHead({
-  title: '夜幕轻小说全集',
+useHead(() => ({
+  title: route.query.keyword
+    ? `搜索 "${route.query.keyword as string}" 的结果`
+    : '夜幕轻小说全集',
   meta: [
-    { name: 'description', content: '最新轻小说全集列表，包含各种分类、标签的轻小说作品。' }
+    { name: 'description', content: route.query.keyword ? `关于 “${route.query.keyword as string}” 的搜索结果。` : '最新轻小说全集列表，包含各种分类、标签的轻小说作品。' }
   ]
-});
+}));
 </script>
