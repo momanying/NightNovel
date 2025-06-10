@@ -1,6 +1,6 @@
 import { CommentModel } from '../../models/Comment.model';
 import { defineEventHandler, readMultipartFormData, type H3Event, createError } from 'h3';
-import type { Comment as CommentType } from '../../../types/comment';
+import type { Comment as CommentType } from '../../../types/comment/short';
 import mongoose from 'mongoose'; // Import mongoose to use Types.ObjectId
 import fs from 'node:fs/promises';
 import path from 'node:path';

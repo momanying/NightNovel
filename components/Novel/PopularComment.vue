@@ -42,6 +42,8 @@
           </div>
           <span class="text-xs text-gray-500">{{ formatDate(comment.createdAt) }}</span>
         </div>
+
+        <h2 class="text-gray-800 dark:text-gray-200 text-lg text-shadow-sm font-bold my-2 ml-1">{{ comment.title }}</h2>
         
         <!-- 渲染 Markdown 内容 -->
         <div v-if="isExpanded[comment._id]" class="comment-content">
@@ -49,7 +51,7 @@
         </div>
         
         <!-- 折叠预览 -->
-        <div v-else class="line-clamp-3 text-gray-700 dark:text-gray-300 text-xs overflow-hidden mb-2">
+        <div v-else class="line-clamp-3 text-gray-700 dark:text-gray-300 text-xs mb-2">
           {{ stripMarkdown(comment.content) }}
         </div>
         
@@ -153,7 +155,7 @@
 import { ref, onMounted, reactive } from 'vue';
 import { MdEditor, MdPreview, type ToolbarNames } from 'md-editor-v3';
 import 'md-editor-v3/lib/style.css';
-import type { Comment } from '~/types/comment';
+import type { PopularComment, PostCommentResponse } from '~/types/comment/long';
 import { useUserStore } from '~/stores/user';
 
 
@@ -168,7 +170,7 @@ const userstore = useUserStore();
 const editorId = 'comment-editor';
 const isSubmitting = ref(false);
 const showModal = ref(false);
-const comments = ref<Comment[]>([]);
+const comments = ref<PopularComment[]>([]);
 const isLoading = ref(true);
 const isExpanded = reactive<Record<string, boolean>>({});
 const isDarkMode = ref(false);
@@ -185,7 +187,7 @@ const fetchPopularComments = async () => {
       params.novelId = props.novelId;
     }
     
-    const response = await useFetch<{ comments: Comment[] }>('/api/comments/popular', { 
+    const response = await useFetch<{ comments: PopularComment[] }>('/api/comments/popular', { 
       method: 'GET',
       params,
       headers: {
@@ -319,14 +321,6 @@ const formatDate = (dateString: string) => {
   }
 };
 
-interface PostCommentResponse {
-  code: number;
-  message: string;
-  data: {
-    comment: Comment;
-  };
-}
-
 // 提交评论
 const submitComment = async () => {
   if (!newComment.value.content.trim()) {
@@ -367,8 +361,6 @@ const submitComment = async () => {
         'Authorization': `Bearer ${userstore.token}`
       }
     });
-    
-    console.log('评论提交成功');
     
     // 重新获取热门评论，可能已经变化
     await fetchPopularComments();

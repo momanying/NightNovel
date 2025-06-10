@@ -23,7 +23,7 @@
             <div>
               <span class="font-semibold text-gray-800 dark:text-gray-200 text-md">{{ comment.user?.username || '匿名用户' }}</span>
               <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-1">
-                <Icon name="ph:calendar-blank-light" class="w-3 h-3 mr-1" />
+                <Icon name="ph:calendar-blank-light" class="w-3 h-3" />
                 {{ formatDate(comment.createdAt) }}
               </div>
             </div>
@@ -69,7 +69,7 @@ import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { MdPreview } from 'md-editor-v3';
 import 'md-editor-v3/lib/style.css';
-import type { Comment } from '~/types/comment'; // Ensure this path is correct
+import type { Comment } from '~/types/comment/short';
 
 interface UserInfo {
   _id: string;
@@ -78,11 +78,11 @@ interface UserInfo {
 }
 
 interface PopularComment extends Omit<Comment, 'user' | 'replies' | 'novelId'> {
-  user?: UserInfo; // User can be optional if not always populated
+  user?: UserInfo;
   htmlContent?: string;
   tags?: string[];
   featuredOrder?: number;
-  novelId?: string; // novelId might not be on every popular comment if it's generic
+  novelId?: string;
   title?: string;
 }
 
@@ -90,7 +90,6 @@ const comment = ref<PopularComment | null>(null);
 const isLoading = ref(true);
 const route = useRoute();
 
-// Fetch a single popular comment by its ID
 const fetchCommentById = async (id: string) => {
   try {
     isLoading.value = true;

@@ -1,4 +1,4 @@
-import type { Comment, Reply } from '~/types/comment';
+import type { Comment, Reply } from '~/types/comment/short';
 import type { ApiPaginatedResponse } from '~/types/apiresponse';
 
 // Helper to construct API response type, useful if not using a generic ApiResponse elsewhere
@@ -14,13 +14,6 @@ export const commentApi = {
   getComments: (novelId: string, page: number = 1, limit: number = 10) => 
     $fetch<ApiPaginatedResponse<Comment>>(`/api/comments/${novelId}`, { 
       params: { page, limit }
-    }),
-  
-  // Post a new comment
-  postComment: (novelId: string, content: string, rating?: number) => 
-    $fetch<CommentApiResponse<{ comment: Comment }>>(`/api/comments/post`, { 
-      method: 'POST', 
-      body: { novelId, content, rating } 
     }),
   
   // Reply to a comment

@@ -3,7 +3,7 @@ import { join } from 'path';
 import { defineEventHandler, readMultipartFormData } from 'h3';
 import { nanoid } from 'nanoid';
 
-const UPLOAD_DIR = './public/uploads/comments';
+const UPLOAD_DIR = './public/uploads/temp';
 
 export default defineEventHandler(async (event) => {
   try {
@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
           await fs.writeFile(filePath, file.data);
           
           // Construct the public URL
-          const publicUrl = `/uploads/comments/${newFileName}`;
+          const publicUrl = `/uploads/temp/${newFileName}`;
           uploadedUrls.push(publicUrl);
         }
       }

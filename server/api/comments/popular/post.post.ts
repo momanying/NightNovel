@@ -1,8 +1,9 @@
 import { PopularCommentModel } from '../../../models/PopularComment.model';
 import { defineEventHandler, readMultipartFormData, type H3Event, createError } from 'h3';
 import mongoose from 'mongoose';
+import { promises as fs } from 'fs';
+import { join, basename } from 'path';
 
-// Assuming you have a way to get the authenticated user ID
 const getAuthenticatedUserId = (event: H3Event): string | null => {
   const userId = event.context.auth?.user?._id;
   return userId;
@@ -81,25 +82,63 @@ export default defineEventHandler(async (event: H3Event) => {
   const novelId = new mongoose.Types.ObjectId(novelIdString);
   const rating = ratingString ? parseInt(ratingString, 10) : 5;
   const tags = tagsString ? JSON.parse(tagsString) : [];
-  const images = imagesString ? JSON.parse(imagesString) : [];
+  let images = imagesString ? JSON.parse(imagesString) : [];
+
+  let finalContent = content;
+
+  // --- Image Handling Logic ---
+  if (images.length > 0) {
+    const TEMP_DIR = './public/uploads/temp';
+    const PERMANENT_DIR = './public/uploads/comments';
+    await fs.mkdir(PERMANENT_DIR, { recursive: true });
+
+    const processedImageUrls: string[] = [];
+
+    for (const tempUrl of images) {
+      const fileName = basename(tempUrl);
+      const tempPath = join(TEMP_DIR, fileName);
+      const permanentPath = join(PERMANENT_DIR, fileName);
+
+      try {
+        // Check if file exists in temp and move it
+        await fs.rename(tempPath, permanentPath);
+        
+        const permanentUrl = `/uploads/comments/${fileName}`;
+        processedImageUrls.push(permanentUrl);
+        
+        // Update the URL in the content
+        if(finalContent) {
+          finalContent = finalContent.replace(tempUrl, permanentUrl);
+        }
+
+      } catch (moveError) {
+        console.error(`Failed to move image ${fileName}:`, moveError);
+        // Depending on desired behavior, you could either skip this image
+        // or throw an error to halt the entire comment submission.
+        // For now, we will skip it and not include it in the final comment.
+      }
+    }
+    // Update the images array with the new, permanent URLs
+    images = processedImageUrls;
+  }
+  // --- End Image Handling ---
 
   try {
     const popularCommentDocument = new PopularCommentModel({
       novel: novelId,
       user: userId,   
       title,
-      content,
+      content: finalContent,
       htmlContent,
       rating,
       images,
       tags,
       isPopular: true,
-      featuredOrder: 0 // Default to lowest priority
+      featuredOrder: 0
     });
 
     await popularCommentDocument.save();
     
-    // Repopulate to ensure all necessary fields are present for the client
     const populatedComment = await PopularCommentModel.findById(popularCommentDocument._id)
       .populate('user', 'username avatar _id')
       .lean();
@@ -124,7 +163,6 @@ export default defineEventHandler(async (event: H3Event) => {
     const typedError = error as (Error & { code?: number; errmsg?: string });
     let errorMessage = typedError.message || 'An unknown error occurred while posting the comment.';
     
-    // Check for Mongoose duplicate key error
     if (typedError.code === 11000) {
       errorMessage = 'A similar comment might already exist. Please check and try again.';
     }

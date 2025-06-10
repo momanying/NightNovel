@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Reply, UserInfo } from '~/types/comment';
+import type { Reply, UserInfo } from '~/types/comment/short';
 import CommentActions from './CommentActions.vue';
 
 defineProps<{

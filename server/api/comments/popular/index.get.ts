@@ -1,9 +1,7 @@
-import { CommentModel } from '../../../models/Comment.model';
 import { PopularCommentModel } from '../../../models/PopularComment.model';
 import { defineEventHandler, getQuery, type H3Event, createError } from 'h3';
 import mongoose from 'mongoose';
 
-// Define types for the popular comment document structure
 interface PopularCommentDocument {
   _id: mongoose.Types.ObjectId;
   content: string;
@@ -27,7 +25,6 @@ export default defineEventHandler(async (event: H3Event) => {
   const { novelId, id: commentId } = getQuery(event);
 
   try {
-    // Handle request for a single comment by its ID
     if (commentId && typeof commentId === 'string' && mongoose.Types.ObjectId.isValid(commentId)) {
       const comment = await PopularCommentModel.findById(commentId)
         .populate('user', 'username avatar _id')
@@ -80,7 +77,7 @@ export default defineEventHandler(async (event: H3Event) => {
     }
     
     // First try to find from dedicated PopularComment model
-    let popularComments = await PopularCommentModel.find(queryConditions)
+    const popularComments = await PopularCommentModel.find(queryConditions)
       .sort({ 
         featuredOrder: 1, // First sort by manual featured order
         rating: -1,       // Then by rating
@@ -88,17 +85,6 @@ export default defineEventHandler(async (event: H3Event) => {
       })
       .populate('user', 'username avatar _id')
       .lean() as unknown as PopularCommentDocument[];
-    
-    // If no results, fall back to regular comments sorted by popularity
-    if (popularComments.length === 0) {
-      popularComments = await CommentModel.find(queryConditions)
-        .sort({ 
-          rating: -1,
-          'likes.length': -1
-        })
-        .populate('user', 'username avatar _id')
-        .lean() as unknown as PopularCommentDocument[];
-    }
 
     // Transform the data for the frontend
     const transformedComments = popularComments.map((comment) => {

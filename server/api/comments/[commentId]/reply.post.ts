@@ -1,7 +1,7 @@
 import { CommentModel } from '../../../models/Comment.model';
 import { ReplyModel } from '../../../models/Reply.model';
 import { defineEventHandler, readBody, type H3Event, createError } from 'h3';
-import type { Reply as ReplyType } from '../../../../types/comment';
+import type { Reply as ReplyType } from '../../../../types/comment/short';
 import mongoose, { type Types } from 'mongoose';
 
 const getAuthenticatedUserId = (event: H3Event): string | null => {

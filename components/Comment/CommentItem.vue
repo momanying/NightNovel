@@ -58,7 +58,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import type { Comment, Reply, UserInfo } from '~/types/comment';
+import type { Comment, Reply, UserInfo } from '~/types/comment/short';
 import CommentActions from './CommentActions.vue';
 import CommentReply from './CommentReply.vue';
 import CommentForm from './CommentForm.vue';

@@ -51,7 +51,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
-import type { Comment, Reply } from '~/types/comment'; // UserInfo not directly used here
+import type { Comment, Reply } from '~/types/comment/short'; // UserInfo not directly used here
 import CommentItem from './CommentItem.vue';
 import CommentForm from './CommentForm.vue';
 import { commentApi } from '@/composables/commentapi'; // Ensure path is correct
