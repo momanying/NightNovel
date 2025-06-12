@@ -30,22 +30,6 @@
         @reply-added="handleReplyAdded"
       />
     </div>
-
-    <div v-if="totalPages > 1" class="mt-6 flex justify-center space-x-2">
-      <button 
-        v-for="page in totalPages" 
-        :key="page"
-        :disabled="currentPage === page || isLoading"
-        class="px-3 py-1 border rounded-md"
-        :class="{
-          'bg-primary-500 text-white': currentPage === page,
-          'bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600': currentPage !== page
-        }"
-        @click="fetchComments(page)"
-      >
-        {{ page }}
-      </button>
-    </div>
   </div>
 </template>
 
@@ -67,30 +51,24 @@ const isLoading = ref(false);
 const errorLoadingComments = ref<Error | null>(null);
 const isSubmittingComment = ref(false);
 const mainCommentForm = ref<InstanceType<typeof CommentForm> | null>(null);
-
-const currentPage = ref(1);
 const totalComments = ref(0);
-const totalPages = ref(0);
-const commentsPerPage = 10;
 
-const fetchComments = async (page: number = 1) => {
+const fetchComments = async () => {
   if (!props.novelId) return;
   isLoading.value = true;
   errorLoadingComments.value = null;
   try {
-    const response = await $fetch<{ data: { comments: Comment[], total: number, totalPages: number, page: number } }>(`/api/comments/${props.novelId}`, {
+    const response = await $fetch<{ comments: Comment[], total: number }>('/api/comments/short', {
       query: {
-        page,
-        limit: commentsPerPage
+        novelId: props.novelId,
       },
       headers: {
         'Authorization': `Bearer ${userStore.token}`
       }
     });
-    comments.value = response.data.comments;
-    totalComments.value = response.data.total;
-    totalPages.value = response.data.totalPages;
-    currentPage.value = response.data.page;
+    
+    comments.value = response.comments || [];
+    totalComments.value = response.total || 0;
   } catch (err) {
     console.error('Failed to fetch comments:', err);
     errorLoadingComments.value = err instanceof Error ? err : new Error('Failed to load comments');
@@ -113,8 +91,7 @@ const submitNewComment = async (formData: { content: string; rating?: number; im
       body.append('image', formData.image);
     }
 
-    // Type assertion for the response, assuming your backend returns this structure
-    const response = await $fetch<{ data: { comment: Comment } }>('/api/comments/post', { 
+    const response = await $fetch<{ data: { comment: Comment } }>('/api/comments/short/post', { 
       method: 'POST', 
       body: body, 
       headers: {
@@ -138,7 +115,7 @@ const submitNewComment = async (formData: { content: string; rating?: number; im
 const handlePostReply = async (payload: { parentCommentId: string, content: string, replyToUserId?: string, callback: (newReply: Reply) => void }) => {
   isSubmittingComment.value = true;
   try {
-    const response = await $fetch<{ data: { reply: Reply } }>(`/api/comments/${payload.parentCommentId}/reply`, {
+    const response = await $fetch<{ data: { reply: Reply } }>(`/api/comments/short/${payload.parentCommentId}/reply`, {
       method: 'POST',
       body: { parentCommentId: payload.parentCommentId, content: payload.content, replyToUserId: payload.replyToUserId },
       headers: {
@@ -159,7 +136,7 @@ const handlePostReply = async (payload: { parentCommentId: string, content: stri
 const handleLikeComment = async (commentId: Comment | string) => {
   const idToUse: string = typeof commentId === 'string' ? commentId : commentId._id;
 
-  const response = await $fetch<{ data: { comment: Comment } }>(`/api/comments/${idToUse}/like`, {
+  const response = await $fetch<{ data: { comment: Comment } }>(`/api/comments/short/${idToUse}/like`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${userStore.token}` 
@@ -176,7 +153,7 @@ const handleLikeComment = async (commentId: Comment | string) => {
 const handleLikeReply = async (reply: Reply, parentComment: Comment) => {
   console.log('Liking reply:', reply._id, 'to comment:', parentComment._id);
   try {
-    const response = await $fetch<{ data: { reply: Reply } }>(`/api/reply/${reply._id}/like`, {
+    const response = await $fetch<{ data: { reply: Reply } }>(`/api/comments/short/reply/${reply._id}/like`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${userStore.token}`
@@ -210,7 +187,6 @@ onMounted(() => {
 watch(() => props.novelId, (newNovelId) => {
   if (newNovelId) {
     comments.value = [];
-    currentPage.value = 1;
     fetchComments();
   }
 });
