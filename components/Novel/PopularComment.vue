@@ -202,7 +202,10 @@ const fetchPopularComments = async () => {
     });
     
     if (response && response.data.value?.comments) {
-      comments.value = response.data.value.comments;
+      // 按创建时间倒序排序，最新的评论在最前面
+      comments.value = response.data.value.comments.sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
       
       // 初始化所有评论为折叠状态
       comments.value.forEach(comment => {
