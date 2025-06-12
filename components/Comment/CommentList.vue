@@ -115,7 +115,7 @@ const submitNewComment = async (formData: { content: string; rating?: number; im
 const handlePostReply = async (payload: { parentCommentId: string, content: string, replyToUserId?: string, callback: (newReply: Reply) => void }) => {
   isSubmittingComment.value = true;
   try {
-    const response = await $fetch<{ data: { reply: Reply } }>(`/api/comments/short/${payload.parentCommentId}/reply`, {
+    const response = await $fetch<{ data: { reply: Reply } }>(`/api/comments/${payload.parentCommentId}/reply`, {
       method: 'POST',
       body: { parentCommentId: payload.parentCommentId, content: payload.content, replyToUserId: payload.replyToUserId },
       headers: {
@@ -136,7 +136,7 @@ const handlePostReply = async (payload: { parentCommentId: string, content: stri
 const handleLikeComment = async (commentId: Comment | string) => {
   const idToUse: string = typeof commentId === 'string' ? commentId : commentId._id;
 
-  const response = await $fetch<{ data: { comment: Comment } }>(`/api/comments/short/${idToUse}/like`, {
+  const response = await $fetch<{ data: { comment: Comment } }>(`/api/comments/${idToUse}/like`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${userStore.token}` 
@@ -153,7 +153,7 @@ const handleLikeComment = async (commentId: Comment | string) => {
 const handleLikeReply = async (reply: Reply, parentComment: Comment) => {
   console.log('Liking reply:', reply._id, 'to comment:', parentComment._id);
   try {
-    const response = await $fetch<{ data: { reply: Reply } }>(`/api/comments/short/reply/${reply._id}/like`, {
+    const response = await $fetch<{ data: { reply: Reply } }>(`/api/reply/${reply._id}/like`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${userStore.token}`
