@@ -35,7 +35,7 @@
       </div>
 
       <!-- 分页 -->
-      <div class="mt-8 flex justify-center">
+      <div v-if="totalPages > 0" class="mt-8 flex justify-center">
         <CommonPageNation 
           :current-page="currentPage"
           :total-pages="totalPages"
@@ -61,25 +61,26 @@ const totalPages = ref(1);
 const itemsPerPage = ref(10);
 const total = ref(0);
 
-// Filter states and options are moved to FilterBar.vue
-// handleFilterChange and handleSortOrderToggle are moved to FilterBar.vue
-
 const buildQueryParams = () => {
   const params: Record<string, string | number | boolean> = {
     page: currentPage.value,
     limit: itemsPerPage.value
   };
-  // Read filters directly from route.query as FilterBar updates the URL
-  if (route.query.category) params.category = route.query.category as string;
-  if (route.query.platform) params.platform = route.query.platform as string;
-  if (route.query.year) params.year = route.query.year as string;
-  if (route.query.month) params.month = route.query.month as string;
-  if (route.query.sort) params.sort = route.query.sort as string;
-  if (route.query.order) params.order = route.query.order as string;
-  if (route.query.animation === 'true') params.animation = true;
-  if (route.query.tag) params.tag = route.query.tag as string;
-  if (route.query.status) params.status = route.query.status as string;
-  if (route.query.keyword) params.keyword = route.query.keyword as string;
+  
+  // 从路由中读取所有筛选参数
+  const queryParams = [
+    'tag', 'wordCount', 'updateTime', 'sort', 'order', 
+    'animation', 'status', 'keyword'
+  ];
+  
+  queryParams.forEach(param => {
+    if (route.query[param]) {
+      const value = route.query[param];
+      if (typeof value === 'string') {
+        params[param] = value;
+      }
+    }
+  });
 
   return params;
 };
@@ -137,17 +138,12 @@ const handlePageChange = (page: number) => {
   }
 };
 
-// Function to update pagination state from route query.
+// 从路由查询参数更新分页状态
 const updatePaginationFromRoute = () => {
   currentPage.value = parseInt(route.query.page as string) || 1;
 };
 
-onMounted(() => {
-  // updatePaginationFromRoute();
-  // fetchNovels();
-});
-
-// Watch for changes in route.fullPath to refetch novels and update pagination
+// 监听路由变化以重新获取小说列表和更新分页
 watch(() => route.fullPath, 
   async (newFullPath, oldFullPath) => {
     if (newFullPath !== oldFullPath) {
@@ -158,13 +154,13 @@ watch(() => route.fullPath,
   { immediate: true }
 );
 
-// SEO optimization
+// SEO 优化
 useHead(() => ({
   title: route.query.keyword
     ? `搜索 "${route.query.keyword as string}" 的结果`
     : '夜幕轻小说全集',
   meta: [
-    { name: 'description', content: route.query.keyword ? `关于 “${route.query.keyword as string}” 的搜索结果。` : '最新轻小说全集列表，包含各种分类、标签的轻小说作品。' }
+    { name: 'description', content: route.query.keyword ? `关于 "${route.query.keyword as string}" 的搜索结果。` : '最新轻小说全集列表，包含各种分类、标签的轻小说作品。' }
   ]
 }));
 </script>
