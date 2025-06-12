@@ -54,7 +54,6 @@ import { ref, onMounted, watch } from 'vue';
 import type { Comment, Reply } from '~/types/comment/short'; // UserInfo not directly used here
 import CommentItem from './CommentItem.vue';
 import CommentForm from './CommentForm.vue';
-import { commentApi } from '@/composables/commentapi'; // Ensure path is correct
 import { useUserStore } from '@/stores/user';
 
 const userStore = useUserStore();
@@ -79,11 +78,19 @@ const fetchComments = async (page: number = 1) => {
   isLoading.value = true;
   errorLoadingComments.value = null;
   try {
-    const response = await commentApi.getComments(props.novelId, page, commentsPerPage);
-    comments.value = response.comments;
-    totalComments.value = response.total;
-    totalPages.value = response.totalPages;
-    currentPage.value = response.page;
+    const response = await $fetch<{ data: { comments: Comment[], total: number, totalPages: number, page: number } }>(`/api/comments/${props.novelId}`, {
+      query: {
+        page,
+        limit: commentsPerPage
+      },
+      headers: {
+        'Authorization': `Bearer ${userStore.token}`
+      }
+    });
+    comments.value = response.data.comments;
+    totalComments.value = response.data.total;
+    totalPages.value = response.data.totalPages;
+    currentPage.value = response.data.page;
   } catch (err) {
     console.error('Failed to fetch comments:', err);
     errorLoadingComments.value = err instanceof Error ? err : new Error('Failed to load comments');

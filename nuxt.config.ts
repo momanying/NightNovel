@@ -32,10 +32,10 @@ export default defineNuxtConfig({
   runtimeConfig: {
     // 私有密钥，仅在服务器端可用
     mongodbUri: process.env.MONGODB_URI,
-    
+    jwtSecret: process.env.JWT_SECRET,
     // 公共密钥，在客户端也可用
     public: {
-      // 如果需要在客户端使用一些配置，可以放在这里
+      apibase: '/api'
     }
   },
   build: {
