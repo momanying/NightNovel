@@ -69,7 +69,7 @@ const buildQueryParams = () => {
   
   // 从路由中读取所有筛选参数
   const queryParams = [
-    'tag', 'wordCount', 'updateTime', 'sort', 'order', 
+    'category', 'tag', 'wordCount', 'updateTime', 'sort', 'order', 
     'animation', 'status', 'keyword'
   ];
   

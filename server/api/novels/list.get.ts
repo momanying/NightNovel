@@ -6,6 +6,7 @@ export default defineEventHandler(async (event) => {
     const query = getQuery(event)
     const page = parseInt(query.page as string) || 1
     const limit = parseInt(query.limit as string) || 20
+    const category = query.category as string
     const tag = query.tag as string
     const keyword = query.keyword as string
     const animation = query.animation as string
@@ -17,6 +18,10 @@ export default defineEventHandler(async (event) => {
     
     const filter: Record<string, unknown> = {}
     
+    if (category) {
+      filter.category = category
+    }
+
     if (tag && tag !== '全部类型') {
       const escapedTag = tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       filter.tags = { $regex: `(^|\\s)${escapedTag}($|\\s)`, $options: 'i' };
