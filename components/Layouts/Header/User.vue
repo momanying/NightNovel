@@ -57,7 +57,7 @@ const logout = async () => {
 
 const userMenuItems = computed(() => [
   { label: '个人主页', path: '/user/info' },
-  { label: '我的收藏', path: '/bookshelf' },
+  { label: '我的收藏', path: '/user/collection' },
   { label: '我的评论', path: '/user/comment' },
   { label: '退出登录', action: logout },
 ]);

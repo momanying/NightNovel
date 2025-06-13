@@ -144,6 +144,6 @@ const toggleCollect = async () => {
 
 // 导航到标签页面
 const navigateToTag = (tagId: string | number) => {
-  navigateTo(`/tags/${tagId}`);
+  navigateTo(`/articlelist?tag=${tagId}&order=desc&page=1`);
 };
 </script>

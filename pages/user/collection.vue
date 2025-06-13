@@ -1,5 +1,5 @@
 <template>
-  <div class="container mx-auto py-8 px-4">
+  <div class="container mx-auto py-2 px-4">
     <h1 class="text-2xl font-bold mb-6">我的书架</h1>
     
     <div v-if="loading" class="flex justify-center py-8">
