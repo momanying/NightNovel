@@ -58,7 +58,7 @@ const fetchComments = async () => {
   isLoading.value = true;
   errorLoadingComments.value = null;
   try {
-    const response = await $fetch<{ comments: Comment[], total: number }>('/api/comments/short', {
+    const { data: responseData, error } = await useFetch<{ comments: Comment[], total: number }>('/api/comments/short', {
       query: {
         novelId: props.novelId,
       },
@@ -66,9 +66,16 @@ const fetchComments = async () => {
         'Authorization': `Bearer ${userStore.token}`
       }
     });
+
+    if (error.value) {
+      throw error.value;
+    }
     
-    comments.value = response.comments || [];
-    totalComments.value = response.total || 0;
+    if (responseData.value) {
+      comments.value = responseData.value.comments || [];
+      totalComments.value = responseData.value.total || 0;
+    }
+
   } catch (err) {
     console.error('Failed to fetch comments:', err);
     errorLoadingComments.value = err instanceof Error ? err : new Error('Failed to load comments');

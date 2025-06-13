@@ -19,14 +19,6 @@ export default defineEventHandler(async (event: H3Event) => {
     const comments = await CommentModel.find({ novel: novelId })
       .sort({ createdAt: -1 })
       .populate('user', 'username avatar _id') // Populate user info, added _id for consistency
-      .populate({
-        path: 'replies',
-        populate: [
-          { path: 'user', select: 'username avatar _id' }, // Populate user for replies
-          { path: 'replyTo', select: 'username avatar _id' } // Populate replyTo user for replies
-        ],
-        options: { sort: { createdAt: 1 } } // Sort replies by creation date ascending
-      })
       .lean();
 
     const totalComments = await CommentModel.countDocuments({ novel: novelId });

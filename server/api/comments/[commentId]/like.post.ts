@@ -58,15 +58,7 @@ export default defineEventHandler(async (event: H3Event) => {
       updateOperation,
       { new: true }
     )
-    .populate('user')
-    .populate({
-      path: 'replies',
-      populate: [
-        { path: 'user', select: 'username avatar _id' },
-        { path: 'replyTo', select: 'username avatar _id' }
-      ],
-      options: { sort: { createdAt: 1 } }
-    });
+    .populate('user', 'username avatar _id');
     
     if (!updatedComment) {
         throw createError({

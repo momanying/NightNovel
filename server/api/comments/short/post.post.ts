@@ -95,14 +95,6 @@ export default defineEventHandler(async (event: H3Event) => {
     // Repopulate to ensure all necessary fields are present for the client
     const populatedComment = await CommentModel.findById(commentDocument._id)
                                   .populate('user', 'username avatar _id')
-                                  .populate({
-                                    path: 'replies',
-                                    populate: [
-                                      { path: 'user', select: 'username avatar _id' },
-                                      { path: 'replyTo', select: 'username avatar _id' }
-                                    ],
-                                    options: { sort: { createdAt: 1 } }
-                                  })
                                   .lean<CommentType>();
     
     if (!populatedComment) {

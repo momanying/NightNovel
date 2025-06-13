@@ -11,7 +11,8 @@ const PUBLIC_EXACT_ROUTES: string[] = [
   '/api/auth/register',
   '/api/auth/refresh',
   '/api/tags/cloud',
-  '/api/comments/popular'
+  '/api/comments/popular',
+  '/api/comments/short'
 ]
 
 const PUBLIC_PREFIX_ROUTES: string[] = [
