@@ -2,6 +2,12 @@ import { UserModel } from '../models'
 import { defineEventHandler, getRequestHeader, getRequestURL, createError, type H3Event } from 'h3'
 import jwt from 'jsonwebtoken'
 
+interface JwtPayload {
+  id: string
+  exp: number
+  iat: number
+}
+
 // 定义公开路由（可抽成 utils）
 const PUBLIC_EXACT_ROUTES: string[] = [
   '/',
@@ -18,7 +24,8 @@ const PUBLIC_EXACT_ROUTES: string[] = [
 const PUBLIC_PREFIX_ROUTES: string[] = [
   '/novels/',
   '/comments/',
-  '/api/novels/'
+  '/api/novels/',
+  '/uploads/'
 ]
 
 export default defineEventHandler(async (event: H3Event) => {
@@ -78,7 +85,7 @@ export default defineEventHandler(async (event: H3Event) => {
   const token = authHeader.substring(7)
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { id: string }
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload
     const user = await UserModel.findById(decoded.id).select('-password')
     if (user) {
       event.context.auth = { user }

@@ -1,5 +1,5 @@
 import { UserModel } from '~/server/models'
-import { verifyToken, generateToken } from './jwt'
+import { verifyRefreshToken, generateToken } from './jwt'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // 验证刷新令牌
-    const decoded = verifyToken(refreshToken)
+    const decoded = verifyRefreshToken(refreshToken)
     const user = await UserModel.findById(decoded.id)
 
     if (!user) {

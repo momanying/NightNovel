@@ -152,16 +152,17 @@ async function uploadAvatar() {
   }
 
   if (!userStore.token) {
-    toast.error('用户未登录或会话已过期，请重新登录。');
+    toast.error('用户未登录，请先登录。');
+    navigateTo('/login');
     return;
   }
 
   isUploading.value = true;
   const formData = new FormData();
   formData.append('avatar', selectedAvatarFile.value);
-  let toastIdVar: string | number | undefined;
 
   try {
+    // Try to upload with current token
     const response = await $fetch<{ success: boolean; message: string; avatarUrl: string }>('/api/user/avatar', {
       method: 'POST',
       body: formData,
@@ -169,8 +170,6 @@ async function uploadAvatar() {
         'Authorization': `Bearer ${userStore.token}` 
       }
     });
-
-    if (toastIdVar) toast.dismiss(toastIdVar);
 
     if (response.success) {
       toast.success(response.message || '头像上传成功!');
@@ -182,10 +181,19 @@ async function uploadAvatar() {
       toast.error(response.message || '无法更新头像.');
     }
   } catch (error: unknown) { 
-    if (toastIdVar) toast.dismiss(toastIdVar); 
     console.error('Avatar upload error:', error);
-    const errorMessage = error instanceof Error ? error.message : '上传头像时发生未知错误.';
-    toast.error(`上传失败: ${errorMessage}`);
+    
+    // Handle token expiration specifically
+    const errorObj = error as { statusCode?: number };
+    if (errorObj?.statusCode === 401 || (error instanceof Error && error.message.includes('token'))) {
+      toast.error('用户会话已过期，请重新登录');
+      // Clear user data and redirect to login
+      userStore.logout();
+      navigateTo('/login');
+    } else {
+      const errorMessage = error instanceof Error ? error.message : '上传头像时发生未知错误.';
+      toast.error(`上传失败: ${errorMessage}`);
+    }
   } finally {
     isUploading.value = false;
   }

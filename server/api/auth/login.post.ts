@@ -1,5 +1,5 @@
 import { UserModel } from '~/server/models'
-import { generateToken } from './jwt'
+import { generateToken, generateRefreshToken } from './jwt'
 import { rateLimit } from '~/server/middleware/rateLimit'
 
 // 定义限流规则（15分钟内最多5次失败尝试）
@@ -36,14 +36,16 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // 生成token
+    // 生成token和刷新token
     const token = generateToken(user._id.toString())
+    const refreshToken = generateRefreshToken(user._id.toString())
 
     return {
       code: 200,
       message: '登录成功',
       data: {
         token,
+        refreshToken,
         user: {
           id: user._id,
           username: user.username,

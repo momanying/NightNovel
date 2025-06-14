@@ -8,7 +8,8 @@ export const useUserStore = defineStore('NightUser', {
     username: '',
     avatar: '',
     token: '',
-    email: ''
+    email: '',
+    refreshToken: ''
   }),
   getters: {
     isLoggedIn: (state) => !!state.id && !!state.token,
@@ -20,6 +21,9 @@ export const useUserStore = defineStore('NightUser', {
       this.avatar = user.avatar
       this.token = user.token
       this.email = user.email
+      if (user.refreshToken) {
+        this.refreshToken = user.refreshToken
+      }
     },
     logout() {
       this.id = ''
@@ -27,6 +31,26 @@ export const useUserStore = defineStore('NightUser', {
       this.avatar = ''
       this.token = ''
       this.email = ''
+      this.refreshToken = ''
+    },
+    async refreshTokenIfNeeded() {
+      if (!this.refreshToken) return false
+      
+      try {
+        const response = await $fetch('/api/auth/refresh', {
+          method: 'POST',
+          body: { refreshToken: this.refreshToken }
+        })
+        
+        if (response.code === 200 && response.data?.token) {
+          this.token = response.data.token
+          return true
+        }
+        return false
+      } catch (error) {
+        console.error('Failed to refresh token:', error)
+        return false
+      }
     }
   }
 })
