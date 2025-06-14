@@ -8,7 +8,7 @@ module.exports = {
         cwd: path.join(__dirname),
         env: {
           NODE_ENV: 'production',
-          JWT_SECRET: '20192128'
+          JWT_SECRET: 'your-jwt-secret-here'
         }
       }
     ]
