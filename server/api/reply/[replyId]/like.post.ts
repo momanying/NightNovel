@@ -53,26 +53,84 @@ export default defineEventHandler(async (event: H3Event) => {
       updateOperation = { $addToSet: { likes: userId } };
     }
 
-    const updatedReply = await ReplyModel.findByIdAndUpdate(
-      replyId,
-      updateOperation,
-      { new: true }
-    )
-    .populate('user')
-    .populate('replyTo');
-    
-    if (!updatedReply) {
-        throw createError({
-            statusCode: 404,
-            statusMessage: 'Not Found',
-            data: { message: '更新回复失败，回复可能已被删除。'},
-        });
+    // 使用聚合管道查询来确保我们能正确处理replyToUser
+    const updatedReply = await ReplyModel.aggregate([
+      { $match: { _id: replyId } },
+      { $limit: 1 },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'user',
+          pipeline: [{ $project: { username: 1, avatar: 1, _id: 1 } }]
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $addFields: {
+          replyTo: { $ifNull: ['$replyTo', null] }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          let: { replyToId: '$replyTo' },
+          pipeline: [
+            { 
+              $match: { 
+                $expr: { 
+                  $and: [
+                    { $ne: ['$$replyToId', null] },
+                    { $eq: ['$_id', '$$replyToId'] }
+                  ]
+                } 
+              }
+            },
+            { $project: { username: 1, _id: 1 } }
+          ],
+          as: 'replyToUser'
+        }
+      },
+      {
+        $addFields: {
+          replyToUser: {
+            $cond: {
+              if: { $gt: [{ $size: '$replyToUser' }, 0] },
+              then: { $arrayElemAt: ['$replyToUser', 0] },
+              else: null
+            }
+          }
+        }
+      }
+    ]);
+
+    // 应用点赞/取消点赞操作
+    await ReplyModel.updateOne(
+      { _id: replyId },
+      updateOperation
+    );
+
+    if (!updatedReply || updatedReply.length === 0) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Not Found',
+        data: { message: '更新回复失败，回复可能已被删除。'},
+      });
+    }
+
+    // 更新点赞数组
+    const finalReply = updatedReply[0];
+    if (alreadyLiked) {
+      finalReply.likes = finalReply.likes.filter((id: mongoose.Types.ObjectId) => id.toString() !== userId.toString());
+    } else {
+      finalReply.likes.push(userId);
     }
 
     return {
       success: true,
       message: alreadyLiked ? '取消点赞成功！' : '点赞成功！',
-      data: { reply: updatedReply },
+      data: { reply: finalReply },
     };
 
   } catch (error) {

@@ -16,7 +16,7 @@
       </div>
       <div class="mt-2">
         <p class="text-white dark:text-gray-300 text-sm">
-          <span v-if="reply.replyTo" class="text-blue-300">@{{ reply.replyTo.username }} </span>
+          <span v-if="reply.replyToUser && reply.replyToUser.username" class="text-blue-300">@{{ reply.replyToUser.username }} </span>
           {{ reply.content }}
         </p>
       </div>

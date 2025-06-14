@@ -10,7 +10,8 @@ export interface Reply {
   user: UserInfo; // Changed from username/avatar string to UserInfo object
   content: string;
   likes: string[]; // Array of user IDs who liked
-  replyTo?: UserInfo; // User being replied to directly
+  replyTo?: string; // User ID being replied to directly
+  replyToUser?: UserInfo | null; // User object being replied to (populated from replyTo)
   createdAt: string;
   updatedAt: string;
   isLive?: boolean; // Retained if still used, backend might not populate

@@ -18,13 +18,13 @@
         <p class="text-white dark:text-gray-300 text-sm mt-3">{{ comment.content }}</p>
         <img v-if="comment.image" :src="comment.image" alt="Comment Image" class="w-24 h-24 rounded-lg mt-3">
         <div v-if="showReplyForm && !replyingToUser" class="mt-3">
-          <CommentForm 
+          <ReplyForm 
             ref="replyFormRef"
             :placeholder="`回复 @${comment.user?.username || 'Anonymous'}...`" 
             submit-text="发表回复"
             :is-submitting="isSubmittingReply"
             :show-cancel-button="true"
-            @submit="data => submitReply(data.content, undefined)"
+            @submit="submitReply"
             @cancel="cancelReplyForm"
           />
         </div>
@@ -41,13 +41,13 @@
         </div>
         
          <div v-if="showReplyForm && replyingToUser" class="mt-3 ml-8">
-          <CommentForm 
+          <ReplyForm 
             ref="specificReplyFormRef"
             :placeholder="`回复 @${replyingToUser?.username || 'Anonymous'}...`" 
             submit-text="发表回复"
             :is-submitting="isSubmittingReply"
             :show-cancel-button="true"
-            @submit="data => submitReply(data.content, replyingToUser?._id)"
+            @submit="content => submitReply(content, replyingToUser?._id)"
             @cancel="cancelReplyForm"
           />
         </div>
@@ -61,7 +61,7 @@ import { ref } from 'vue';
 import type { Comment, Reply, UserInfo } from '~/types/comment/short';
 import CommentActions from './CommentActions.vue';
 import CommentReply from './CommentReply.vue';
-import CommentForm from './CommentForm.vue';
+import ReplyForm from './ReplyForm.vue';
 
 const props = defineProps<{
   comment: Comment;
@@ -73,8 +73,8 @@ const emit = defineEmits(['like-comment', 'submit-reply', 'like-reply', 'reply-a
 const showReplyForm = ref(false);
 const isSubmittingReply = ref(false);
 const replyingToUser = ref<UserInfo | null>(null);
-const replyFormRef = ref<InstanceType<typeof CommentForm> | null>(null);
-const specificReplyFormRef = ref<InstanceType<typeof CommentForm> | null>(null);
+const replyFormRef = ref<InstanceType<typeof ReplyForm> | null>(null);
+const specificReplyFormRef = ref<InstanceType<typeof ReplyForm> | null>(null);
 
 const toggleReplyForm = (userToReplyTo: UserInfo | null) => {
   if (showReplyForm.value && replyingToUser.value?.username === userToReplyTo?.username) {

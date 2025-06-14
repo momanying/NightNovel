@@ -51,15 +51,41 @@ export default defineEventHandler(async (event: H3Event) => {
             },
             { $unwind: '$user' },
             {
-              $lookup: {
-                from: 'users',
-                localField: 'replyTo',
-                foreignField: '_id',
-                as: 'replyToUser',
-                pipeline: [{ $project: { username: 1, _id: 1 } }]
+              $addFields: {
+                replyTo: { $ifNull: ['$replyTo', null] }
               }
             },
-            { $unwind: { path: '$replyToUser', preserveNullAndEmptyArrays: true } }
+            {
+              $lookup: {
+                from: 'users',
+                let: { replyToId: '$replyTo' },
+                pipeline: [
+                  { 
+                    $match: { 
+                      $expr: { 
+                        $and: [
+                          { $ne: ['$$replyToId', null] },
+                          { $eq: ['$_id', '$$replyToId'] }
+                        ]
+                      } 
+                    }
+                  },
+                  { $project: { username: 1, _id: 1 } }
+                ],
+                as: 'replyToUser'
+              }
+            },
+            {
+              $addFields: {
+                replyToUser: {
+                  $cond: {
+                    if: { $gt: [{ $size: '$replyToUser' }, 0] },
+                    then: { $arrayElemAt: ['$replyToUser', 0] },
+                    else: null
+                  }
+                }
+              }
+            }
           ]
         }
       }

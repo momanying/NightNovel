@@ -1,7 +1,6 @@
 import { CommentModel } from '../../../models/Comment.model';
 import { ReplyModel } from '../../../models/Reply.model';
 import { defineEventHandler, readBody, type H3Event, createError } from 'h3';
-import type { Reply as ReplyType } from '../../../../types/comment/short';
 import mongoose, { type Types } from 'mongoose';
 
 const getAuthenticatedUserId = (event: H3Event): string | null => {
@@ -44,16 +43,11 @@ export default defineEventHandler(async (event: H3Event) => {
       throw createError({ statusCode: 404, statusMessage: 'Not Found', data: { message: 'Parent comment not found for reply.' } });
     }
 
-    if (replyToObjectId) {
-      // const userToReplyToExists = await mongoose.model('User').findById(replyToObjectId).lean();
-      // if (!userToReplyToExists) throw createError({ statusCode: 404, statusMessage: 'Not Found', data: { message: 'User to reply to not found.' } });
-    }
-
     const replyDocument = new ReplyModel({
-      parentComment: parentCommentId, // ObjectId instance
-      user: userId,                // ObjectId instance
+      parentComment: parentCommentId,
+      user: userId,
       content,
-      replyTo: replyToObjectId,    // ObjectId instance or undefined
+      replyTo: replyToObjectId,
     });
 
     await replyDocument.save();
@@ -61,17 +55,63 @@ export default defineEventHandler(async (event: H3Event) => {
     parentComment.replies.push(replyDocument._id as unknown as Types.ObjectId);
     await parentComment.save();
     
-    const populatedReply = await ReplyModel.findById(replyDocument._id)
-      .populate('user', 'username avatar _id')
-      .populate('replyTo', 'username avatar _id') // Populate if replyToUserId was provided
-      .lean<ReplyType>();
+    // 使用聚合管道查询来确保我们能正确处理replyToUser
+    const populatedReplies = await ReplyModel.aggregate([
+      { $match: { _id: replyDocument._id } },
+      { $limit: 1 },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'user',
+          pipeline: [{ $project: { username: 1, avatar: 1, _id: 1 } }]
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $addFields: {
+          replyTo: { $ifNull: ['$replyTo', null] }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          let: { replyToId: '$replyTo' },
+          pipeline: [
+            { 
+              $match: { 
+                $expr: { 
+                  $and: [
+                    { $ne: ['$$replyToId', null] },
+                    { $eq: ['$_id', '$$replyToId'] }
+                  ]
+                } 
+              }
+            },
+            { $project: { username: 1, _id: 1 } }
+          ],
+          as: 'replyToUser'
+        }
+      },
+      {
+        $addFields: {
+          replyToUser: {
+            $cond: {
+              if: { $gt: [{ $size: '$replyToUser' }, 0] },
+              then: { $arrayElemAt: ['$replyToUser', 0] },
+              else: null
+            }
+          }
+        }
+      }
+    ]);
 
-    if (!populatedReply) {
+    if (!populatedReplies || populatedReplies.length === 0) {
         throw createError({ statusCode: 404, statusMessage: 'Not Found', data: { message: 'Reply created but could not be retrieved.' } });
     }
 
-    // Match the expected CommentApiResponse structure { data: { reply: ... } }
-    return { data: { reply: populatedReply } };
+    return { data: { reply: populatedReplies[0] } };
 
   } catch (error) {
     const typedError = error as (Error & { code?: number; errmsg?: string });
