@@ -43,7 +43,9 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'avatars')
+  // 使用storage目录作为头像存储位置
+  const uploadsDir = path.join(process.cwd(), 'storage', 'uploads', 'avatars')
+  
   // Ensure the directory exists
   try {
     await fs.mkdir(uploadsDir, { recursive: true })
@@ -59,7 +61,9 @@ export default defineEventHandler(async (event) => {
   const fileExtension = path.extname(filePart.filename)
   const newFilename = `avatar-${userId}-${uniqueSuffix}${fileExtension}`
   const filePath = path.join(uploadsDir, newFilename)
-  const publicPath = `/uploads/avatars/${newFilename}`
+  
+  // 修改URL索引格式，使用/api/avatars端点
+  const avatarUrl = `/api/avatars/${newFilename}`
 
   try {
     await fs.writeFile(filePath, filePart.data)
@@ -74,7 +78,7 @@ export default defineEventHandler(async (event) => {
   try {
     const updatedUser = await UserModel.findByIdAndUpdate(
       userId,
-      { avatar: publicPath },
+      { avatar: avatarUrl },
       { new: true }
     )
 
@@ -90,7 +94,7 @@ export default defineEventHandler(async (event) => {
     return {
       success: true,
       message: 'Avatar uploaded successfully!',
-      avatarUrl: publicPath,
+      avatarUrl: avatarUrl,
     }
   } catch (error) {
     // Attempt to clean up uploaded file if DB update fails

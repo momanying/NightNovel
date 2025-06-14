@@ -44,7 +44,7 @@
 
             <div class="mt-8 mb-12">
               <div class="max-w-[1200px] mx-auto">
-                <NovelComment />
+                <NovelComment :novel-id="novelId" />
               </div>
             </div>
           </div>

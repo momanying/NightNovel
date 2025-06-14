@@ -58,7 +58,7 @@ const fetchComments = async () => {
   isLoading.value = true;
   errorLoadingComments.value = null;
   try {
-    const { data: responseData, error } = await useFetch<{ comments: Comment[], total: number }>('/api/comments/short', {
+    const responseData = await $fetch<{ comments: Comment[], total: number }>('/api/comments/short', {
       query: {
         novelId: props.novelId,
       },
@@ -67,13 +67,9 @@ const fetchComments = async () => {
       }
     });
 
-    if (error.value) {
-      throw error.value;
-    }
-    
-    if (responseData.value) {
-      comments.value = responseData.value.comments || [];
-      totalComments.value = responseData.value.total || 0;
+    if (responseData) {
+      comments.value = responseData.comments || [];
+      totalComments.value = responseData.total || 0;
     }
 
   } catch (err) {

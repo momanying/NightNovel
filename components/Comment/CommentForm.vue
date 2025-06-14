@@ -154,7 +154,6 @@ const handleImageSelected = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0]) {
     const file = target.files[0];
-    // Basic validation (e.g., file type, size)
     if (!file.type.startsWith('image/')) {
       errorMessage.value = '请选择图片文件';
       return;

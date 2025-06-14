@@ -66,7 +66,7 @@
                     <button 
                     type="submit"
                     :disabled="isSubmitting"
-                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-sky-800 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                     <template v-if="isSubmitting">
                     更新中...
@@ -142,6 +142,8 @@ const handleChangePassword = async () => {
       oldPassword.value = '';
       newPassword.value = '';
       confirmPassword.value = '';
+      userStore.logout();
+      router.push('/auth/login');
     } else {
       passwordError.value = response.message || '无法更新密码，请检查您输入的当前密码是否正确。';
       toast.error(response.message || '无法更新密码，请检查您输入的当前密码是否正确。');

@@ -61,7 +61,6 @@ const navigationItems: NavigationItem[] = [
   { name: '头像上传', to: '/user/avatar', icon: ['fas', 'image'] },
   { name: '修改密码', to: '/user/password', icon: ['fas', 'key'] },
   { name: '我的收藏', to: '/user/collection', icon: ['fas', 'bookmark'] },
-  { name: '设置', to: '/user/settings', icon: ['fas', 'cog'] }, // 'fas' for solid, 'far' for regular etc.
 ];
 
 

@@ -103,9 +103,6 @@ const userStatsItems = [
   // ... other stats items
   { label: '每天允许评分次数', value: '1' }
 ];
-
-// Avatar specific refs and functions (avatarInput, selectedAvatarFile, handleAvatarSelected, uploadAvatar)
-// have been REMOVED from here.
 </script>
 
 

@@ -66,18 +66,15 @@ export default defineEventHandler(async (event: H3Event) => {
     try {
       const fileExtension = path.extname(imageFileName);
       const uniqueFileName = `${randomUUID()}${fileExtension}`;
-      const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'comments');
+      const uploadsDir = path.join(process.cwd(), 'storage', 'shortcomment');
       const filePath = path.join(uploadsDir, uniqueFileName);
 
       await fs.mkdir(uploadsDir, { recursive: true }); // Ensure directory exists
       await fs.writeFile(filePath, imageFile);
       
-      imageUrl = `/uploads/comments/${uniqueFileName}`; // URL relative to public directory
+      imageUrl = `/api/comments/images/${uniqueFileName}`;
     } catch (uploadError) {
       console.error('Error saving uploaded image:', uploadError);
-      // Decide if this should be a fatal error or if comment can be saved without image
-      // For now, we'll proceed without image if upload fails
-      // You might want to throw createError here in a real application
     }
   }
 

@@ -108,25 +108,19 @@ export default defineEventHandler(async (event: H3Event) => {
       const permanentPath = join(PERMANENT_DIR, fileName);
 
       try {
-        // Check if file exists in temp and move it
         await fs.rename(tempPath, permanentPath);
         
         const permanentUrl = `/uploads/comments/${fileName}`;
         processedImageUrls.push(permanentUrl);
         
-        // Update the URL in the content
         if(finalContent) {
           finalContent = finalContent.replace(tempUrl, permanentUrl);
         }
 
       } catch (moveError) {
         console.error(`Failed to move image ${fileName}:`, moveError);
-        // Depending on desired behavior, you could either skip this image
-        // or throw an error to halt the entire comment submission.
-        // For now, we will skip it and not include it in the final comment.
       }
     }
-    // Update the images array with the new, permanent URLs
     images = processedImageUrls;
   }
   // --- End Image Handling ---

@@ -162,7 +162,6 @@ async function uploadAvatar() {
   formData.append('avatar', selectedAvatarFile.value);
 
   try {
-    // Try to upload with current token
     const response = await $fetch<{ success: boolean; message: string; avatarUrl: string }>('/api/user/avatar', {
       method: 'POST',
       body: formData,
@@ -183,16 +182,14 @@ async function uploadAvatar() {
   } catch (error: unknown) { 
     console.error('Avatar upload error:', error);
     
-    // Handle token expiration specifically
     const errorObj = error as { statusCode?: number };
     if (errorObj?.statusCode === 401 || (error instanceof Error && error.message.includes('token'))) {
       toast.error('用户会话已过期，请重新登录');
-      // Clear user data and redirect to login
       userStore.logout();
       navigateTo('/login');
     } else {
-      const errorMessage = error instanceof Error ? error.message : '上传头像时发生未知错误.';
-      toast.error(`上传失败: ${errorMessage}`);
+    const errorMessage = error instanceof Error ? error.message : '上传头像时发生未知错误.';
+    toast.error(`上传失败: ${errorMessage}`);
     }
   } finally {
     isUploading.value = false;

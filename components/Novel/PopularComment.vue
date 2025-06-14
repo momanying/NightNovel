@@ -50,7 +50,7 @@
         
         <!-- 渲染 Markdown 内容 -->
         <div v-if="isExpanded[comment._id]" class="comment-content">
-          <MdPreview modelValue={comment.content} previewTheme="default" />
+          <MdPreview :modelValue="processMarkdownImages(comment.content)" previewTheme="default" />
         </div>
         
         <!-- 折叠预览 -->
@@ -289,6 +289,33 @@ const extractImageUrls = (markdown: string): string[] => {
   }).filter(url => url);
 };
 
+// 处理图片URL，将旧格式转换为新格式
+const processImageUrl = (url: string): string => {
+  // 如果已经是新格式的URL（以/api/开头），则直接返回
+  if (url.startsWith('/api/')) {
+    return url;
+  }
+  
+  // 如果是旧格式的URL（以/storage/longcomment/开头），则转换为新格式
+  if (url.startsWith('/storage/longcomment/')) {
+    const filename = url.split('/').pop();
+    if (filename) {
+      return `/api/longcomment/images/${filename}`;
+    }
+  }
+  
+  // 默认返回原始URL
+  return url;
+};
+
+// 替换Markdown中的图片URL
+const processMarkdownImages = (markdown: string): string => {
+  return markdown.replace(/!\[(.*?)\]\((\/storage\/longcomment\/.*?)\)/g, (match, alt, url) => {
+    const newUrl = processImageUrl(url);
+    return `![${alt}](${newUrl})`;
+  });
+};
+
 // 上传图片
 const onUploadImg = async (files: File[], callback: (urls: string[]) => void) => {
   const formData = new FormData();
@@ -297,7 +324,10 @@ const onUploadImg = async (files: File[], callback: (urls: string[]) => void) =>
   try {
     const res = await $fetch<string[]>('/api/upload', {
       method: 'POST',
-      body: formData
+      body: formData,
+      headers: {
+        'Authorization': `Bearer ${userstore.token}`
+      }
     });
     callback(res);
   } catch (error) {

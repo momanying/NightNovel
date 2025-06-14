@@ -3,7 +3,7 @@ import { join } from 'path';
 import { defineEventHandler, readMultipartFormData } from 'h3';
 import { nanoid } from 'nanoid';
 
-const UPLOAD_DIR = './public/uploads/temp';
+const UPLOAD_DIR = './storage/longcomment';
 
 export default defineEventHandler(async (event) => {
   try {
@@ -22,8 +22,8 @@ export default defineEventHandler(async (event) => {
           
           await fs.writeFile(filePath, file.data);
           
-          // Construct the public URL
-          const publicUrl = `/uploads/temp/${newFileName}`;
+          // 使用API路径而不是直接的文件系统路径
+          const publicUrl = `/api/longcomment/images/${newFileName}`;
           uploadedUrls.push(publicUrl);
         }
       }

@@ -25,7 +25,9 @@ const PUBLIC_PREFIX_ROUTES: string[] = [
   '/novels/',
   '/comments/',
   '/api/novels/',
-  '/uploads/'
+  '/api/avatars/',
+  '/api/comments/images/',
+  '/api/longcomment/images/'
 ]
 
 export default defineEventHandler(async (event: H3Event) => {
