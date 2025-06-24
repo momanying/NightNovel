@@ -2,7 +2,7 @@
   <div class="flex justify-center items-center h-screen">
     <div class="auth-container flex flex-col w-[50%] h-[80%] z-1 rounded-lg">
         <div class="sm:mx-auto sm:w-full sm:max-w-sm mt-5">
-            <img class="mx-auto h-20 w-auto" src="http://54.255.84.100/i/2025/05/14/6823f89a2e094.webp" alt="NightNovel">
+            <img class="mx-auto h-20 w-auto" src="/default-cover.webp" alt="NightNovel">
             <h2 class="mt-5 text-center text-2xl font-bold tracking-tight text-black">欢迎来到夜幕，请注册</h2>
         </div>
 

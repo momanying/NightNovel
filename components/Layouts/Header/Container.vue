@@ -4,7 +4,7 @@
     <div class="hidden md:flex h-20 items-center px-3 sm:px-5 box-border">
       <!-- 左侧标题区域 -->
       <div class="flex items-center shrink-0">
-        <NuxtImg class="h-9 w-9 md:h-11 md:w-11 rounded-full" src="http://54.255.84.100/i/2025/05/14/6823f89a2e094.webp" alt="Logo" loading="lazy" />
+        <img class="h-9 w-9 md:h-11 md:w-11 rounded-full" src="/default-cover.webp" alt="Logo" >
         <div class="mt-0.5 cursor-pointer" @click="goToHome">
           <span class="bg-gradient-to-r from-yellow-500 to-purple-800 bg-clip-text text-transparent text-xl md:text-2xl tracking-wider font-bold ml-2 md:ml-4 font-kai">夜幕</span>
           <span class="text-white text-xl md:text-2xl tracking-wider font-kai">轻小说</span>
@@ -15,7 +15,7 @@
       <LayoutsHeaderMenu class="mx-auto" />
       
       <!-- 右侧图标区域 -->
-      <div class="flex items-center shrink-0">
+      <div class="flex items-center shrink-0 mr-3">
         <LayoutsHeaderSearch class="mr-3" />
         <LayoutsHeaderUser />
       </div>
@@ -27,7 +27,7 @@
       <div class="h-16 flex items-center justify-between px-3">
         <!-- 左侧Logo和标题 -->
         <div class="flex items-center">
-          <NuxtImg class="h-8 w-8 rounded-full" src="http://54.255.84.100/i/2025/05/14/6823f89a2e094.webp" alt="Logo" loading="lazy" />
+          <img class="h-8 w-8 rounded-full" src="/default-cover.webp" alt="Logo" >
           <div class="mt-0.5 cursor-pointer" @click="goToHome">
             <span class="bg-gradient-to-r from-yellow-500 to-purple-800 bg-clip-text text-transparent text-lg tracking-wider font-bold ml-2 font-kai">夜幕</span>
             <span class="text-white text-lg tracking-wider font-kai">轻小说</span>

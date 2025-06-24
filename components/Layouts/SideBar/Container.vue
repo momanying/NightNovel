@@ -19,7 +19,7 @@
       class="w-full"
     />
 
-    <!-- 新书组件 - 移除absolute定位 -->
+    <!-- 新书组件 -->
     <LayoutsSideBarNewNovel class="w-full" />
   </div>
 </template>

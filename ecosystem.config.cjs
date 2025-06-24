@@ -8,9 +8,10 @@ module.exports = {
         cwd: path.join(__dirname),
         env: {
           NODE_ENV: 'production',
-          JWT_SECRET: 'your-jwt-secret-here'
+          JWT_SECRET: '20192128',
+          NITRO_HOST: '127.0.0.1',
+          NITRO_PORT: '3000'
         }
       }
     ]
   }
-  

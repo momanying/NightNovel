@@ -5,7 +5,7 @@
   <!-- 使用响应式布局 -->
   <div class="flex flex-col lg:flex-row w-full lg:h-[400px] text-white overflow-hidden justify-between">
     <!-- 左侧：轮播区域 - 在移动设备上占满宽度，在桌面上占40% -->
-    <div class="w-full lg:w-2/6 h-[300px] lg:h-full mb-6 lg:mb-0">
+    <div class="w-full lg:w-2/6 h-[300px] lg:h-full lg:mb-0">
       <ul class="relative w-full h-full overflow-hidden rounded-lg">
         <li 
           v-for="(novel, index) in items" 
@@ -85,13 +85,13 @@ const checkIsMobile = () => {
 // 根据设备类型设置不同的动画位置
 const getAnimations = () => {
   if (isMobile.value) {
-    // 移动设备上的位置设置
+    // 移动设备上只显示当前图片
     return [
-      { left: '50%', top: '8%', opacity: 1, zIndex: 5, width: '180px', height: '230px', transform: 'translateX(-50%)' },
-      { left: '30%', top: '70%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },
-      { left: '40%', top: '70%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },
-      { left: '50%', top: '70%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },
-      { left: '60%', top: '70%', opacity: 0.7, zIndex: 2, width: '50px', height: '70px' },
+      { left: '50%', top: '50%', transform: 'translate(-50%, -50%)', opacity: 1, zIndex: 5, width: '180px', height: '230px' },
+      { opacity: 0, width: '0', height: '0' },
+      { opacity: 0, width: '0', height: '0' },
+      { opacity: 0, width: '0', height: '0' },
+      { opacity: 0, width: '0', height: '0' },
     ];
   } else {
     // 桌面设备上的位置设置
@@ -181,10 +181,3 @@ onBeforeUnmount(() => {
   stop();
 });
 </script>
-
-<style scoped>
-/* 在这里可以添加额外的响应式样式 */
-@media (max-width: 640px) {
-  /* 小屏幕样式调整 */
-}
-</style>

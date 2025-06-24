@@ -8,28 +8,6 @@ interface JwtPayload {
   iat: number
 }
 
-// 定义公开路由（可抽成 utils）
-const PUBLIC_EXACT_ROUTES: string[] = [
-  '/',
-  '/login',
-  '/register',
-  '/api/auth/login',
-  '/api/auth/register',
-  '/api/auth/refresh',
-  '/api/tags/cloud',
-  '/api/comments/popular',
-  '/api/comments/short'
-]
-
-const PUBLIC_PREFIX_ROUTES: string[] = [
-  '/novels/',
-  '/comments/',
-  '/api/novels/',
-  '/api/avatars/',
-  '/api/comments/images/',
-  '/api/longcomment/images/'
-]
-
 export default defineEventHandler(async (event: H3Event) => {
   const config = useRuntimeConfig()
   const JWT_SECRET = config.jwtSecret
@@ -70,12 +48,26 @@ export default defineEventHandler(async (event: H3Event) => {
   }
 
   // 生产环境
-  const isPublicRoute =
-    PUBLIC_EXACT_ROUTES.includes(pathname) ||
-    PUBLIC_PREFIX_ROUTES.some(prefix => pathname.startsWith(prefix))
+  const isProtectedRoute = (() => {
+    // 默认保护所有修改性操作
+    if (event.method !== 'GET' && event.method !== 'HEAD' && event.method !== 'OPTIONS') {
+      // 但排除 auth 路由
+      if (pathname.startsWith('/api/auth/')) {
+        return false
+      }
+      return true
+    }
 
-  if (isPublicRoute) {
-    return
+    // 对于GET等安全方法，按需保护
+    if (pathname.startsWith('/api/user') || pathname.startsWith('/user')) {
+      return true
+    }
+
+    return false
+  })()
+
+  if (!isProtectedRoute) {
+    return // 公开路由，直接通过
   }
 
   // 受保护路由，验证 token
